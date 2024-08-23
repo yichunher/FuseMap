@@ -6,6 +6,7 @@ import random
 import os
 import anndata as ad
 import pandas as pd
+
 try:
     import torch
 except ModuleNotFoundError:
@@ -23,10 +24,7 @@ from matplotlib.patches import PathPatch
 from scipy.optimize import linear_sum_assignment
 import dgl
 
-eps=1e-100
-
-
-
+eps = 1e-100
 
 
 def get_filenames(directory, prefix):
@@ -34,11 +32,14 @@ def get_filenames(directory, prefix):
     return [f for f in os.listdir(directory) if f.startswith(prefix)]
 
 
-
-'''
+"""
 plot figures
-'''
-def insert_columns(array1, array2, location_indices, column_label_now, column_label_rest):
+"""
+
+
+def insert_columns(
+    array1, array2, location_indices, column_label_now, column_label_rest
+):
     sorted_indices = np.argsort(location_indices)
     sorted_array2 = array2[:, sorted_indices]
     sorted_rest = column_label_rest[:, sorted_indices]
@@ -48,7 +49,9 @@ def insert_columns(array1, array2, location_indices, column_label_now, column_la
     offset = 0
     for i, loc in enumerate(sorted_locations):
         array1 = np.insert(array1, loc + offset, sorted_array2[:, i], axis=1)
-        column_label_now = np.insert(column_label_now, loc + offset, sorted_rest[:, i], axis=1)
+        column_label_now = np.insert(
+            column_label_now, loc + offset, sorted_rest[:, i], axis=1
+        )
         offset += 1
 
     return array1, column_label_now
@@ -62,7 +65,7 @@ def custom_annot(data, fmt_func):
 
 # Custom annotation function
 def fmt(x):
-    return '' if x == 0 else '{:.0f}'.format(x)
+    return "" if x == 0 else "{:.0f}".format(x)
 
 
 def map_diagonal_line(cross_tab_normalized):
@@ -75,10 +78,13 @@ def map_diagonal_line(cross_tab_normalized):
     column_label = cross_tab_normalized.columns
     row_label = row_label[row_indices]
     column_label_now = np.array(column_label[col_indices]).reshape(1, -1)
-    column_label_rest = np.array(column_label[list(set(np.arange(cost_matrix.shape[1])) - set(col_indices))]).reshape(1,
-                                                                                                                      -1)
+    column_label_rest = np.array(
+        column_label[list(set(np.arange(cost_matrix.shape[1])) - set(col_indices))]
+    ).reshape(1, -1)
 
-    rest_matrix = -cost_matrix[row_indices][:, list(set(np.arange(cost_matrix.shape[1])) - set(col_indices))]
+    rest_matrix = -cost_matrix[row_indices][
+        :, list(set(np.arange(cost_matrix.shape[1])) - set(col_indices))
+    ]
 
     position_column = []
     for i in range(rest_matrix.shape[1]):
@@ -88,52 +94,60 @@ def map_diagonal_line(cross_tab_normalized):
     array1 = reordered_matrix
     array2 = -rest_matrix
 
-    result, column_label = insert_columns(reordered_matrix, -rest_matrix, position_column,
-                                          column_label_now, column_label_rest)
+    result, column_label = insert_columns(
+        reordered_matrix,
+        -rest_matrix,
+        position_column,
+        column_label_now,
+        column_label_rest,
+    )
 
     cross_tab_normalized = cross_tab_normalized.loc[row_label, column_label[0]]
 
     return cross_tab_normalized
 
 
-
-
-
-
-
-'''
+"""
 Metrics Part
 Citation: Metric function code from GLUE: https://github.com/gao-lab/GLUE
 Reference: Multi-omics single-cell data integration and regulatory inference with graph-linked embedding.
-'''
+"""
 
 #### general
 
+
 def save_obj(objt, name):
-    with(open(name + '.pkl', 'wb')) as f:
+    with open(name + ".pkl", "wb") as f:
         pickle.dump(objt, f, pickle.HIGHEST_PROTOCOL)
         f.close()
 
+
 def seed_all(seed_value, cuda_deterministic=True):
-    print('---------------------------------- SEED ALL ---------------------------------- ')
-    print(f'                           Seed Num :   {seed_value}                                ')
-    print('---------------------------------- SEED ALL ---------------------------------- ')
+    print(
+        "---------------------------------- SEED ALL ---------------------------------- "
+    )
+    print(
+        f"                           Seed Num :   {seed_value}                                "
+    )
+    print(
+        "---------------------------------- SEED ALL ---------------------------------- "
+    )
     random.seed(seed_value)
-    os.environ['PYTHONHASHSEED'] = str(seed_value)
+    os.environ["PYTHONHASHSEED"] = str(seed_value)
     np.random.seed(seed_value)
     dgl.seed(seed_value)
     torch.manual_seed(seed_value)
     if torch.cuda.is_available():
         torch.cuda.manual_seed(seed_value)
-        torch.cuda.manual_seed_all(seed_value) # Speed-reproducibility tradeoff https://pytorch.org/docs/stable/notes/randomness.html
-        if cuda_deterministic: # slower, more reproducible
+        torch.cuda.manual_seed_all(
+            seed_value
+        )  # Speed-reproducibility tradeoff https://pytorch.org/docs/stable/notes/randomness.html
+        if cuda_deterministic:  # slower, more reproducible
             torch.backends.cudnn.deterministic = True
             torch.backends.cudnn.benchmark = False
-        else: # faster, less reproducible
+        else:  # faster, less reproducible
             torch.backends.cudnn.deterministic = False
             torch.backends.cudnn.benchmark = True
-
-
 
 
 def add_leiden(adata_raw):
@@ -141,13 +155,13 @@ def add_leiden(adata_raw):
     sc.pp.normalize_total(adata)
     sc.pp.log1p(adata)
     sc.pp.scale(adata)
-    sc.tl.pca(adata,n_comps=30)
+    sc.tl.pca(adata, n_comps=30)
     sc.pp.neighbors(adata, n_neighbors=10)
     sc.tl.umap(adata)
-    sc.tl.leiden(adata,resolution=1)
-    sc.pl.umap(adata,color='leiden',legend_loc='on data')
+    sc.tl.leiden(adata, resolution=1)
+    sc.pl.umap(adata, color="leiden", legend_loc="on data")
     plt.show()
-    adata_raw.obs['leiden'] = adata.obs['leiden']
+    adata_raw.obs["leiden"] = adata.obs["leiden"]
 
 
 def batch_cosine_similarity(matrixA, matrixB, batch_size=100):
@@ -184,7 +198,6 @@ def batch_cosine_similarity(matrixA, matrixB, batch_size=100):
     return similarities
 
 
-
 def adjust_box_widths(g, fac):
     """
     Adjust the withs of a seaborn-generated boxplot.
@@ -192,10 +205,8 @@ def adjust_box_widths(g, fac):
 
     # iterating through Axes instances
     for ax in g.axes:
-
         # iterating through axes artists:
         for c in ax.get_children():
-
             # searching for PathPatches
             if isinstance(c, PathPatch):
                 # getting current width of box:
@@ -204,12 +215,12 @@ def adjust_box_widths(g, fac):
                 verts_sub = verts[:-1]
                 xmin = np.min(verts_sub[:, 0])
                 xmax = np.max(verts_sub[:, 0])
-                xmid = 0.5*(xmin+xmax)
-                xhalf = 0.5*(xmax - xmin)
+                xmid = 0.5 * (xmin + xmax)
+                xhalf = 0.5 * (xmax - xmin)
 
                 # setting new width of box
-                xmin_new = xmid-fac*xhalf
-                xmax_new = xmid+fac*xhalf
+                xmin_new = xmid - fac * xhalf
+                xmax_new = xmid + fac * xhalf
                 verts_sub[verts_sub[:, 0] == xmin, 0] = xmin_new
                 verts_sub[verts_sub[:, 0] == xmax, 0] = xmax_new
 
@@ -219,11 +230,8 @@ def adjust_box_widths(g, fac):
                         l.set_xdata([xmin_new, xmax_new])
 
 
-
-
-
-
 ####### visualize
+
 
 def plot_each_group(labels, adata, x, y, min_cell=0):
     new_labels = np.array(labels)
@@ -235,31 +243,38 @@ def plot_each_group(labels, adata, x, y, min_cell=0):
         if label_counts[i] > min_cell:
             unique_label.append(i)
 
-    fig, axs = plt.subplots(int(np.ceil(len(unique_label) / 5)), 5,
-                            figsize=(12, 2.5 * int(np.ceil(len(unique_label) / 5))), dpi=150)
+    fig, axs = plt.subplots(
+        int(np.ceil(len(unique_label) / 5)),
+        5,
+        figsize=(12, 2.5 * int(np.ceil(len(unique_label) / 5))),
+        dpi=150,
+    )
 
     for ax, label, i in zip(axs.flat, unique_label, np.arange(len(unique_label))):
-        ax.scatter(adata.obs[x],
-                   adata.obs[y],
-                   s=0.1, cmap='tab20',
-                   c='lightgrey')
-        ax.scatter(adata[new_labels == label, :].obs[x],
-                   adata[new_labels == label, :].obs[y],
-                   s=0.1, cmap='tab20',
-                   c='red')
-        ax.axis('off')
+        ax.scatter(adata.obs[x], adata.obs[y], s=0.1, cmap="tab20", c="lightgrey")
+        ax.scatter(
+            adata[new_labels == label, :].obs[x],
+            adata[new_labels == label, :].obs[y],
+            s=0.1,
+            cmap="tab20",
+            c="red",
+        )
+        ax.axis("off")
         ax.set_title(label)
+
 
 def transfer_labels(cells_coords, cells_sample_ids, cells_labels, n_neighbors=5):
     # Separate the coordinates of cells from sample 1 and sample 2
-    sample1_coords = cells_coords[cells_sample_ids == 'sample1']
-    sample2_coords = cells_coords[cells_sample_ids == 'sample2']
+    sample1_coords = cells_coords[cells_sample_ids == "sample1"]
+    sample2_coords = cells_coords[cells_sample_ids == "sample2"]
 
     # Also separate the labels of cells from sample 2
-    sample2_labels = cells_labels[cells_sample_ids == 'sample2']
+    sample2_labels = cells_labels[cells_sample_ids == "sample2"]
 
     # Fit the NearestNeighbors model to sample 2
-    nbrs = NearestNeighbors(n_neighbors=n_neighbors, algorithm='ball_tree').fit(sample2_coords)
+    nbrs = NearestNeighbors(n_neighbors=n_neighbors, algorithm="ball_tree").fit(
+        sample2_coords
+    )
 
     # Find indices of nearest neighbors in sample 2 for each cell in sample 1
     distances, indices = nbrs.kneighbors(sample1_coords)
@@ -282,16 +297,13 @@ def transfer_labels(cells_coords, cells_sample_ids, cells_labels, n_neighbors=5)
     return new_labels
 
 
-
-
-
 ####### metrics
 
-'''
+"""
 Metrics
 Citation: Metric function code from GLUE: https://github.com/gao-lab/GLUE
 Reference: Multi-omics single-cell data integration and regulatory inference with graph-linked embedding.
-'''
+"""
 
 from typing import Optional, Union
 
@@ -300,7 +312,7 @@ from scipy.sparse.csgraph import connected_components
 
 
 def mean_average_precision(
-        x: np.ndarray, y: np.ndarray, neighbor_frac: float = 0.01, **kwargs
+    x: np.ndarray, y: np.ndarray, neighbor_frac: float = 0.01, **kwargs
 ) -> float:
     r"""
     Mean average precision
@@ -330,23 +342,29 @@ def mean_average_precision(
     match = np.equal(y[nni[:, 1:]], np.expand_dims(y, 1))
     return np.apply_along_axis(_average_precision, 1, match).mean().item()
 
-'''
+
+"""
 Metrics
 Citation: Metric function code from GLUE: https://github.com/gao-lab/GLUE
 Reference: Multi-omics single-cell data integration and regulatory inference with graph-linked embedding.
-'''
+"""
+
+
 def _average_precision(match: np.ndarray) -> float:
     if np.any(match):
         cummean = np.cumsum(match) / (np.arange(match.size) + 1)
         return cummean[match].mean().item()
     return 0.0
 
-'''
+
+"""
 Metrics
 Citation: Metric function code from GLUE: https://github.com/gao-lab/GLUE
 Reference: Multi-omics single-cell data integration and regulatory inference with graph-linked embedding.
 
-'''
+"""
+
+
 def avg_silhouette_width(x: np.ndarray, y: np.ndarray, **kwargs) -> float:
     r"""
     Cell type average silhouette width
@@ -373,15 +391,21 @@ def avg_silhouette_width(x: np.ndarray, y: np.ndarray, **kwargs) -> float:
     """
     return (sklearn.metrics.silhouette_score(x, y, **kwargs).item() + 1) / 2
 
-'''
+
+"""
 Metrics
 Citation: Metric function code from GLUE: https://github.com/gao-lab/GLUE
 Reference: Multi-omics single-cell data integration and regulatory inference with graph-linked embedding.
 
-'''
+"""
+
+
 def neighbor_conservation(
-        x: np.ndarray, y: np.ndarray, batch: np.ndarray,
-        neighbor_frac: float = 0.01, **kwargs
+    x: np.ndarray,
+    y: np.ndarray,
+    batch: np.ndarray,
+    neighbor_frac: float = 0.01,
+    **kwargs,
 ) -> float:
     r"""
     Neighbor conservation score
@@ -408,12 +432,20 @@ def neighbor_conservation(
         mask = batch == b
         x_, y_ = x[mask], y[mask]
         k = max(round(x.shape[0] * neighbor_frac), 1)
-        nnx = sklearn.neighbors.NearestNeighbors(
-            n_neighbors=min(x_.shape[0], k + 1), **kwargs
-        ).fit(x_).kneighbors_graph(x_)
-        nny = sklearn.neighbors.NearestNeighbors(
-            n_neighbors=min(y_.shape[0], k + 1), **kwargs
-        ).fit(y_).kneighbors_graph(y_)
+        nnx = (
+            sklearn.neighbors.NearestNeighbors(
+                n_neighbors=min(x_.shape[0], k + 1), **kwargs
+            )
+            .fit(x_)
+            .kneighbors_graph(x_)
+        )
+        nny = (
+            sklearn.neighbors.NearestNeighbors(
+                n_neighbors=min(y_.shape[0], k + 1), **kwargs
+            )
+            .fit(y_)
+            .kneighbors_graph(y_)
+        )
         nnx.setdiag(0)  # Remove self
         nny.setdiag(0)  # Remove self
         n_intersection = nnx.multiply(nny).sum(axis=1).A1
@@ -422,12 +454,14 @@ def neighbor_conservation(
     return np.mean(nn_cons_per_batch).item()
 
 
-'''
+"""
 Metrics
 Citation: Metric function code from GLUE: https://github.com/gao-lab/GLUE
 Reference: Multi-omics single-cell data integration and regulatory inference with graph-linked embedding.
 
-'''
+"""
+
+
 def batch_entropy_umap(embedding, batch_indices, n_neighbors=100):
     r"""
     how to use
@@ -440,7 +474,7 @@ def batch_entropy_umap(embedding, batch_indices, n_neighbors=100):
     le.fit(batch_indices)
     batch_indices = le.transform(batch_indices)
 
-    nn = NearestNeighbors(n_neighbors=n_neighbors + 1, metric='euclidean')
+    nn = NearestNeighbors(n_neighbors=n_neighbors + 1, metric="euclidean")
     nn.fit(embedding)
 
     batch_entropies_all = []
@@ -456,22 +490,32 @@ def batch_entropy_umap(embedding, batch_indices, n_neighbors=100):
             prob_array = np.zeros((n_neighbors, le.classes_.shape[0]))
             for i in range(n_neighbors):
                 for j in range(le.classes_.shape[0]):
-                    prob_array[i, j] = np.count_nonzero(input_array[i] == j) / n_neighbors
+                    prob_array[i, j] = (
+                        np.count_nonzero(input_array[i] == j) / n_neighbors
+                    )
 
             prob_array += eps
             batch_entropies_all.append(-np.sum(prob_array * np.log(prob_array)))
     #         break
     #         batch_entropies_all.append(batch_entropies_idx)
-    max_value = -(1 / le.classes_.shape[0]) * np.log(1 / le.classes_.shape[0]) * n_neighbors * le.classes_.shape[0]
-    print(f'mean batch entropy is: {np.mean(batch_entropies_all) / max_value}')
+    max_value = (
+        -(1 / le.classes_.shape[0])
+        * np.log(1 / le.classes_.shape[0])
+        * n_neighbors
+        * le.classes_.shape[0]
+    )
+    print(f"mean batch entropy is: {np.mean(batch_entropies_all) / max_value}")
     return [i / max_value for i in batch_entropies_all]
 
-'''
+
+"""
 Metrics
 Citation: Metric function code from GLUE: https://github.com/gao-lab/GLUE
 Reference: Multi-omics single-cell data integration and regulatory inference with graph-linked embedding.
 
-'''
+"""
+
+
 def get_rs(x: RandomState = None) -> np.random.RandomState:
     r"""
     Get random state object
@@ -492,15 +536,22 @@ def get_rs(x: RandomState = None) -> np.random.RandomState:
         return x
     return np.random
 
-'''
+
+"""
 Metrics
 Citation: Metric function code from GLUE: https://github.com/gao-lab/GLUE
 Reference: Multi-omics single-cell data integration and regulatory inference with graph-linked embedding.
 
-'''
+"""
+
+
 def seurat_alignment_score(
-        x: np.ndarray, y: np.ndarray, neighbor_frac: float = 0.01,
-        n_repeats: int = 4, random_state: int = 0, **kwargs
+    x: np.ndarray,
+    y: np.ndarray,
+    neighbor_frac: float = 0.01,
+    n_repeats: int = 4,
+    random_state: int = 0,
+    **kwargs,
 ) -> float:
     r"""
     Seurat alignment score
@@ -531,33 +582,38 @@ def seurat_alignment_score(
     min_size = min(idx.size for idx in idx_list)
     repeat_scores = []
     for _ in range(n_repeats):
-        subsample_idx = np.concatenate([
-            rs.choice(idx, min_size, replace=False)
-            for idx in idx_list
-        ])
+        subsample_idx = np.concatenate(
+            [rs.choice(idx, min_size, replace=False) for idx in idx_list]
+        )
         subsample_x = x[subsample_idx]
         subsample_y = y[subsample_idx]
         k = max(round(subsample_idx.size * neighbor_frac), 1)
-        nn = sklearn.neighbors.NearestNeighbors(
-            n_neighbors=k + 1, **kwargs
-        ).fit(subsample_x)
+        nn = sklearn.neighbors.NearestNeighbors(n_neighbors=k + 1, **kwargs).fit(
+            subsample_x
+        )
         nni = nn.kneighbors(subsample_x, return_distance=False)
         same_y_hits = (
-                subsample_y[nni[:, 1:]] == np.expand_dims(subsample_y, axis=1)
-        ).sum(axis=1).mean()
+            (subsample_y[nni[:, 1:]] == np.expand_dims(subsample_y, axis=1))
+            .sum(axis=1)
+            .mean()
+        )
         repeat_score = (k - same_y_hits) * len(idx_list) / (k * (len(idx_list) - 1))
         repeat_scores.append(
-            min(repeat_score, 1))  # score may exceed 1, if same_y_hits is lower than expected by chance
+            min(repeat_score, 1)
+        )  # score may exceed 1, if same_y_hits is lower than expected by chance
     return np.mean(repeat_scores).item()
 
-'''
+
+"""
 Metrics
 Citation: Metric function code from GLUE: https://github.com/gao-lab/GLUE
 Reference: Multi-omics single-cell data integration and regulatory inference with graph-linked embedding.
 
-'''
+"""
+
+
 def avg_silhouette_width_batch(
-        x: np.ndarray, y: np.ndarray, ct: np.ndarray, **kwargs
+    x: np.ndarray, y: np.ndarray, ct: np.ndarray, **kwargs
 ) -> float:
     r"""
     Batch average silhouette width
@@ -595,15 +651,16 @@ def avg_silhouette_width_batch(
         s_per_ct.append(s)
     return np.mean(s_per_ct).item()
 
-'''
+
+"""
 Metrics
 Citation: Metric function code from GLUE: https://github.com/gao-lab/GLUE
 Reference: Multi-omics single-cell data integration and regulatory inference with graph-linked embedding.
 
-'''
-def graph_connectivity(
-        x: np.ndarray, y: np.ndarray, **kwargs
-) -> float:
+"""
+
+
+def graph_connectivity(x: np.ndarray, y: np.ndarray, **kwargs) -> float:
     r"""
     Graph connectivity
 
@@ -627,65 +684,75 @@ def graph_connectivity(
     conns = []
     for y_ in np.unique(y):
         x_ = x[y == y_]
-        _, c = connected_components(
-            x_.obsp['connectivities'],
-            connection='strong'
-        )
+        _, c = connected_components(x_.obsp["connectivities"], connection="strong")
         counts = pd.value_counts(c)
         conns.append(counts.max() / counts.sum())
     return np.mean(conns).item()
 
 
-
-
-def map_sample(adata, coord_arg='X_umap',  type_arg='gtTaxonomyRank4'):
-    map_per_sample = mean_average_precision(adata.obsm[coord_arg],
-                                            np.array(adata.obs[type_arg]))
-    print(f' average precision over samples is: {np.mean(map_per_sample)}')
+def map_sample(adata, coord_arg="X_umap", type_arg="gtTaxonomyRank4"):
+    map_per_sample = mean_average_precision(
+        adata.obsm[coord_arg], np.array(adata.obs[type_arg])
+    )
+    print(f" average precision over samples is: {np.mean(map_per_sample)}")
     return map_per_sample
 
 
-def ave_sw_sample_all(adata, coord_arg='X_umap', type_arg='gtTaxonomyRank4'):
-    map_per_sample = avg_silhouette_width(adata.obsm[coord_arg], np.array(adata.obs[type_arg]))
-    print(f'mean avg_silhouette_width is: {np.mean(map_per_sample)}')
+def ave_sw_sample_all(adata, coord_arg="X_umap", type_arg="gtTaxonomyRank4"):
+    map_per_sample = avg_silhouette_width(
+        adata.obsm[coord_arg], np.array(adata.obs[type_arg])
+    )
+    print(f"mean avg_silhouette_width is: {np.mean(map_per_sample)}")
     return map_per_sample
 
 
-def nc_sample_all(adata, coord_arg='X_umap', coord_before_arg='Unintegrated',
-                  batch_arg='domain'):
-    map_per_sample = neighbor_conservation(adata.obsm[coord_arg], adata.obsm[coord_before_arg],
-                                           np.array(adata.obs[batch_arg]), neighbor_frac=0.1)
-    print(f'mean Neighbor conservation is: {np.mean(map_per_sample)}')
+def nc_sample_all(
+    adata, coord_arg="X_umap", coord_before_arg="Unintegrated", batch_arg="domain"
+):
+    map_per_sample = neighbor_conservation(
+        adata.obsm[coord_arg],
+        adata.obsm[coord_before_arg],
+        np.array(adata.obs[batch_arg]),
+        neighbor_frac=0.1,
+    )
+    print(f"mean Neighbor conservation is: {np.mean(map_per_sample)}")
     return map_per_sample
 
 
-def batch_entropy_sample_all(adata, coord_arg='X_umap', batch_arg='domain', ):
-    map_per_sample = batch_entropy_umap(adata.obsm[coord_arg],
-                                        np.array(adata.obs[batch_arg]),
-                                        n_neighbors=100)
+def batch_entropy_sample_all(
+    adata,
+    coord_arg="X_umap",
+    batch_arg="domain",
+):
+    map_per_sample = batch_entropy_umap(
+        adata.obsm[coord_arg], np.array(adata.obs[batch_arg]), n_neighbors=100
+    )
     return map_per_sample
 
 
-def sas_sample_all(adata, coord_arg='X_umap',
-                   batch_arg='domain',  random_seed=0):
-    map_per_sample = seurat_alignment_score(adata.obsm[coord_arg],
-                                            np.array(adata.obs[batch_arg]),
-                                            random_state=random_seed)
-    print(f' seurat_alignment_score is: {np.mean(map_per_sample)}')
+def sas_sample_all(adata, coord_arg="X_umap", batch_arg="domain", random_seed=0):
+    map_per_sample = seurat_alignment_score(
+        adata.obsm[coord_arg], np.array(adata.obs[batch_arg]), random_state=random_seed
+    )
+    print(f" seurat_alignment_score is: {np.mean(map_per_sample)}")
     return map_per_sample
 
 
-def aswb_sample_all(adata, coord_arg='X_umap',
-                    batch_arg='domain', type_arg='gtTaxonomyRank4'):
-    map_per_sample = avg_silhouette_width_batch(adata.obsm[coord_arg],
-                                                np.array(adata.obs[batch_arg]),
-                                                np.array(adata.obs[type_arg]))
-    print(f' avg_silhouette_width_batch is: {np.mean(map_per_sample)}')
+def aswb_sample_all(
+    adata, coord_arg="X_umap", batch_arg="domain", type_arg="gtTaxonomyRank4"
+):
+    map_per_sample = avg_silhouette_width_batch(
+        adata.obsm[coord_arg],
+        np.array(adata.obs[batch_arg]),
+        np.array(adata.obs[type_arg]),
+    )
+    print(f" avg_silhouette_width_batch is: {np.mean(map_per_sample)}")
     return map_per_sample
 
 
-def gc_sample_all(adata, coord_arg='X_umap', type_arg='gtTaxonomyRank4'):
-    map_per_sample = graph_connectivity(adata.obsm[coord_arg],
-                                        np.array(adata.obs[type_arg]))
-    print(f' graph_connectivity is: {np.mean(map_per_sample)}')
+def gc_sample_all(adata, coord_arg="X_umap", type_arg="gtTaxonomyRank4"):
+    map_per_sample = graph_connectivity(
+        adata.obsm[coord_arg], np.array(adata.obs[type_arg])
+    )
+    print(f" graph_connectivity is: {np.mean(map_per_sample)}")
     return map_per_sample

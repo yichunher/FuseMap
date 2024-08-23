@@ -1,8 +1,29 @@
 import sys
 import argparse
+from typing import Dict, Any
+
+
+def parse_input_args():
+    parser = argparse.ArgumentParser(description="FuseMap")
+
+    parser.add_argument(
+        "--data_path",
+        type=str,
+        default="/home/jialiulab/disk1/yichun/FuseMap/sample_data/",
+    )
+    parser.add_argument(
+        "--save_dir",
+        type=str,
+        default="/home/jialiulab/disk1/yichun/FuseMap/output/sample_data1/",
+    )
+
+    args = parser.parse_args()
+
+    return args
+
 
 def parse_args():
-    if 'ipykernel_launcher' in sys.argv[0]:
+    if "ipykernel_launcher" in sys.argv[0]:
         # Default values when running in Jupyter notebook
         args = argparse.Namespace(
             pca_dim=50,
@@ -12,8 +33,8 @@ def parse_args():
             n_epochs=200,
             batch_size=16,
             learning_rate=0.001,
-            optim_kw='RMSprop',
-            use_input='norm',
+            optim_kw="RMSprop",
+            use_input="norm",
             harmonized_gene=True,
             data_pth=None,
             preprocess_save=False,
@@ -35,7 +56,7 @@ def parse_args():
             DIS_LAMDA=2,
             TRAIN_WITHOUT_EVAL=3,
             USE_REFERENCE_PCT=0.25,
-            verbose=False
+            verbose=False,
         )
     else:
         # Argument parsing when running from the command line
@@ -47,8 +68,8 @@ def parse_args():
         parser.add_argument("--n_epochs", type=int, default=200)
         parser.add_argument("--batch_size", type=int, default=16)
         parser.add_argument("--learning_rate", type=float, default=0.001)
-        parser.add_argument("--optim_kw", type=str, default='RMSprop')
-        parser.add_argument("--use_input", type=str, default='norm')
+        parser.add_argument("--optim_kw", type=str, default="RMSprop")
+        parser.add_argument("--use_input", type=str, default="norm")
         parser.add_argument("--harmonized_gene", type=bool, default=True)
         parser.add_argument("--data_pth", type=str, default=None)
         parser.add_argument("--preprocess_save", type=bool, default=False)
