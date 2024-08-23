@@ -27,7 +27,7 @@ def main(args):
     kneighbor = ["delaunay"] * len(X_input)
     input_identity = ["ST"] * len(X_input)
 
-    train(X_input, args.save_dir, kneighbor, input_identity)
+    train(X_input, args.save_dir, kneighbor, input_identity, data_pth=data_pth)
 
     pass
 

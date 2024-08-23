@@ -209,11 +209,11 @@ class Fuse_network(nn.Module):
         self.scrna_seq_adj = {}
 
         ##### build encoders
-        if use_input == "pca":
-            for i in range(n_atlas):
-                self.add_encoder_module(
-                    "atlas" + str(i), pca_dim, hidden_dim, latent_dim, dropout_rate
-                )
+        # if use_input == "pca":
+        #     for i in range(n_atlas):
+        #         self.add_encoder_module(
+        #             "atlas" + str(i), pca_dim, hidden_dim, latent_dim, dropout_rate
+        #         )
         if use_input == "norm" or use_input == "raw":
             for i in range(n_atlas):
                 self.add_encoder_module(

@@ -5,7 +5,7 @@ import torch
 import torch.distributions as D
 import pandas as pd
 from sparse import COO
-
+from fusemap.config import *
 
 def AE_Gene_loss(recon_x, x, z_distribution):
     if recon_x.shape[0] == 0:
@@ -45,20 +45,20 @@ def compute_dis_loss_pretrain(
     adj_all,
     mask_batch_single,
     mask_batch_spatial,
-    args,
+    flagconfig,
 ):
     mask_batch_single_all = torch.hstack(mask_batch_single)
     mask_batch_spatial_all = torch.hstack(mask_batch_spatial)
 
     z_all = [
         model.encoder["atlas" + str(i)](batch_features_all[i], adj_all[i])
-        for i in range(args.n_atlas)
+        for i in range(ModelType.n_atlas)
     ]
-    z_mean_cat_single = torch.cat([z_all[i][0] for i in range(args.n_atlas)])[
+    z_mean_cat_single = torch.cat([z_all[i][0] for i in range(ModelType.n_atlas)])[
         mask_batch_single_all, :
     ]
 
-    z_spatial_all = [z_all[i][2] for i in range(args.n_atlas)]
+    z_spatial_all = [z_all[i][2] for i in range(ModelType.n_atlas)]
     z_mean_cat_spatial = torch.cat(z_spatial_all)[mask_batch_spatial_all, :]
 
     if anneal:
@@ -67,14 +67,14 @@ def compute_dis_loss_pretrain(
                 (z_mean_cat_single.shape[0],)
             )
             z_mean_cat_single = (
-                z_mean_cat_single + (anneal * args.align_noise_coef) * noise_single
+                z_mean_cat_single + (anneal * ModelType.align_noise_coef.value) * noise_single
             )
         if z_mean_cat_spatial.shape[0] > 1:
             noise_spatial = D.Normal(
-                0, args.EPS + z_mean_cat_spatial.std(axis=0)
+                0, ModelType.EPS.value + z_mean_cat_spatial.std(axis=0)
             ).sample((z_mean_cat_spatial.shape[0],))
             z_mean_cat_spatial = (
-                z_mean_cat_spatial + (anneal * args.align_noise_coef) * noise_spatial
+                z_mean_cat_spatial + (anneal * ModelType.align_noise_coef.value) * noise_spatial
             )
 
     ### compute dis loss
@@ -92,7 +92,7 @@ def compute_dis_loss_pretrain(
     )
     loss_dis_spatial = loss_dis_spatial.sum() / loss_dis_spatial.numel()
 
-    loss_dis = args.lambda_disc_single * (loss_dis_single + loss_dis_spatial)
+    loss_dis = flagconfig.lambda_disc_single * (loss_dis_single + loss_dis_spatial)
     # loss_dis = lambda_disc_single * (loss_dis_single )
 
     loss_all = {"dis": loss_dis}
@@ -108,24 +108,24 @@ def compute_ae_loss_pretrain(
     adj_all,
     mask_batch_single,
     mask_batch_spatial,
-    args,
+    flagconfig,
 ):
     z_all = [
         model.encoder["atlas" + str(i)](batch_features_all[i], adj_all[i])
-        for i in range(args.n_atlas)
+        for i in range(ModelType.n_atlas)
     ]
 
     z_distribution_all = [
-        D.Normal(z_all[i][0], z_all[i][1]) for i in range(args.n_atlas)
+        D.Normal(z_all[i][0], z_all[i][1]) for i in range(ModelType.n_atlas)
     ]
 
-    z_sample_all = [z_distribution_all[i].rsample() for i in range(args.n_atlas)]
+    z_sample_all = [z_distribution_all[i].rsample() for i in range(ModelType.n_atlas)]
 
-    z_spatial_all = [z_all[i][2] for i in range(args.n_atlas)]
+    z_spatial_all = [z_all[i][2] for i in range(ModelType.n_atlas)]
 
     decoder_all = [
         model.decoder["atlas" + str(i)](z_sample_all[i], z_spatial_all[i], adj_all[i])
-        for i in range(args.n_atlas)
+        for i in range(ModelType.n_atlas)
     ]
 
     ### compute AE loss
@@ -133,22 +133,22 @@ def compute_ae_loss_pretrain(
         D.Normal(
             z_all[i][0][mask_batch_single[i], :], z_all[i][1][mask_batch_single[i], :]
         )
-        for i in range(args.n_atlas)
+        for i in range(ModelType.n_atlas)
     ]
     loss_AE_all = [
-        args.lambda_ae_single
+        ModelType.lambda_ae_single.value
         * AE_Gene_loss(
             decoder_all[i][mask_batch_single[i], :],
             batch_features_all[i][mask_batch_single[i], :],
             z_distribution_loss[i],
         )
-        for i in range(args.n_atlas)
+        for i in range(ModelType.n_atlas)
     ]
 
     mask_batch_single_all = torch.hstack(mask_batch_single)
     mask_batch_spatial_all = torch.hstack(mask_batch_spatial)
 
-    z_mean_cat_single = torch.cat([z_all[i][0] for i in range(args.n_atlas)])[
+    z_mean_cat_single = torch.cat([z_all[i][0] for i in range(ModelType.n_atlas)])[
         mask_batch_single_all, :
     ]
     z_mean_cat_spatial = torch.cat(z_spatial_all)[mask_batch_spatial_all, :]
@@ -159,14 +159,14 @@ def compute_ae_loss_pretrain(
                 (z_mean_cat_single.shape[0],)
             )
             z_mean_cat_single = (
-                z_mean_cat_single + (anneal * args.align_noise_coef) * noise_single
+                z_mean_cat_single + (anneal * ModelType.align_noise_coef.value) * noise_single
             )
         if z_mean_cat_spatial.shape[0] > 1:
             noise_spatial = D.Normal(
-                0, args.EPS + z_mean_cat_spatial.std(axis=0)
+                0, ModelType.EPS.value + z_mean_cat_spatial.std(axis=0)
             ).sample((z_mean_cat_spatial.shape[0],))
             z_mean_cat_spatial = (
-                z_mean_cat_spatial + (anneal * args.align_noise_coef) * noise_spatial
+                z_mean_cat_spatial + (anneal * ModelType.align_noise_coef.value) * noise_spatial
             )
 
     ### compute dis loss
@@ -185,16 +185,16 @@ def compute_ae_loss_pretrain(
     )
     loss_dis_spatial = loss_dis_spatial.sum() / loss_dis_spatial.numel()
 
-    loss_dis = args.lambda_disc_single * (loss_dis_single + loss_dis_spatial)
+    loss_dis = flagconfig.lambda_disc_single * (loss_dis_single + loss_dis_spatial)
 
     if (
-        args.lambda_disc_single == 1
+        flagconfig.lambda_disc_single == 1
     ):  # and loss_dis.item()<sum(loss_AE_all).item()/DIS_LAMDA:
-        args.lambda_disc_single = (
-            sum(loss_AE_all).item() / args.DIS_LAMDA / loss_dis.item()
+        flagconfig.lambda_disc_single = (
+            sum(loss_AE_all).item() / ModelType.DIS_LAMDA.value / loss_dis.item()
         )
-        print(f"lambda_disc_single changed to {args.lambda_disc_single}")
-        loss_dis = args.lambda_disc_single * loss_dis
+        print(f"lambda_disc_single changed to {flagconfig.lambda_disc_single}")
+        loss_dis = flagconfig.lambda_disc_single * loss_dis
 
     loss_all = {
         "dis_ae": loss_dis,
@@ -220,7 +220,7 @@ def compute_dis_loss(
     mask_batch_spatial,
     balance_weight_single_block,
     balance_weight_spatial_block,
-    args,
+    flagconfig,
 ):
     mask_batch_single_all = torch.hstack(mask_batch_single)
     mask_batch_spatial_all = torch.hstack(mask_batch_spatial)
@@ -229,13 +229,13 @@ def compute_dis_loss(
 
     z_all = [
         model.encoder["atlas" + str(i)](batch_features_all[i], adj_all[i])
-        for i in range(args.n_atlas)
+        for i in range(ModelType.n_atlas)
     ]
-    z_mean_cat_single = torch.cat([z_all[i][0] for i in range(args.n_atlas)])[
+    z_mean_cat_single = torch.cat([z_all[i][0] for i in range(ModelType.n_atlas)])[
         mask_batch_single_all, :
     ]
 
-    z_spatial_all = [z_all[i][2] for i in range(args.n_atlas)]
+    z_spatial_all = [z_all[i][2] for i in range(ModelType.n_atlas)]
     z_mean_cat_spatial = torch.cat(z_spatial_all)[mask_batch_spatial_all, :]
 
     if anneal:
@@ -244,14 +244,14 @@ def compute_dis_loss(
                 (z_mean_cat_single.shape[0],)
             )
             z_mean_cat_single = (
-                z_mean_cat_single + (anneal * args.align_noise_coef) * noise_single
+                z_mean_cat_single + (anneal * ModelType.align_noise_coef.value) * noise_single
             )
         if z_mean_cat_spatial.shape[0] > 1:
             noise_spatial = D.Normal(
-                0, args.EPS + z_mean_cat_spatial.std(axis=0)
+                0, ModelType.EPS.value + z_mean_cat_spatial.std(axis=0)
             ).sample((z_mean_cat_spatial.shape[0],))
             z_mean_cat_spatial = (
-                z_mean_cat_spatial + (anneal * args.align_noise_coef) * noise_spatial
+                z_mean_cat_spatial + (anneal * ModelType.align_noise_coef.value) * noise_spatial
             )
 
     ### compute dis loss
@@ -273,7 +273,7 @@ def compute_dis_loss(
         balance_weight_spatial_block[mask_batch_spatial_all] * loss_dis_spatial
     ).sum() / loss_dis_spatial.numel()
 
-    loss_dis = args.lambda_disc_single * (loss_dis_single + loss_dis_spatial)
+    loss_dis = flagconfig.lambda_disc_single * (loss_dis_single + loss_dis_spatial)
 
     loss_all = {"dis": loss_dis}
     return loss_all
@@ -290,23 +290,23 @@ def compute_ae_loss(
     mask_batch_spatial,
     balance_weight_single_block,
     balance_weight_spatial_block,
-    args,
+    flagconfig,
 ):
     z_all = [
         model.encoder["atlas" + str(i)](batch_features_all[i], adj_all[i])
-        for i in range(args.n_atlas)
+        for i in range(ModelType.n_atlas)
     ]
 
     z_distribution_all = [
-        D.Normal(z_all[i][0], z_all[i][1]) for i in range(args.n_atlas)
+        D.Normal(z_all[i][0], z_all[i][1]) for i in range(ModelType.n_atlas)
     ]
-    z_sample_all = [z_distribution_all[i].rsample() for i in range(args.n_atlas)]
+    z_sample_all = [z_distribution_all[i].rsample() for i in range(ModelType.n_atlas)]
 
-    z_spatial_all = [z_all[i][2] for i in range(args.n_atlas)]
+    z_spatial_all = [z_all[i][2] for i in range(ModelType.n_atlas)]
 
     decoder_all = [
         model.decoder["atlas" + str(i)](z_sample_all[i], z_spatial_all[i], adj_all[i])
-        for i in range(args.n_atlas)
+        for i in range(ModelType.n_atlas)
     ]
 
     ### compute AE loss
@@ -314,22 +314,22 @@ def compute_ae_loss(
         D.Normal(
             z_all[i][0][mask_batch_single[i], :], z_all[i][1][mask_batch_single[i], :]
         )
-        for i in range(args.n_atlas)
+        for i in range(ModelType.n_atlas)
     ]
     loss_AE_all = [
-        args.lambda_ae_single
+        ModelType.lambda_ae_single.value
         * AE_Gene_loss(
             decoder_all[i][mask_batch_single[i], :],
             batch_features_all[i][mask_batch_single[i], :],
             z_distribution_loss[i],
         )
-        for i in range(args.n_atlas)
+        for i in range(ModelType.n_atlas)
     ]
 
     mask_batch_single_all = torch.hstack(mask_batch_single)
     mask_batch_spatial_all = torch.hstack(mask_batch_spatial)
 
-    z_mean_cat_single = torch.cat([z_all[i][0] for i in range(args.n_atlas)])[
+    z_mean_cat_single = torch.cat([z_all[i][0] for i in range(ModelType.n_atlas)])[
         mask_batch_single_all, :
     ]
     z_mean_cat_spatial = torch.cat(z_spatial_all)[mask_batch_spatial_all, :]
@@ -340,14 +340,14 @@ def compute_ae_loss(
                 (z_mean_cat_single.shape[0],)
             )
             z_mean_cat_single = (
-                z_mean_cat_single + (anneal * args.align_noise_coef) * noise_single
+                z_mean_cat_single + (anneal * ModelType.align_noise_coef.value) * noise_single
             )
         if z_mean_cat_spatial.shape[0] > 1:
             noise_spatial = D.Normal(
-                0, args.EPS + z_mean_cat_spatial.std(axis=0)
+                0, ModelType.EPS.value + z_mean_cat_spatial.std(axis=0)
             ).sample((z_mean_cat_spatial.shape[0],))
             z_mean_cat_spatial = (
-                z_mean_cat_spatial + (anneal * args.align_noise_coef) * noise_spatial
+                z_mean_cat_spatial + (anneal * ModelType.align_noise_coef.value) * noise_spatial
             )
 
     ### compute dis loss
@@ -372,14 +372,14 @@ def compute_ae_loss(
         balance_weight_spatial_block[mask_batch_spatial_all] * loss_dis_spatial
     ).sum() / loss_dis_spatial.numel()
 
-    loss_dis = args.lambda_disc_single * (loss_dis_single + loss_dis_spatial)
+    loss_dis = flagconfig.lambda_disc_single * (loss_dis_single + loss_dis_spatial)
 
     if (
-        args.lambda_disc_single == 1
+        flagconfig.lambda_disc_single == 1
     ):  # and loss_dis.item()<sum(loss_AE_all).item()/DIS_LAMDA:
-        lambda_disc_single = sum(loss_AE_all).item() / args.DIS_LAMDA / loss_dis.item()
-        print(f"lambda_disc_single changed to {lambda_disc_single}")
-        loss_dis = lambda_disc_single * loss_dis
+        flagconfig.lambda_disc_single = sum(loss_AE_all).item() / ModelType.DIS_LAMDA.value / loss_dis.item()
+        print(f"lambda_disc_single changed to {flagconfig.lambda_disc_single}")
+        loss_dis = flagconfig.lambda_disc_single * loss_dis
 
     loss_all = {
         "dis_ae": loss_dis,
