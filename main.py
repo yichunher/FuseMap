@@ -8,6 +8,8 @@ import scanpy as sc
 
 def main(args):
     seed_all(0)
+
+    ### read data
     data_pth = []
     X_input = []
     file_names = [
@@ -27,9 +29,12 @@ def main(args):
     kneighbor = ["delaunay"] * len(X_input)
     input_identity = ["ST"] * len(X_input)
 
+    ### train model
     train(X_input, args.save_dir, kneighbor, input_identity, data_pth=data_pth)
 
-    pass
+    print("Done.")
+    
+    return
 
 
 if __name__ == "__main__":
