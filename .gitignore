@@ -1,5 +1,7 @@
 sample_data/
 .vscode/
-__pycache__/
+*/*/*/__pycache__
+*/*/__pycache__
+*/__pycache__
 fusemap/__pycache__/
 *.pyc
