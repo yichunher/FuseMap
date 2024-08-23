@@ -6,6 +6,7 @@ import dgl.dataloading as dgl_dataload
 import random
 import os
 from fusemap.config import *
+from fusemap.utils import *
 from fusemap.loss import *
 import anndata as ad
 import torch
@@ -20,9 +21,77 @@ except ModuleNotFoundError:
     import pickle
     
     
+def get_data(blocks_all, feature_all, adj_all, train_mask, device, model):
+    row_index_all = {}
+    col_index_all = {}
+    for i_atlas in range(ModelType.n_atlas):
+        row_index = list(blocks_all[i_atlas]["spatial"][0])
+        col_index = list(blocks_all[i_atlas]["spatial"][1])
+        row_index_all[i_atlas] = torch.sort(torch.vstack(row_index).flatten())[
+            0
+        ].tolist()
+        col_index_all[i_atlas] = torch.sort(torch.vstack(col_index).flatten())[
+            0
+        ].tolist()
+
+    batch_features_all = [
+        torch.FloatTensor(feature_all[i][row_index_all[i], :].toarray()).to(
+            device
+        )
+        for i in range(ModelType.n_atlas)
+    ]
+
+    adj_all_block = [
+        torch.FloatTensor(
+            adj_all[i][row_index_all[i], :]
+            .tocsc()[:, col_index_all[i]]
+            .todense()
+        ).to(device)
+        if ModelType.input_identity[i] == "ST"
+        else model.scrna_seq_adj["atlas" + str(i)]()[row_index_all[i], :][
+            :, col_index_all[i]
+        ]
+        for i in range(ModelType.n_atlas)
+    ]
+    adj_all_block_dis = [
+        torch.FloatTensor(
+            adj_all[i][row_index_all[i], :]
+            .tocsc()[:, col_index_all[i]]
+            .todense()
+        ).to(device)
+        if ModelType.input_identity[i] == "ST"
+        else model.scrna_seq_adj["atlas" + str(i)]()[row_index_all[i], :][
+            :, col_index_all[i]
+        ].detach()
+        for i in range(ModelType.n_atlas)
+    ]
+
+    train_mask_batch_single = [
+        train_mask_i[row_index_all[blocks_all_ind]]
+        for train_mask_i, blocks_all_ind in zip(train_mask, blocks_all)
+    ]
+    train_mask_batch_spatial = [
+        train_mask_i[col_index_all[blocks_all_ind]]
+        for train_mask_i, blocks_all_ind in zip(train_mask, blocks_all)
+    ]
+
+    ### discriminator flags
+    flag_shape_single = [len(row_index_all[i]) for i in range(ModelType.n_atlas)]
+    flag_all_single = torch.cat(
+        [torch.full((x,), i) for i, x in enumerate(flag_shape_single)]
+    )
+    flag_source_cat_single = flag_all_single.long().to(device)
+
+    flag_shape_spatial = [len(col_index_all[i]) for i in range(ModelType.n_atlas)]
+    flag_all_spatial = torch.cat(
+        [torch.full((x,), i) for i, x in enumerate(flag_shape_spatial)]
+    )
+    flag_source_cat_spatial = flag_all_spatial.long().to(device)
+    return (batch_features_all, adj_all_block, adj_all_block_dis, 
+            train_mask_batch_single, train_mask_batch_spatial, flag_source_cat_single, flag_source_cat_spatial)
 
 def pretrain_model(
-    model, spatial_dataloader, feature_all, adj_all, device, train_mask, val_mask, ModelType
+    model, spatial_dataloader, feature_all, adj_all, device, train_mask, val_mask, flagconfig
 ):
     loss_atlas_val_best = float("inf")
     patience_counter = 0  # 2
@@ -56,7 +125,7 @@ def pretrain_model(
         patience=ModelType.lr_patience_pretrain.value,
         verbose=True,
     )
-    flagconfig = FlagConfig()
+    
 
     for epoch in range(ModelType.epochs_run_pretrain + 1, ModelType.n_epochs.value):
         loss_dis = 0
@@ -66,75 +135,20 @@ def pretrain_model(
         for i in range(ModelType.n_atlas):
             loss_atlas_i[i] = 0
         loss_atlas_val = 0
-        anneal = max(1 - (epoch - 1) / ModelType.align_anneal.value, 0) if ModelType.align_anneal.value else 0
+        anneal = max(1 - (epoch - 1) / flagconfig.align_anneal, 0) if flagconfig.align_anneal else 0
 
         model.train()
-        for blocks_all in tqdm(spatial_dataloader):
-            row_index_all = {}
-            col_index_all = {}
-            for i_atlas in range(ModelType.n_atlas):
-                row_index = list(blocks_all[i_atlas]["spatial"][0])
-                col_index = list(blocks_all[i_atlas]["spatial"][1])
-                row_index_all[i_atlas] = torch.sort(torch.vstack(row_index).flatten())[
-                    0
-                ].tolist()
-                col_index_all[i_atlas] = torch.sort(torch.vstack(col_index).flatten())[
-                    0
-                ].tolist()
 
-            batch_features_all = [
-                torch.FloatTensor(feature_all[i][row_index_all[i], :].toarray()).to(
-                    device
-                )
-                for i in range(ModelType.n_atlas)
-            ]
+        random_numbers = random.sample(range(len(spatial_dataloader)+1), 10)
 
-            adj_all_block = [
-                torch.FloatTensor(
-                    adj_all[i][row_index_all[i], :]
-                    .tocsc()[:, col_index_all[i]]
-                    .todense()
-                ).to(device)
-                if ModelType.input_identity[i] == "ST"
-                else model.scrna_seq_adj["atlas" + str(i)]()[row_index_all[i], :][
-                    :, col_index_all[i]
-                ]
-                for i in range(ModelType.n_atlas)
-            ]
-            adj_all_block_dis = [
-                torch.FloatTensor(
-                    adj_all[i][row_index_all[i], :]
-                    .tocsc()[:, col_index_all[i]]
-                    .todense()
-                ).to(device)
-                if ModelType.input_identity[i] == "ST"
-                else model.scrna_seq_adj["atlas" + str(i)]()[row_index_all[i], :][
-                    :, col_index_all[i]
-                ].detach()
-                for i in range(ModelType.n_atlas)
-            ]
-
-            train_mask_batch_single = [
-                train_mask_i[row_index_all[blocks_all_ind]]
-                for train_mask_i, blocks_all_ind in zip(train_mask, blocks_all)
-            ]
-            train_mask_batch_spatial = [
-                train_mask_i[col_index_all[blocks_all_ind]]
-                for train_mask_i, blocks_all_ind in zip(train_mask, blocks_all)
-            ]
-
-            ### discriminator flags
-            flag_shape_single = [len(row_index_all[i]) for i in range(ModelType.n_atlas)]
-            flag_all_single = torch.cat(
-                [torch.full((x,), i) for i, x in enumerate(flag_shape_single)]
-            )
-            flag_source_cat_single = flag_all_single.long().to(device)
-
-            flag_shape_spatial = [len(col_index_all[i]) for i in range(ModelType.n_atlas)]
-            flag_all_spatial = torch.cat(
-                [torch.full((x,), i) for i, x in enumerate(flag_shape_spatial)]
-            )
-            flag_source_cat_spatial = flag_all_spatial.long().to(device)
+        for ind,blocks_all in enumerate(tqdm(spatial_dataloader)):
+            if ind not in random_numbers:
+                continue
+            
+            (batch_features_all, adj_all_block, adj_all_block_dis, 
+            train_mask_batch_single, train_mask_batch_spatial, 
+            flag_source_cat_single, flag_source_cat_spatial) = get_data(blocks_all, feature_all, adj_all, 
+                                                                        train_mask, device, model)
 
             # Train discriminator part
             loss_part1 = compute_dis_loss_pretrain(
@@ -154,7 +168,6 @@ def pretrain_model(
             loss_dis += loss_part1["dis"].item()
 
             # Train AE part
-
             loss_part2 = compute_ae_loss_pretrain(
                 model,
                 flag_source_cat_single,
@@ -175,7 +188,7 @@ def pretrain_model(
             loss_all_item += loss_part2["loss_all"].item()
             loss_ae_dis += loss_part2["dis_ae"].item()
 
-        ModelType.align_anneal /= 2
+        flagconfig.align_anneal /= 2
 
         if ModelType.verbose == True:
             print(
@@ -189,69 +202,21 @@ def pretrain_model(
         save_snapshot(model, epoch, ModelType.epochs_run_final, ModelType.snapshot_path)
 
         if not os.path.exists(f"{ModelType.save_dir}/lambda_disc_single.pkl"):
-            save_obj(ModelType.lambda_disc_single, f"{ModelType.save_dir}/lambda_disc_single")
+            save_obj(flagconfig.lambda_disc_single, f"{ModelType.save_dir}/lambda_disc_single")
 
         ################# validation
-        if epoch > ModelType.TRAIN_WITHOUT_EVAL:
+        if epoch > ModelType.TRAIN_WITHOUT_EVAL.value:
             model.eval()
             with torch.no_grad():
                 for blocks_all in tqdm(spatial_dataloader):
-                    row_index_all = {}
-                    col_index_all = {}
-                    for i_atlas in range(ModelType.n_atlas):
-                        row_index = list(blocks_all[i_atlas]["spatial"][0])
-                        col_index = list(blocks_all[i_atlas]["spatial"][1])
-                        row_index_all[i_atlas] = torch.sort(
-                            torch.vstack(row_index).flatten()
-                        )[0].tolist()
-                        col_index_all[i_atlas] = torch.sort(
-                            torch.vstack(col_index).flatten()
-                        )[0].tolist()
+                    if ind not in random_numbers:
+                        continue
 
-                    batch_features_all = [
-                        torch.FloatTensor(
-                            feature_all[i][row_index_all[i], :].toarray()
-                        ).to(device)
-                        for i in range(ModelType.n_atlas)
-                    ]
-                    adj_all_block = [
-                        torch.FloatTensor(
-                            adj_all[i][row_index_all[i], :]
-                            .tocsc()[:, col_index_all[i]]
-                            .todense()
-                        ).to(device)
-                        if ModelType.input_identity[i] == "ST"
-                        else model.scrna_seq_adj["atlas" + str(i)]()[
-                            row_index_all[i], :
-                        ][:, col_index_all[i]]
-                        for i in range(ModelType.n_atlas)
-                    ]
-                    val_mask_batch_single = [
-                        train_mask_i[row_index_all[blocks_all_ind]]
-                        for train_mask_i, blocks_all_ind in zip(val_mask, blocks_all)
-                    ]
-                    val_mask_batch_spatial = [
-                        train_mask_i[col_index_all[blocks_all_ind]]
-                        for train_mask_i, blocks_all_ind in zip(val_mask, blocks_all)
-                    ]
-
-                    ### discriminator flags
-                    flag_shape_single = [
-                        len(row_index_all[i]) for i in range(ModelType.n_atlas)
-                    ]
-                    flag_all_single = torch.cat(
-                        [torch.full((x,), i) for i, x in enumerate(flag_shape_single)]
-                    )
-                    flag_source_cat_single = flag_all_single.long().to(device)
-
-                    flag_shape_spatial = [
-                        len(col_index_all[i]) for i in range(ModelType.n_atlas)
-                    ]
-                    flag_all_spatial = torch.cat(
-                        [torch.full((x,), i) for i, x in enumerate(flag_shape_spatial)]
-                    )
-                    flag_source_cat_spatial = flag_all_spatial.long().to(device)
-
+                    (batch_features_all, adj_all_block, adj_all_block_dis, 
+                    val_mask_batch_single, val_mask_batch_spatial, 
+                    flag_source_cat_single, flag_source_cat_spatial) = get_data(blocks_all, feature_all, adj_all, 
+                                                                                val_mask, device, model)
+                    
                     # val AE part
                     loss_part2 = compute_ae_loss_pretrain(
                         model,
@@ -296,7 +261,7 @@ def pretrain_model(
                 patience_counter += 1
 
             # If the patience counter is greater than or equal to the patience limit, stop training
-            if patience_counter >= ModelType.patience_limit_pretrain:
+            if patience_counter >= ModelType.patience_limit_pretrain.value:
                 print("Early stopping due to loss not improving - patience count")
                 os.rename(
                     f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model.pt",
@@ -304,7 +269,7 @@ def pretrain_model(
                 )
                 print("File name changed")
                 break
-            if current_lr < ModelType.lr_limit_pretrain:
+            if current_lr < ModelType.lr_limit_pretrain.value:
                 print("Early stopping due to loss not improving - learning rate")
                 os.rename(
                     f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model.pt",
@@ -324,7 +289,7 @@ def pretrain_model(
 
 
 def train_model(
-    model, spatial_dataloader, feature_all, adj_all, device, train_mask, val_mask, ModelType
+    model, spatial_dataloader, feature_all, adj_all, device, train_mask, val_mask, flagconfig
 ):
     with open(f"{ModelType.save_dir}/balance_weight_single.pkl", "rb") as openfile:
         balance_weight_single = pickle.load(openfile)
@@ -336,7 +301,7 @@ def train_model(
     loss_atlas_val_best = float("inf")
     patience_counter = 0
 
-    optimizer_dis = getattr(torch.optim, ModelType.optim_kw)(
+    optimizer_dis = getattr(torch.optim, ModelType.optim_kw.value)(
         itertools.chain(
             model.discriminator_single.parameters(),
             model.discriminator_spatial.parameters(),
@@ -374,10 +339,15 @@ def train_model(
         for i in range(ModelType.n_atlas):
             loss_atlas_i[i] = 0
         loss_atlas_val = 0
-        anneal = max(1 - (epoch - 1) / ModelType.align_anneal, 0) if ModelType.align_anneal else 0
+        anneal = max(1 - (epoch - 1) / flagconfig.align_anneal, 0) if ModelType.align_anneal else 0
 
         model.train()
-        for blocks_all in tqdm(spatial_dataloader):
+                
+        random_numbers = random.sample(range(len(spatial_dataloader)+1), 10)
+            
+        for ind,blocks_all in enumerate(tqdm(spatial_dataloader)):
+            if ind not in random_numbers:
+                continue
             row_index_all = {}
             col_index_all = {}
             for i_atlas in range(ModelType.n_atlas):
@@ -462,7 +432,7 @@ def train_model(
                 train_mask_batch_spatial,
                 balance_weight_single_block,
                 balance_weight_spatial_block,
-                ModelType,
+                flagconfig,
             )
             model.zero_grad(set_to_none=True)
             loss_part1["dis"].backward()
@@ -481,7 +451,7 @@ def train_model(
                 train_mask_batch_spatial,
                 balance_weight_single_block,
                 balance_weight_spatial_block,
-                ModelType,
+                flagconfig,
             )
             model.zero_grad(set_to_none=True)
             loss_part2["loss_all"].backward()
@@ -492,7 +462,7 @@ def train_model(
             loss_all_item += loss_part2["loss_all"].item()
             loss_ae_dis += loss_part2["dis_ae"].item()
 
-        ModelType.align_anneal /= 2
+        flagconfig.align_anneal /= 2
 
         save_snapshot(model, ModelType.epochs_run_pretrain, epoch, ModelType.snapshot_path)
 
@@ -509,7 +479,10 @@ def train_model(
         if epoch > ModelType.TRAIN_WITHOUT_EVAL:
             model.eval()
             with torch.no_grad():
-                for blocks_all in tqdm(spatial_dataloader):
+           
+                for ind,blocks_all in enumerate(tqdm(spatial_dataloader)):
+                    if ind not in random_numbers:
+                        continue
                     row_index_all = {}
                     col_index_all = {}
                     for i_atlas in range(ModelType.n_atlas):
@@ -587,7 +560,7 @@ def train_model(
                         val_mask_batch_spatial,
                         balance_weight_single_block,
                         balance_weight_spatial_block,
-                        ModelType,
+                        flagconfig,
                     )
 
                     for i in range(ModelType.n_atlas):
@@ -617,7 +590,7 @@ def train_model(
                 patience_counter += 1
 
             # If the patience counter is greater than or equal to the patience limit, stop training
-            if patience_counter >= ModelType.patience_limit_final:
+            if patience_counter >= ModelType.patience_limit_final.value:
                 # torch.save(model.state_dict(), f"{save_dir}/trained_model/FuseMap_final_model_end.pt")
                 print("Early stopping due to loss not improving")
                 os.rename(

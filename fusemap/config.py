@@ -23,6 +23,7 @@ def parse_input_args():
 
 class FlagConfig:
     lambda_disc_single = 1
+    align_anneal = 1e10
 
 
 
@@ -44,7 +45,7 @@ class ModelType(Enum):
     lambda_disc_spatial=1
     lambda_ae_spatial=1
     align_noise_coef=1.5
-    align_anneal=1e10
+    # align_anneal=1e10
     lr_patience_pretrain=2
     lr_factor_pretrain=0.5
     lr_limit_pretrain=0.00001

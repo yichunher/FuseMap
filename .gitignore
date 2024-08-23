@@ -5,3 +5,4 @@ sample_data/
 */__pycache__
 fusemap/__pycache__/
 *.pyc
+output/

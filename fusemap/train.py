@@ -145,10 +145,12 @@ def train(X_input, save_dir, kneighbor, input_identity,
     train_mask, val_mask = construct_mask(ModelType.n_atlas, spatial_dataset_list, g_all)
 
     ### train
+    flagconfig=FlagConfig()
     if os.path.exists(f"{ModelType.save_dir}/lambda_disc_single.pkl"):
         with open(f"{ModelType.save_dir}/lambda_disc_single.pkl", "rb") as openfile:
-            ModelType.lambda_disc_single.value = pickle.load(openfile)
+            flagconfig.lambda_disc_single = pickle.load(openfile)
 
+    
     if not os.path.exists(
         f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt"
     ):
@@ -163,7 +165,7 @@ def train(X_input, save_dir, kneighbor, input_identity,
             device,
             train_mask,
             val_mask,
-            ModelType,
+            flagconfig,
         )
 
     if not os.path.exists(f"{ModelType.save_dir}/latent_embeddings_all_single_pretrain.pkl"):
@@ -209,7 +211,7 @@ def train(X_input, save_dir, kneighbor, input_identity,
             device,
             train_mask,
             val_mask,
-            ModelType,
+            flagconfig,
         )
 
     if not os.path.exists(f"{ModelType.save_dir}/latent_embeddings_all_single_final.pkl"):
