@@ -87,7 +87,7 @@ def generate_ad_embed(save_dir, X_input, ttype, use_key="final"):
 
 def annotation_transfer(X_input, save_dir):
     if not os.path.exists(f"{save_dir}/ad_celltype_embedding.h5ad"):
-        ad_embed = generate_ad_embed(save_dir, X_input, ttype="single")
+        ad_embed = generate_ad_embed(save_dir, X_input, ttype="single", use_key="final")
         ad_embed.write_h5ad(save_dir + "/ad_celltype_embedding.h5ad")
 
     if not os.path.exists(f"{save_dir}/ad_tissueregion_embedding.h5ad"):
@@ -95,5 +95,5 @@ def annotation_transfer(X_input, save_dir):
             "gt_tissue_region_main",
             "gt_tissue_region_sub",
         ]
-        ad_embed = generate_ad_embed(save_dir, X_input, ttype="spatial")
+        ad_embed = generate_ad_embed(save_dir, X_input, ttype="spatial",use_key="final")
         ad_embed.write_h5ad(save_dir + "/ad_tissueregion_embedding.h5ad")

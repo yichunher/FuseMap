@@ -10,7 +10,7 @@ def main(args):
     seed_all(0)
 
     ### read data
-    data_pth = []
+    # data_pth = []
     X_input = []
     file_names = [
         args.data_path + f
@@ -23,17 +23,17 @@ def main(args):
         if "x" not in X.obs.columns:
             X.obs["x"] = X.obs["col"]
             X.obs["y"] = X.obs["row"]
-        data_pth.append(file_name_i)
+        # data_pth.append(file_name_i)
         X.obs["name"] = f"section{ind}"
         X_input.append(X)
     kneighbor = ["delaunay"] * len(X_input)
     input_identity = ["ST"] * len(X_input)
 
     ### train model
-    train(X_input, args.save_dir, kneighbor, input_identity, data_pth=data_pth)
+    train(X_input, args.save_dir, kneighbor, input_identity)
 
     print("Done.")
-    
+
     return
 
 

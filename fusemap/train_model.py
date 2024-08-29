@@ -88,7 +88,9 @@ def get_data(blocks_all, feature_all, adj_all, train_mask, device, model):
     )
     flag_source_cat_spatial = flag_all_spatial.long().to(device)
     return (batch_features_all, adj_all_block, adj_all_block_dis, 
-            train_mask_batch_single, train_mask_batch_spatial, flag_source_cat_single, flag_source_cat_spatial)
+            train_mask_batch_single, train_mask_batch_spatial, 
+            flag_source_cat_single, flag_source_cat_spatial,
+            row_index_all, col_index_all)
 
 def pretrain_model(
     model, spatial_dataloader, feature_all, adj_all, device, train_mask, val_mask, flagconfig
@@ -127,7 +129,7 @@ def pretrain_model(
     )
     
 
-    for epoch in range(ModelType.epochs_run_pretrain + 1, ModelType.n_epochs.value):
+    for epoch in tqdm(range(ModelType.epochs_run_pretrain + 1, ModelType.n_epochs.value)):
         loss_dis = 0
         loss_ae_dis = 0
         loss_all_item = 0
@@ -139,15 +141,15 @@ def pretrain_model(
 
         model.train()
 
-        random_numbers = random.sample(range(len(spatial_dataloader)+1), 10)
+        # random_numbers = random.sample(range(len(spatial_dataloader)+1), 1000)
 
-        for ind,blocks_all in enumerate(tqdm(spatial_dataloader)):
-            if ind not in random_numbers:
-                continue
+        for ind,blocks_all in enumerate(spatial_dataloader):
+            # if ind not in random_numbers:
+            #     continue
             
             (batch_features_all, adj_all_block, adj_all_block_dis, 
             train_mask_batch_single, train_mask_batch_spatial, 
-            flag_source_cat_single, flag_source_cat_spatial) = get_data(blocks_all, feature_all, adj_all, 
+            flag_source_cat_single, flag_source_cat_spatial,_,_) = get_data(blocks_all, feature_all, adj_all, 
                                                                         train_mask, device, model)
 
             # Train discriminator part
@@ -208,13 +210,13 @@ def pretrain_model(
         if epoch > ModelType.TRAIN_WITHOUT_EVAL.value:
             model.eval()
             with torch.no_grad():
-                for blocks_all in tqdm(spatial_dataloader):
-                    if ind not in random_numbers:
-                        continue
+                for ind,blocks_all in enumerate(spatial_dataloader):
+                    # if ind not in random_numbers:
+                    #     continue
 
                     (batch_features_all, adj_all_block, adj_all_block_dis, 
                     val_mask_batch_single, val_mask_batch_spatial, 
-                    flag_source_cat_single, flag_source_cat_spatial) = get_data(blocks_all, feature_all, adj_all, 
+                    flag_source_cat_single, flag_source_cat_spatial,_,_) = get_data(blocks_all, feature_all, adj_all, 
                                                                                 val_mask, device, model)
                     
                     # val AE part
@@ -306,32 +308,32 @@ def train_model(
             model.discriminator_single.parameters(),
             model.discriminator_spatial.parameters(),
         ),
-        lr=ModelType.learning_rate,
+        lr=ModelType.learning_rate.value,
     )
-    optimizer_ae = getattr(torch.optim, ModelType.optim_kw)(
+    optimizer_ae = getattr(torch.optim, ModelType.optim_kw.value)(
         itertools.chain(
             model.encoder.parameters(),
             model.decoder.parameters(),
             model.scrna_seq_adj.parameters(),
         ),
-        lr=ModelType.learning_rate,
+        lr=ModelType.learning_rate.value,
     )
     scheduler_dis = ReduceLROnPlateau(
         optimizer_dis,
         mode="min",
-        factor=ModelType.lr_factor_final,
-        patience=ModelType.lr_patience_final,
+        factor=ModelType.lr_factor_final.value,
+        patience=ModelType.lr_patience_final.value,
         verbose=True,
     )
     scheduler_ae = ReduceLROnPlateau(
         optimizer_ae,
         mode="min",
-        factor=ModelType.lr_factor_final,
-        patience=ModelType.lr_patience_final,
+        factor=ModelType.lr_factor_final.value,
+        patience=ModelType.lr_patience_final.value,
         verbose=True,
     )
 
-    for epoch in range(ModelType.epochs_run_final + 1, ModelType.n_epochs):
+    for epoch in tqdm(range(ModelType.epochs_run_final + 1, ModelType.n_epochs.value)):
         loss_dis = 0
         loss_ae_dis = 0
         loss_all_item = 0
@@ -339,78 +341,23 @@ def train_model(
         for i in range(ModelType.n_atlas):
             loss_atlas_i[i] = 0
         loss_atlas_val = 0
-        anneal = max(1 - (epoch - 1) / flagconfig.align_anneal, 0) if ModelType.align_anneal else 0
+        anneal = max(1 - (epoch - 1) / flagconfig.align_anneal, 0) if flagconfig.align_anneal else 0
 
         model.train()
                 
-        random_numbers = random.sample(range(len(spatial_dataloader)+1), 10)
+        # random_numbers = random.sample(range(len(spatial_dataloader)+1), 1000)
             
-        for ind,blocks_all in enumerate(tqdm(spatial_dataloader)):
-            if ind not in random_numbers:
-                continue
-            row_index_all = {}
-            col_index_all = {}
-            for i_atlas in range(ModelType.n_atlas):
-                row_index = list(blocks_all[i_atlas]["spatial"][0])
-                col_index = list(blocks_all[i_atlas]["spatial"][1])
-                row_index_all[i_atlas] = torch.sort(torch.vstack(row_index).flatten())[
-                    0
-                ].tolist()
-                col_index_all[i_atlas] = torch.sort(torch.vstack(col_index).flatten())[
-                    0
-                ].tolist()
+        for ind,blocks_all in enumerate(spatial_dataloader):
+            # if ind not in random_numbers:
+            #     continue
 
-            batch_features_all = [
-                torch.FloatTensor(feature_all[i][row_index_all[i], :].toarray()).to(
-                    device
-                )
-                for i in range(ModelType.n_atlas)
-            ]
-            adj_all_block = [
-                torch.FloatTensor(
-                    adj_all[i][row_index_all[i], :]
-                    .tocsc()[:, col_index_all[i]]
-                    .todense()
-                ).to(device)
-                if ModelType.input_identity[i] == "ST"
-                else model.scrna_seq_adj["atlas" + str(i)]()[row_index_all[i], :][
-                    :, col_index_all[i]
-                ]
-                for i in range(ModelType.n_atlas)
-            ]
-            adj_all_block_dis = [
-                torch.FloatTensor(
-                    adj_all[i][row_index_all[i], :]
-                    .tocsc()[:, col_index_all[i]]
-                    .todense()
-                ).to(device)
-                if ModelType.input_identity[i] == "ST"
-                else model.scrna_seq_adj["atlas" + str(i)]()[row_index_all[i], :][
-                    :, col_index_all[i]
-                ].detach()
-                for i in range(ModelType.n_atlas)
-            ]
-            train_mask_batch_single = [
-                train_mask_i[row_index_all[blocks_all_ind]]
-                for train_mask_i, blocks_all_ind in zip(train_mask, blocks_all)
-            ]
-            train_mask_batch_spatial = [
-                train_mask_i[col_index_all[blocks_all_ind]]
-                for train_mask_i, blocks_all_ind in zip(train_mask, blocks_all)
-            ]
+            (batch_features_all, adj_all_block, adj_all_block_dis, 
+            train_mask_batch_single, train_mask_batch_spatial, 
+            flag_source_cat_single, flag_source_cat_spatial,
+            row_index_all, col_index_all) = get_data(blocks_all, feature_all, adj_all, 
+                                                    train_mask, device, model)
 
-            ### discriminator flags
-            flag_shape_single = [len(row_index_all[i]) for i in range(ModelType.n_atlas)]
-            flag_all_single = torch.cat(
-                [torch.full((x,), i) for i, x in enumerate(flag_shape_single)]
-            )
-            flag_source_cat_single = flag_all_single.long().to(device)
 
-            flag_shape_spatial = [len(col_index_all[i]) for i in range(ModelType.n_atlas)]
-            flag_all_spatial = torch.cat(
-                [torch.full((x,), i) for i, x in enumerate(flag_shape_spatial)]
-            )
-            flag_source_cat_spatial = flag_all_spatial.long().to(device)
 
             balance_weight_single_block = [
                 balance_weight_single[i][row_index_all[i]] for i in range(ModelType.n_atlas)
@@ -468,7 +415,7 @@ def train_model(
 
         if ModelType.verbose == True:
             print(
-                f"Train Epoch {epoch + 1}/{ModelType.n_epochs}, \
+                f"Train Epoch {epoch + 1}/{ModelType.n_epochs.value}, \
             Loss dis: {loss_dis / len(spatial_dataloader)},\
             Loss AE: {[i / len(spatial_dataloader) for i in loss_atlas_i.values()]} , \
             Loss ae dis:{loss_ae_dis / len(spatial_dataloader)},\
@@ -476,51 +423,21 @@ def train_model(
             )
 
         ################# validation
-        if epoch > ModelType.TRAIN_WITHOUT_EVAL:
+        if epoch > ModelType.TRAIN_WITHOUT_EVAL.value:
             model.eval()
             with torch.no_grad():
            
-                for ind,blocks_all in enumerate(tqdm(spatial_dataloader)):
-                    if ind not in random_numbers:
-                        continue
-                    row_index_all = {}
-                    col_index_all = {}
-                    for i_atlas in range(ModelType.n_atlas):
-                        row_index = list(blocks_all[i_atlas]["spatial"][0])
-                        col_index = list(blocks_all[i_atlas]["spatial"][1])
-                        row_index_all[i_atlas] = torch.sort(
-                            torch.vstack(row_index).flatten()
-                        )[0].tolist()
-                        col_index_all[i_atlas] = torch.sort(
-                            torch.vstack(col_index).flatten()
-                        )[0].tolist()
+                for ind,blocks_all in enumerate(spatial_dataloader):
+                    # if ind not in random_numbers:
+                    #     continue
 
-                    batch_features_all = [
-                        torch.FloatTensor(
-                            feature_all[i][row_index_all[i], :].toarray()
-                        ).to(device)
-                        for i in range(ModelType.n_atlas)
-                    ]
-                    adj_all_block = [
-                        torch.FloatTensor(
-                            adj_all[i][row_index_all[i], :]
-                            .tocsc()[:, col_index_all[i]]
-                            .todense()
-                        ).to(device)
-                        if ModelType.input_identity[i] == "ST"
-                        else model.scrna_seq_adj["atlas" + str(i)]()[
-                            row_index_all[i], :
-                        ][:, col_index_all[i]]
-                        for i in range(ModelType.n_atlas)
-                    ]
-                    val_mask_batch_single = [
-                        train_mask_i[row_index_all[blocks_all_ind]]
-                        for train_mask_i, blocks_all_ind in zip(val_mask, blocks_all)
-                    ]
-                    val_mask_batch_spatial = [
-                        train_mask_i[col_index_all[blocks_all_ind]]
-                        for train_mask_i, blocks_all_ind in zip(val_mask, blocks_all)
-                    ]
+                    (batch_features_all, adj_all_block, adj_all_block_dis, 
+                    val_mask_batch_single, val_mask_batch_spatial, 
+                    flag_source_cat_single, flag_source_cat_spatial,
+                    row_index_all, col_index_all) = get_data(blocks_all, feature_all, adj_all, 
+                                                            val_mask, device, model)
+
+
                     balance_weight_single_block = [
                         balance_weight_single[i][row_index_all[i]]
                         for i in range(ModelType.n_atlas)
@@ -531,22 +448,6 @@ def train_model(
                         for i in range(ModelType.n_atlas)
                     ]
 
-                    ### discriminator flags
-                    flag_shape_single = [
-                        len(row_index_all[i]) for i in range(ModelType.n_atlas)
-                    ]
-                    flag_all_single = torch.cat(
-                        [torch.full((x,), i) for i, x in enumerate(flag_shape_single)]
-                    )
-                    flag_source_cat_single = flag_all_single.long().to(device)
-
-                    flag_shape_spatial = [
-                        len(col_index_all[i]) for i in range(ModelType.n_atlas)
-                    ]
-                    flag_all_spatial = torch.cat(
-                        [torch.full((x,), i) for i, x in enumerate(flag_shape_spatial)]
-                    )
-                    flag_source_cat_spatial = flag_all_spatial.long().to(device)
 
                     # val AE part
                     loss_part2 = compute_ae_loss(
@@ -569,7 +470,7 @@ def train_model(
                 loss_atlas_val = loss_atlas_val / len(spatial_dataloader) / ModelType.n_atlas
                 if ModelType.verbose == True:
                     print(
-                        f"Validation Epoch {epoch + 1}/{ModelType.n_epochs}, \
+                        f"Validation Epoch {epoch + 1}/{ModelType.n_epochs.value}, \
                     Loss AE validation: {loss_atlas_val} "
                     )
 
@@ -599,7 +500,7 @@ def train_model(
                 )
                 print("File name changed")
                 break
-            if current_lr < ModelType.lr_limit_final:
+            if current_lr < ModelType.lr_limit_final.value:
                 # torch.save(model.state_dict(), f"{save_dir}/trained_model/FuseMap_final_model_end.pt")
                 print("Early stopping due to loss not improving - learning rate")
                 os.rename(

@@ -32,7 +32,7 @@ class ModelType(Enum):
     hidden_dim=512
     latent_dim=64
     dropout_rate=0.2
-    n_epochs=100
+    n_epochs=20
     batch_size=16
     learning_rate=0.001
     optim_kw="RMSprop"

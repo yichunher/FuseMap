@@ -77,7 +77,7 @@ def train(X_input, save_dir, kneighbor, input_identity,
             X_input,
             ModelType.kneighbor,
             ModelType.input_identity,
-            ModelType.use_input,
+            ModelType.use_input.value,
             ModelType.n_atlas,
             ModelType.data_pth,
         )
