@@ -96,7 +96,7 @@ def pretrain_model(
     model, spatial_dataloader, feature_all, adj_all, device, train_mask, val_mask, flagconfig
 ):
     loss_atlas_val_best = float("inf")
-    patience_counter = 0  # 2
+    patience_counter = 0  
 
     optimizer_dis = getattr(torch.optim, ModelType.optim_kw.value)(
         itertools.chain(
@@ -143,7 +143,7 @@ def pretrain_model(
 
         # random_numbers = random.sample(range(len(spatial_dataloader)+1), 1000)
 
-        for ind,blocks_all in enumerate(spatial_dataloader):
+        for blocks_all in tqdm(spatial_dataloader):
             # if ind not in random_numbers:
             #     continue
             

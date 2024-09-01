@@ -7,6 +7,45 @@ except ModuleNotFoundError:
 import torch
 import anndata as ad
 import pandas as pd
+import numpy as np
+import dgl
+import random
+
+try:
+    import pickle5 as pickle
+except ModuleNotFoundError:
+    import pickle
+
+
+
+
+def seed_all(seed_value, cuda_deterministic=True):
+    print(
+        "---------------------------------- SEED ALL ---------------------------------- "
+    )
+    print(
+        f"                           Seed Num :   {seed_value}                                "
+    )
+    print(
+        "---------------------------------- SEED ALL ---------------------------------- "
+    )
+    random.seed(seed_value)
+    os.environ["PYTHONHASHSEED"] = str(seed_value)
+    np.random.seed(seed_value)
+    dgl.seed(seed_value)
+    torch.manual_seed(seed_value)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed_value)
+        torch.cuda.manual_seed_all(
+            seed_value
+        )  # Speed-reproducibility tradeoff https://pytorch.org/docs/stable/notes/randomness.html
+        if cuda_deterministic:  # slower, more reproducible
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
+        else:  # faster, less reproducible
+            torch.backends.cudnn.deterministic = False
+            torch.backends.cudnn.benchmark = True
+
 
 
 def save_obj(objt, name):
