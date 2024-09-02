@@ -122,3 +122,57 @@ class CustomGraphDataLoader:
         return max([len(i) for i in self.dataloader])
         # return 100
 
+
+class MapPretrainDataset(Dataset):
+    def __init__(self, X):
+        self.X = X
+
+    def __len__(self):
+        return len(self.X)
+
+    def __getitem__(self, idx):
+        return self.X[idx]
+
+
+class MapPretrainDataLoader:
+    def __init__(self, dataset_all, batch_size, shuffle, n_atlas):
+        self.dataset_all = dataset_all
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.n_atlas = n_atlas
+        self.dataloader = []
+        for i in range(n_atlas):
+            self.dataloader.append(
+                DataLoader(
+                    self.dataset_all[i],
+                    batch_size=batch_size,
+                    shuffle=shuffle,
+                    drop_last=False,
+                )
+            )
+        cell_num = [len(i) for i in self.dataset_all]
+        self.max_value_index = np.argmax(cell_num)
+
+    def __iter__(self):
+        dataloader_iter_before = {}
+        dataloader_iter_after = {}
+        for i in np.arange(0, self.max_value_index):
+            dataloader_iter_before[i] = itertools.cycle(self.dataloader[i])
+        for i in np.arange(self.max_value_index + 1, self.n_atlas):
+            dataloader_iter_after[i] = itertools.cycle(self.dataloader[i])
+
+        for atlasdata_max in self.dataloader[self.max_value_index]:
+            blocks = {}
+            for i in np.arange(0, self.max_value_index):
+                atlasdata_i = next(dataloader_iter_before[i])
+                blocks[i] = atlasdata_i
+
+            blocks[self.max_value_index] = atlasdata_max
+
+            for i in np.arange(self.max_value_index + 1, self.n_atlas):
+                atlasdata_i = next(dataloader_iter_after[i])
+                blocks[i] = atlasdata_i
+            yield blocks
+
+    def __len__(self):
+        return max([len(i) for i in self.dataloader])

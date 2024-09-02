@@ -1,2 +1,2 @@
-from spatial_integrate import *
-from spatial_map import *
+from fusemap.spatial_integrate import *
+from fusemap.spatial_map import *

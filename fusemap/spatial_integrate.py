@@ -25,12 +25,13 @@ except ModuleNotFoundError:
     import pickle
 
 
-
-
-
-
-def spatial_integrate(X_input, save_dir, kneighbor, input_identity, data_pth=None,):
-    
+def spatial_integrate(
+    X_input,
+    save_dir,
+    kneighbor,
+    input_identity,
+    data_pth=None,
+):
     ### preprocess
     if "spatial_input" in X_input[0].obsm:
         preprocess_save = True
@@ -68,7 +69,6 @@ def spatial_integrate(X_input, save_dir, kneighbor, input_identity, data_pth=Non
         f"number of genes in each section:{[len(i) for i in ModelType.var_name]}, Number of all genes: {len(all_unique_genes)}"
     )
 
-
     ### create model
     model = Fuse_network(
         ModelType.pca_dim.value,
@@ -94,9 +94,10 @@ def spatial_integrate(X_input, save_dir, kneighbor, input_identity, data_pth=Non
         print("Loading snapshot")
         load_snapshot(model, ModelType.snapshot_path, device)
 
-
     ### construct graph and data
-    adj_all, g_all = construct_data(ModelType.n_atlas, adatas, ModelType.input_identity, model)
+    adj_all, g_all = construct_data(
+        ModelType.n_atlas, adatas, ModelType.input_identity, model
+    )
     feature_all = [
         get_feature_sparse(device, adata.obsm["spatial_input"]) for adata in adatas
     ]
@@ -119,11 +120,12 @@ def spatial_integrate(X_input, save_dir, kneighbor, input_identity, data_pth=Non
         n_atlas=ModelType.n_atlas,
         drop_last=False,
     )
-    train_mask, val_mask = construct_mask(ModelType.n_atlas, spatial_dataset_list, g_all)
-
+    train_mask, val_mask = construct_mask(
+        ModelType.n_atlas, spatial_dataset_list, g_all
+    )
 
     ### train
-    flagconfig=FlagConfig()
+    flagconfig = FlagConfig()
     if os.path.exists(f"{ModelType.save_dir}/lambda_disc_single.pkl"):
         with open(f"{ModelType.save_dir}/lambda_disc_single.pkl", "rb") as openfile:
             flagconfig.lambda_disc_single = pickle.load(openfile)
@@ -131,7 +133,9 @@ def spatial_integrate(X_input, save_dir, kneighbor, input_identity, data_pth=Non
     if not os.path.exists(
         f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt"
     ):
-        print("---------------------------------- Phase 1. Pretrain FuseMap model ----------------------------------")
+        print(
+            "---------------------------------- Phase 1. Pretrain FuseMap model ----------------------------------"
+        )
         pretrain_model(
             model,
             spatial_dataloader,
@@ -143,8 +147,12 @@ def spatial_integrate(X_input, save_dir, kneighbor, input_identity, data_pth=Non
             flagconfig,
         )
 
-    if not os.path.exists(f"{ModelType.save_dir}/latent_embeddings_all_single_pretrain.pkl"):
-        print("---------------------------------- Phase 2. Evaluate pretrained FuseMap model ----------------------------------")
+    if not os.path.exists(
+        f"{ModelType.save_dir}/latent_embeddings_all_single_pretrain.pkl"
+    ):
+        print(
+            "---------------------------------- Phase 2. Evaluate pretrained FuseMap model ----------------------------------"
+        )
         if os.path.exists(
             f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt"
         ):
@@ -162,16 +170,22 @@ def spatial_integrate(X_input, save_dir, kneighbor, input_identity, data_pth=Non
             raise ValueError("No pretrained model!")
 
     if not os.path.exists(f"{ModelType.save_dir}/balance_weight_single.pkl"):
-        print("---------------------------------- Phase 3. Estimate_balancing_weight ----------------------------------")
+        print(
+            "---------------------------------- Phase 3. Estimate_balancing_weight ----------------------------------"
+        )
         balance_weight(model, adatas, ModelType.save_dir, ModelType.n_atlas, device)
 
     if not os.path.exists(
         f"{ModelType.save_dir}/trained_model/FuseMap_final_model_final.pt"
     ):
         model.load_state_dict(
-            torch.load(f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt")
+            torch.load(
+                f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt"
+            )
         )
-        print("---------------------------------- Phase 4. Train final FuseMap model ----------------------------------")
+        print(
+            "---------------------------------- Phase 4. Train final FuseMap model ----------------------------------"
+        )
         train_model(
             model,
             spatial_dataloader,
@@ -183,8 +197,12 @@ def spatial_integrate(X_input, save_dir, kneighbor, input_identity, data_pth=Non
             flagconfig,
         )
 
-    if not os.path.exists(f"{ModelType.save_dir}/latent_embeddings_all_single_final.pkl"):
-        print("---------------------------------- Phase 5. Evaluate final FuseMap model ----------------------------------")
+    if not os.path.exists(
+        f"{ModelType.save_dir}/latent_embeddings_all_single_final.pkl"
+    ):
+        print(
+            "---------------------------------- Phase 5. Evaluate final FuseMap model ----------------------------------"
+        )
         if os.path.exists(
             f"{ModelType.save_dir}/trained_model/FuseMap_final_model_final.pt"
         ):
@@ -201,14 +219,18 @@ def spatial_integrate(X_input, save_dir, kneighbor, input_identity, data_pth=Non
         else:
             raise ValueError("No final model!")
 
-    print("---------------------------------- Finish ----------------------------------")
-
+    print(
+        "---------------------------------- Finish ----------------------------------"
+    )
 
     ### read out gene embedding
     read_gene_embedding(
-        model, all_unique_genes, ModelType.save_dir, ModelType.n_atlas, ModelType.var_name
+        model,
+        all_unique_genes,
+        ModelType.save_dir,
+        ModelType.n_atlas,
+        ModelType.var_name,
     )
-
 
     ### read out cell embedding
     annotation_transfer(
@@ -217,5 +239,3 @@ def spatial_integrate(X_input, save_dir, kneighbor, input_identity, data_pth=Non
     )
 
     return
-
-

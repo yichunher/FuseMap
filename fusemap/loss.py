@@ -7,6 +7,7 @@ import pandas as pd
 from sparse import COO
 from fusemap.config import *
 
+
 def AE_Gene_loss(recon_x, x, z_distribution):
     if recon_x.shape[0] == 0:
         return torch.tensor(0.0, dtype=torch.float32).to(recon_x.device)
@@ -67,14 +68,16 @@ def compute_dis_loss_pretrain(
                 (z_mean_cat_single.shape[0],)
             )
             z_mean_cat_single = (
-                z_mean_cat_single + (anneal * ModelType.align_noise_coef.value) * noise_single
+                z_mean_cat_single
+                + (anneal * ModelType.align_noise_coef.value) * noise_single
             )
         if z_mean_cat_spatial.shape[0] > 1:
             noise_spatial = D.Normal(
                 0, ModelType.EPS.value + z_mean_cat_spatial.std(axis=0)
             ).sample((z_mean_cat_spatial.shape[0],))
             z_mean_cat_spatial = (
-                z_mean_cat_spatial + (anneal * ModelType.align_noise_coef.value) * noise_spatial
+                z_mean_cat_spatial
+                + (anneal * ModelType.align_noise_coef.value) * noise_spatial
             )
 
     ### compute dis loss
@@ -159,14 +162,16 @@ def compute_ae_loss_pretrain(
                 (z_mean_cat_single.shape[0],)
             )
             z_mean_cat_single = (
-                z_mean_cat_single + (anneal * ModelType.align_noise_coef.value) * noise_single
+                z_mean_cat_single
+                + (anneal * ModelType.align_noise_coef.value) * noise_single
             )
         if z_mean_cat_spatial.shape[0] > 1:
             noise_spatial = D.Normal(
                 0, ModelType.EPS.value + z_mean_cat_spatial.std(axis=0)
             ).sample((z_mean_cat_spatial.shape[0],))
             z_mean_cat_spatial = (
-                z_mean_cat_spatial + (anneal * ModelType.align_noise_coef.value) * noise_spatial
+                z_mean_cat_spatial
+                + (anneal * ModelType.align_noise_coef.value) * noise_spatial
             )
 
     ### compute dis loss
@@ -244,14 +249,16 @@ def compute_dis_loss(
                 (z_mean_cat_single.shape[0],)
             )
             z_mean_cat_single = (
-                z_mean_cat_single + (anneal * ModelType.align_noise_coef.value) * noise_single
+                z_mean_cat_single
+                + (anneal * ModelType.align_noise_coef.value) * noise_single
             )
         if z_mean_cat_spatial.shape[0] > 1:
             noise_spatial = D.Normal(
                 0, ModelType.EPS.value + z_mean_cat_spatial.std(axis=0)
             ).sample((z_mean_cat_spatial.shape[0],))
             z_mean_cat_spatial = (
-                z_mean_cat_spatial + (anneal * ModelType.align_noise_coef.value) * noise_spatial
+                z_mean_cat_spatial
+                + (anneal * ModelType.align_noise_coef.value) * noise_spatial
             )
 
     ### compute dis loss
@@ -340,14 +347,16 @@ def compute_ae_loss(
                 (z_mean_cat_single.shape[0],)
             )
             z_mean_cat_single = (
-                z_mean_cat_single + (anneal * ModelType.align_noise_coef.value) * noise_single
+                z_mean_cat_single
+                + (anneal * ModelType.align_noise_coef.value) * noise_single
             )
         if z_mean_cat_spatial.shape[0] > 1:
             noise_spatial = D.Normal(
                 0, ModelType.EPS.value + z_mean_cat_spatial.std(axis=0)
             ).sample((z_mean_cat_spatial.shape[0],))
             z_mean_cat_spatial = (
-                z_mean_cat_spatial + (anneal * ModelType.align_noise_coef.value) * noise_spatial
+                z_mean_cat_spatial
+                + (anneal * ModelType.align_noise_coef.value) * noise_spatial
             )
 
     ### compute dis loss
@@ -377,7 +386,9 @@ def compute_ae_loss(
     if (
         flagconfig.lambda_disc_single == 1
     ):  # and loss_dis.item()<sum(loss_AE_all).item()/DIS_LAMDA:
-        flagconfig.lambda_disc_single = sum(loss_AE_all).item() / ModelType.DIS_LAMDA.value / loss_dis.item()
+        flagconfig.lambda_disc_single = (
+            sum(loss_AE_all).item() / ModelType.DIS_LAMDA.value / loss_dis.item()
+        )
         print(f"lambda_disc_single changed to {flagconfig.lambda_disc_single}")
         loss_dis = flagconfig.lambda_disc_single * loss_dis
 
@@ -557,23 +568,268 @@ train ref data part
 """
 
 
-def _load_snapshot(snapshot_path, loc):
-    snapshot = torch.load(snapshot_path, map_location=loc)
-    model.load_state_dict(snapshot["MODEL_STATE"])
-    epochs_run_pretrain = snapshot["EPOCHS_RUN_pretrain"]
-    epochs_run_final = snapshot["EPOCHS_RUN_final"]
-    print(
-        f" Resuming training from snapshot at pretrain Epoch {epochs_run_pretrain}, final epoch {epochs_run_final}\n"
+def compute_dis_loss_map(
+    adapt_model,
+    flag_source_cat_single,
+    flag_source_cat_spatial,
+    anneal,
+    batch_features_all,
+    adj_all,
+    mask_batch_single,
+    mask_batch_spatial,
+    pretrain_single_batch,
+    pretrain_spatial_batch,
+    flag_source_cat_single_pretrain,
+    flag_source_cat_spatial_pretrain,
+    flagconfig,
+):
+    mask_batch_single_all = torch.hstack(mask_batch_single)
+    mask_batch_spatial_all = torch.hstack(mask_batch_spatial)
+
+    z_all = [
+        adapt_model.encoder["atlas" + str(i)](batch_features_all[i], adj_all[i])
+        for i in range(ModelType.n_atlas)
+    ]
+    z_mean_cat_single = torch.cat([z_all[i][0] for i in range(ModelType.n_atlas)])[
+        mask_batch_single_all, :
+    ]
+    z_mean_cat_single = torch.vstack(
+        [
+            z_mean_cat_single,
+            torch.cat(
+                [pretrain_single_batch[i] for i in range(len(pretrain_single_batch))]
+            ),
+        ]
     )
 
+    z_spatial_all = [z_all[i][2] for i in range(ModelType.n_atlas)]
+    z_mean_cat_spatial = torch.cat(z_spatial_all)[mask_batch_spatial_all, :]
+    z_mean_cat_spatial = torch.vstack(
+        [
+            z_mean_cat_spatial,
+            torch.cat(
+                [pretrain_spatial_batch[i] for i in range(len(pretrain_spatial_batch))]
+            ),
+        ]
+    )
 
-def _save_snapshot(epoch_pretrain, epoch_final):
-    snapshot = {
-        "MODEL_STATE": model.state_dict(),
-        "EPOCHS_RUN_pretrain": epoch_pretrain,
-        "EPOCHS_RUN_final": epoch_final,
+    ######### append pretrained data ##############
+
+    if anneal:
+        if z_mean_cat_single.shape[0] > 1:
+            noise_single = D.Normal(0, z_mean_cat_single.std(axis=0)).sample(
+                (z_mean_cat_single.shape[0],)
+            )
+            z_mean_cat_single = (
+                z_mean_cat_single
+                + (anneal * ModelType.align_noise_coef.value) * noise_single
+            )
+        if z_mean_cat_spatial.shape[0] > 1:
+            noise_spatial = D.Normal(
+                0, ModelType.EPS.value + z_mean_cat_spatial.std(axis=0)
+            ).sample((z_mean_cat_spatial.shape[0],))
+            z_mean_cat_spatial = (
+                z_mean_cat_spatial
+                + (anneal * ModelType.align_noise_coef.value) * noise_spatial
+            )
+
+    ### compute dis loss
+    loss_dis_single = F.cross_entropy(
+        F.softmax(
+            torch.hstack(
+                [
+                    adapt_model.discriminator_single(z_mean_cat_single),
+                    adapt_model.discriminator_single_pretrain(z_mean_cat_single),
+                ]
+            ),
+            dim=1,
+        ),
+        torch.hstack(
+            [
+                flag_source_cat_single[mask_batch_single_all],
+                flag_source_cat_single_pretrain,
+            ]
+        ),
+        reduction="none",
+    )
+    loss_dis_single = loss_dis_single.sum() / loss_dis_single.numel()
+
+    loss_dis_spatial = F.cross_entropy(
+        F.softmax(
+            torch.hstack(
+                [
+                    adapt_model.discriminator_spatial(z_mean_cat_spatial),
+                    adapt_model.discriminator_spatial_pretrain(z_mean_cat_spatial),
+                ]
+            ),
+            dim=1,
+        ),
+        torch.hstack(
+            [
+                flag_source_cat_spatial[mask_batch_spatial_all],
+                flag_source_cat_spatial_pretrain,
+            ]
+        ),
+        reduction="none",
+    )
+    loss_dis_spatial = loss_dis_spatial.sum() / loss_dis_spatial.numel()
+
+    loss_dis = flagconfig.lambda_disc_single * (loss_dis_single + loss_dis_spatial)
+    # loss_dis = self.lambda_disc_single * (loss_dis_single )
+
+    loss_all = {"dis": loss_dis}
+    return loss_all
+
+
+def compute_ae_loss_map(
+    adapt_model,
+    flag_source_cat_single,
+    flag_source_cat_spatial,
+    anneal,
+    batch_features_all,
+    adj_all,
+    mask_batch_single,
+    mask_batch_spatial,
+    pretrain_single_batch,
+    pretrain_spatial_batch,
+    flag_source_cat_single_pretrain,
+    flag_source_cat_spatial_pretrain,
+    flagconfig
+):
+    z_all = [
+        adapt_model.encoder["atlas" + str(i)](batch_features_all[i], adj_all[i])
+        for i in range(ModelType.n_atlas)
+    ]
+
+    z_distribution_all = [
+        D.Normal(z_all[i][0], z_all[i][1]) for i in range(ModelType.n_atlas)
+    ]
+    z_sample_all = [z_distribution_all[i].rsample() for i in range(ModelType.n_atlas)]
+
+    z_spatial_all = [z_all[i][2] for i in range(ModelType.n_atlas)]
+
+    decoder_all = [
+        adapt_model.decoder["atlas" + str(i)](
+            z_sample_all[i],
+            z_spatial_all[i],
+            adj_all[i],
+            adapt_model.gene_embedding_pretrained,
+            adapt_model.gene_embedding_new,
+        )
+        for i in range(ModelType.n_atlas)
+    ]
+
+    ### compute AE loss
+    z_distribution_loss = [
+        D.Normal(
+            z_all[i][0][mask_batch_single[i], :], z_all[i][1][mask_batch_single[i], :]
+        )
+        for i in range(ModelType.n_atlas)
+    ]
+    loss_AE_all = [
+        ModelType.lambda_ae_single.value
+        * AE_Gene_loss(
+            decoder_all[i][mask_batch_single[i], :],
+            batch_features_all[i][mask_batch_single[i], :],
+            z_distribution_loss[i],
+        )
+        for i in range(ModelType.n_atlas)
+    ]
+
+    mask_batch_single_all = torch.hstack(mask_batch_single)
+    mask_batch_spatial_all = torch.hstack(mask_batch_spatial)
+
+    z_mean_cat_single = torch.cat([z_all[i][0] for i in range(ModelType.n_atlas)])[
+        mask_batch_single_all, :
+    ]
+    z_mean_cat_single = torch.vstack(
+        [
+            z_mean_cat_single,
+            torch.cat(
+                [pretrain_single_batch[i] for i in range(len(pretrain_single_batch))]
+            ),
+        ]
+    )
+
+    z_mean_cat_spatial = torch.cat(z_spatial_all)[mask_batch_spatial_all, :]
+    z_mean_cat_spatial = torch.vstack(
+        [
+            z_mean_cat_spatial,
+            torch.cat(
+                [pretrain_spatial_batch[i] for i in range(len(pretrain_spatial_batch))]
+            ),
+        ]
+    )
+
+    if anneal:
+        if z_mean_cat_single.shape[0] > 1:
+            noise_single = D.Normal(0, z_mean_cat_single.std(axis=0)).sample(
+                (z_mean_cat_single.shape[0],)
+            )
+            z_mean_cat_single = (
+                z_mean_cat_single + (anneal * ModelType.align_noise_coef.value) * noise_single
+            )
+        if z_mean_cat_spatial.shape[0] > 1:
+            noise_spatial = D.Normal(0, ModelType.EPS.value + z_mean_cat_spatial.std(axis=0)).sample(
+                (z_mean_cat_spatial.shape[0],)
+            )
+            z_mean_cat_spatial = (
+                z_mean_cat_spatial + (anneal * ModelType.align_noise_coef.value) * noise_spatial
+            )
+
+    ### compute dis loss
+    loss_dis_single = F.cross_entropy(
+        F.softmax(
+            torch.hstack(
+                [
+                    adapt_model.discriminator_single(z_mean_cat_single),
+                    adapt_model.discriminator_single_pretrain(z_mean_cat_single),
+                ]
+            ),
+            dim=1,
+        ),
+        torch.hstack(
+            [
+                flag_source_cat_single[mask_batch_single_all],
+                flag_source_cat_single_pretrain,
+            ]
+        ),
+        reduction="none",
+    )
+    loss_dis_single = loss_dis_single.sum() / loss_dis_single.numel()
+
+    loss_dis_spatial = F.cross_entropy(
+        F.softmax(
+            torch.hstack(
+                [
+                    adapt_model.discriminator_spatial(z_mean_cat_spatial),
+                    adapt_model.discriminator_spatial_pretrain(z_mean_cat_spatial),
+                ]
+            ),
+            dim=1,
+        ),
+        torch.hstack(
+            [
+                flag_source_cat_spatial[mask_batch_spatial_all],
+                flag_source_cat_spatial_pretrain,
+            ]
+        ),
+        reduction="none",
+    )
+    loss_dis_spatial = loss_dis_spatial.sum() / loss_dis_spatial.numel()
+
+    loss_dis = flagconfig.lambda_disc_single * (loss_dis_single + loss_dis_spatial)
+
+    if (
+        flagconfig.lambda_disc_single == 1
+    ):  # and loss_dis.item()<sum(loss_AE_all).item()/DIS_LAMDA:
+        flagconfig.lambda_disc_single = sum(loss_AE_all).item() / ModelType.DIS_LAMDA.value / loss_dis.item()
+        print(f"lambda_disc_single changed to {flagconfig.lambda_disc_single}")
+        loss_dis = flagconfig.lambda_disc_single * loss_dis
+
+    loss_all = {
+        "dis_ae": loss_dis,
+        "loss_AE_all": loss_AE_all,
+        "loss_all": -loss_dis + sum(loss_AE_all),
     }
-    torch.save(snapshot, snapshot_path)
-    print(
-        f"Pretrain Epoch {epoch_pretrain}, final Epoch {epoch_final} | Training snapshot saved at {snapshot_path}\n"
-    )
+    return loss_all

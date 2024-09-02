@@ -23,12 +23,14 @@ except ModuleNotFoundError:
     import pickle
 
 
-
-
-
-
-def spatial_map(molccf_path, X_input, save_dir, kneighbor, input_identity, data_pth=None,):
-    
+def spatial_map(
+    molccf_path,
+    X_input,
+    save_dir,
+    kneighbor,
+    input_identity,
+    data_pth=None,
+):
     ### preprocess
     if "spatial_input" in X_input[0].obsm:
         preprocess_save = True
@@ -66,27 +68,60 @@ def spatial_map(molccf_path, X_input, save_dir, kneighbor, input_identity, data_
         f"number of genes in each section:{[len(i) for i in ModelType.var_name]}, Number of all genes: {len(all_unique_genes)}"
     )
 
-
-    ### create model
+    ### load pretrain model
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    (
+        TRAINED_MODEL,
+        TRAINED_X_NUM,
+        TRAINED_GENE_EMBED,
+        TRAINED_GENE_NAME,
+    ) = load_ref_model(molccf_path, device)
 
-    ############# load pretrain model ##################
-    TRAINED_MODEL, TRAINED_X_NUM, ad_gene_embed, TRAINED_GENE_NAME = load_ref_model(ref_dir,
-                                                                                            device,
-                                                                                            'pretrain')
+    ### define new model
+    PRETRAINED_GENE = []
+    new_train_gene = []
+    for i in all_unique_genes:
+        if i not in TRAINED_GENE_NAME:
+            new_train_gene.append(i)
+        else:
+            PRETRAINED_GENE.append(i)
+    pretrain_index = [TRAINED_GENE_NAME.index(i) for i in PRETRAINED_GENE]
+    print(
+        f"pretrain gene number:{len(PRETRAINED_GENE)}, new gene number:{len(new_train_gene)}"
+    )
 
-    model.to(device)
+    adapt_model = Fuse_network(
+        ModelType.pca_dim.value,
+        ModelType.input_dim,
+        ModelType.hidden_dim.value,
+        ModelType.latent_dim.value,
+        ModelType.dropout_rate.value,
+        ModelType.var_name,
+        all_unique_genes,
+        ModelType.use_input.value,
+        ModelType.harmonized_gene,
+        ModelType.n_atlas,
+        ModelType.input_identity,
+        ModelType.n_obs,
+        ModelType.n_epochs.value,
+        pretrain_model=True,
+        pretrain_n_atlas=TRAINED_X_NUM,
+        PRETRAINED_GENE=PRETRAINED_GENE,
+        new_train_gene=new_train_gene,
+    )
+    adapt_model.to(device)
 
     ModelType.epochs_run_pretrain = 0
     ModelType.epochs_run_final = 0
     if os.path.exists(ModelType.snapshot_path):
         print("Loading snapshot")
-        load_snapshot(model, ModelType.snapshot_path, device)
-
+        load_snapshot(adapt_model, ModelType.snapshot_path, device)
 
     ### construct graph and data
-    adj_all, g_all = construct_data(ModelType.n_atlas, adatas, ModelType.input_identity, model)
+    adj_all, g_all = construct_data(
+        ModelType.n_atlas, adatas, ModelType.input_identity, adapt_model
+    )
     feature_all = [
         get_feature_sparse(device, adata.obsm["spatial_input"]) for adata in adatas
     ]
@@ -109,11 +144,12 @@ def spatial_map(molccf_path, X_input, save_dir, kneighbor, input_identity, data_
         n_atlas=ModelType.n_atlas,
         drop_last=False,
     )
-    train_mask, val_mask = construct_mask(ModelType.n_atlas, spatial_dataset_list, g_all)
-
+    train_mask, val_mask = construct_mask(
+        ModelType.n_atlas, spatial_dataset_list, g_all
+    )
 
     ### train
-    flagconfig=FlagConfig()
+    flagconfig = FlagConfig()
     if os.path.exists(f"{ModelType.save_dir}/lambda_disc_single.pkl"):
         with open(f"{ModelType.save_dir}/lambda_disc_single.pkl", "rb") as openfile:
             flagconfig.lambda_disc_single = pickle.load(openfile)
@@ -121,20 +157,51 @@ def spatial_map(molccf_path, X_input, save_dir, kneighbor, input_identity, data_
     if not os.path.exists(
         f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt"
     ):
-        print("---------------------------------- Phase 1. Pretrain FuseMap model ----------------------------------")
-        pretrain_model(
-            model,
+        print(
+            "---------------------------------- Phase 1. Pretrain FuseMap model ----------------------------------"
+        )
+        ### transfer model weight
+        transfer_weight(TRAINED_MODEL, pretrain_index, adapt_model)
+
+        ### load reference data
+        (dataloader_pretrain_single, dataloader_pretrain_spatial) = load_ref_data(
+            molccf_path,
+            TRAINED_X_NUM,
+            ModelType.batch_size.value,
+        )
+
+        pretrain_model_map(
+            adapt_model,
             spatial_dataloader,
             feature_all,
             adj_all,
             device,
             train_mask,
             val_mask,
+            molccf_path,
+            dataloader_pretrain_single,
+            dataloader_pretrain_spatial,
+            TRAINED_X_NUM,
             flagconfig,
         )
 
-    if not os.path.exists(f"{ModelType.save_dir}/latent_embeddings_all_single_pretrain.pkl"):
-        print("---------------------------------- Phase 2. Evaluate pretrained FuseMap model ----------------------------------")
+        # pretrain_model(
+        #     adapt_model,
+        #     spatial_dataloader,
+        #     feature_all,
+        #     adj_all,
+        #     device,
+        #     train_mask,
+        #     val_mask,
+        #     flagconfig,
+        # )
+
+    if not os.path.exists(
+        f"{ModelType.save_dir}/latent_embeddings_all_single_pretrain.pkl"
+    ):
+        print(
+            "---------------------------------- Phase 2. Evaluate pretrained FuseMap model ----------------------------------"
+        )
         if os.path.exists(
             f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt"
         ):
@@ -152,16 +219,22 @@ def spatial_map(molccf_path, X_input, save_dir, kneighbor, input_identity, data_
             raise ValueError("No pretrained model!")
 
     if not os.path.exists(f"{ModelType.save_dir}/balance_weight_single.pkl"):
-        print("---------------------------------- Phase 3. Estimate_balancing_weight ----------------------------------")
+        print(
+            "---------------------------------- Phase 3. Estimate_balancing_weight ----------------------------------"
+        )
         balance_weight(model, adatas, ModelType.save_dir, ModelType.n_atlas, device)
 
     if not os.path.exists(
         f"{ModelType.save_dir}/trained_model/FuseMap_final_model_final.pt"
     ):
         model.load_state_dict(
-            torch.load(f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt")
+            torch.load(
+                f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt"
+            )
         )
-        print("---------------------------------- Phase 4. Train final FuseMap model ----------------------------------")
+        print(
+            "---------------------------------- Phase 4. Train final FuseMap model ----------------------------------"
+        )
         train_model(
             model,
             spatial_dataloader,
@@ -173,8 +246,12 @@ def spatial_map(molccf_path, X_input, save_dir, kneighbor, input_identity, data_
             flagconfig,
         )
 
-    if not os.path.exists(f"{ModelType.save_dir}/latent_embeddings_all_single_final.pkl"):
-        print("---------------------------------- Phase 5. Evaluate final FuseMap model ----------------------------------")
+    if not os.path.exists(
+        f"{ModelType.save_dir}/latent_embeddings_all_single_final.pkl"
+    ):
+        print(
+            "---------------------------------- Phase 5. Evaluate final FuseMap model ----------------------------------"
+        )
         if os.path.exists(
             f"{ModelType.save_dir}/trained_model/FuseMap_final_model_final.pt"
         ):
@@ -191,14 +268,18 @@ def spatial_map(molccf_path, X_input, save_dir, kneighbor, input_identity, data_
         else:
             raise ValueError("No final model!")
 
-    print("---------------------------------- Finish ----------------------------------")
-
+    print(
+        "---------------------------------- Finish ----------------------------------"
+    )
 
     ### read out gene embedding
     read_gene_embedding(
-        model, all_unique_genes, ModelType.save_dir, ModelType.n_atlas, ModelType.var_name
+        model,
+        all_unique_genes,
+        ModelType.save_dir,
+        ModelType.n_atlas,
+        ModelType.var_name,
     )
-
 
     ### read out cell embedding
     annotation_transfer(
@@ -207,5 +288,3 @@ def spatial_map(molccf_path, X_input, save_dir, kneighbor, input_identity, data_
     )
 
     return
-
-

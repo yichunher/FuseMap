@@ -2,6 +2,7 @@ import os, random, logging, warnings, numpy as np, pandas as pd
 
 warnings.filterwarnings("ignore")
 from fusemap import *
+
 # from fusemap.spatial_integrate import *
 import scanpy as sc
 
@@ -28,16 +29,17 @@ def main(args):
     kneighbor = ["delaunay"] * len(X_input)
     input_identity = ["ST"] * len(X_input)
 
-
     ### train model
     if args.mode == "integrate":
         spatial_integrate(X_input, args.output_save_dir, kneighbor, input_identity)
-    elif args.mode == "preprocess":
+    elif args.mode == "map":
         molccf_path = "/home/jialiulab/disk1/yichun/FuseMap/molCCF/"
-        spatial_map(molccf_path, X_input, args.output_save_dir, kneighbor, input_identity)
+        spatial_map(
+            molccf_path, X_input, args.output_save_dir, kneighbor, input_identity
+        )
     else:
         raise ValueError(f"mode {args.mode} not recognized")
-    
+
     print("Done.")
 
     return

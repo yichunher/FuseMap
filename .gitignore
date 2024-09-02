@@ -5,6 +5,9 @@ output/
 output/*
 output/*/*
 output/*/*/*
+molCCF/
+molCCF/*
+molCCF/*/*
 annotation_agent/
 annotation_agent/*
 annotation_agent/*/*

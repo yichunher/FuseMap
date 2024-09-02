@@ -17,8 +17,6 @@ except ModuleNotFoundError:
     import pickle
 
 
-
-
 def seed_all(seed_value, cuda_deterministic=True):
     print(
         "---------------------------------- SEED ALL ---------------------------------- "
@@ -45,7 +43,6 @@ def seed_all(seed_value, cuda_deterministic=True):
         else:  # faster, less reproducible
             torch.backends.cudnn.deterministic = False
             torch.backends.cudnn.benchmark = True
-
 
 
 def save_obj(objt, name):
@@ -134,5 +131,7 @@ def annotation_transfer(X_input, save_dir):
             "gt_tissue_region_main",
             "gt_tissue_region_sub",
         ]
-        ad_embed = generate_ad_embed(save_dir, X_input, ttype="spatial",use_key="final")
+        ad_embed = generate_ad_embed(
+            save_dir, X_input, ttype="spatial", use_key="final"
+        )
         ad_embed.write_h5ad(save_dir + "/ad_tissueregion_embedding.h5ad")
