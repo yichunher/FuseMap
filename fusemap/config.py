@@ -36,7 +36,7 @@ class ModelType(Enum):
     hidden_dim = 512
     latent_dim = 64
     dropout_rate = 0.2
-    n_epochs = 20
+    n_epochs = 2
     batch_size = 64
     learning_rate = 0.001
     optim_kw = "RMSprop"
@@ -56,6 +56,6 @@ class ModelType(Enum):
     patience_limit_pretrain = 4
     EPS = 1e-10
     DIS_LAMDA = 2
-    TRAIN_WITHOUT_EVAL = 3
-    USE_REFERENCE_PCT = 0.25
+    TRAIN_WITHOUT_EVAL = 0
+    USE_REFERENCE_PCT = 0.02
     verbose = False

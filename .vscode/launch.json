@@ -12,17 +12,31 @@
             "console": "integratedTerminal"
         }
         {
-            "name": "sample_data",
+            "name": "tutorial_integrate",
             "type": "debugpy",
             "request": "launch",
             "program": "main.py",
             "console": "integratedTerminal",
             "python": "/home/jialiulab/.conda/envs/fusemap_glue/bin/python", 
-            // "args": [
-            //     "--task_id", "task1",
-            //     "--rule_num", "50",
-            //     "--observation_rule_key", "task1_3db_observation_rule",
-            // ],
+            "args": [
+                "--input_data_folder_path", "/home/jialiulab/disk1/yichun/FuseMap/input_data/tutorial_integrate/",
+                "--output_save_dir", "/home/jialiulab/disk1/yichun/FuseMap/output/tutorial_integrate2/",
+                "--mode", "integrate",
+            ],
+            "justMyCode": true,
+        },
+        {
+            "name": "tutorial_map",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal",
+            "python": "/home/jialiulab/.conda/envs/fusemap_glue/bin/python", 
+            "args": [
+                "--input_data_folder_path", "/home/jialiulab/disk1/yichun/FuseMap/input_data/tutorial_map/",
+                "--output_save_dir", "/home/jialiulab/disk1/yichun/FuseMap/output/tutorial_map1/",
+                "--mode", "map",
+            ],
             "justMyCode": true,
         },
     ]

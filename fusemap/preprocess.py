@@ -5,23 +5,23 @@ from scipy.spatial import Delaunay
 from scipy.sparse.csr import csr_matrix
 import scanpy as sc
 from sklearn.neighbors import NearestNeighbors
-
+import logging
 
 def preprocess_raw(
     X_input, kneighbor, input_identity, use_input, n_atlas, data_pth=None
 ):
-    print(
-        "---------------------------------- Preprocess adata ----------------------------------"
+    logging.info(
+        "\n\n---------------------------------- Preprocess adata ----------------------------------\n"
     )
     X_input = preprocess_adata(X_input, n_atlas)
 
-    print(
-        "---------------------------------- Construct graph adata ----------------------------------"
+    logging.info(
+        "\n\n---------------------------------- Construct graph adata ----------------------------------\n"
     )
     construct_graph(X_input, n_atlas, kneighbor, input_identity)
 
-    print(
-        "---------------------------------- Process graph adata ----------------------------------"
+    logging.info(
+        "\n\n---------------------------------- Process graph adata ----------------------------------\n"
     )
     preprocess_adj_sparse(X_input, n_atlas, input_identity)
 
@@ -29,7 +29,7 @@ def preprocess_raw(
 
     if data_pth is not None:
         for pth_i, data_i in zip(data_pth, X_input[: len(data_pth)]):
-            print(f"Saving processed data in {pth_i}")
+            logging.info(f"\n\nSaving processed data in {pth_i}\n")
             data_i.write_h5ad(pth_i)
 
 

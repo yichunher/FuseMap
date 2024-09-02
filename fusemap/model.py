@@ -231,7 +231,6 @@ class Fuse_network(nn.Module):
                 self.gene_embedding_new = nn.Parameter(
                     torch.zeros(latent_dim, len(new_train_gene))
                 )
-
                 all_genes = new_train_gene + PRETRAINED_GENE
                 for ij in range(n_atlas):
                     self.var_index.append([all_genes.index(i) for i in var_name[ij]])

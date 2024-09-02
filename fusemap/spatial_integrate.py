@@ -18,7 +18,7 @@ import numpy as np
 from tqdm import tqdm
 import scanpy as sc
 import dgl
-
+import logging
 try:
     import pickle5 as pickle
 except ModuleNotFoundError:
@@ -65,8 +65,8 @@ def spatial_integrate(
     ModelType.var_name = [list(i.var.index) for i in adatas]
 
     all_unique_genes = sorted(list(get_allunique_gene_names(*ModelType.var_name)))
-    print(
-        f"number of genes in each section:{[len(i) for i in ModelType.var_name]}, Number of all genes: {len(all_unique_genes)}"
+    logging.info(
+        f"\n\nnumber of genes in each section:{[len(i) for i in ModelType.var_name]}, Number of all genes: {len(all_unique_genes)}.\n"
     )
 
     ### create model
@@ -91,7 +91,7 @@ def spatial_integrate(
     ModelType.epochs_run_pretrain = 0
     ModelType.epochs_run_final = 0
     if os.path.exists(ModelType.snapshot_path):
-        print("Loading snapshot")
+        logging.info("\n\nLoading snapshot\n")
         load_snapshot(model, ModelType.snapshot_path, device)
 
     ### construct graph and data
@@ -133,8 +133,8 @@ def spatial_integrate(
     if not os.path.exists(
         f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt"
     ):
-        print(
-            "---------------------------------- Phase 1. Pretrain FuseMap model ----------------------------------"
+        logging.info(
+            "\n\n---------------------------------- Phase 1. Pretrain FuseMap model ----------------------------------\n"
         )
         pretrain_model(
             model,
@@ -150,8 +150,8 @@ def spatial_integrate(
     if not os.path.exists(
         f"{ModelType.save_dir}/latent_embeddings_all_single_pretrain.pkl"
     ):
-        print(
-            "---------------------------------- Phase 2. Evaluate pretrained FuseMap model ----------------------------------"
+        logging.info(
+            "\n\n---------------------------------- Phase 2. Evaluate pretrained FuseMap model ----------------------------------\n"
         )
         if os.path.exists(
             f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt"
@@ -170,8 +170,8 @@ def spatial_integrate(
             raise ValueError("No pretrained model!")
 
     if not os.path.exists(f"{ModelType.save_dir}/balance_weight_single.pkl"):
-        print(
-            "---------------------------------- Phase 3. Estimate_balancing_weight ----------------------------------"
+        logging.info(
+            "\n\n---------------------------------- Phase 3. Estimate_balancing_weight ----------------------------------\n"
         )
         balance_weight(model, adatas, ModelType.save_dir, ModelType.n_atlas, device)
 
@@ -183,8 +183,8 @@ def spatial_integrate(
                 f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt"
             )
         )
-        print(
-            "---------------------------------- Phase 4. Train final FuseMap model ----------------------------------"
+        logging.info(
+            "\n\n---------------------------------- Phase 4. Train final FuseMap model ----------------------------------\n"
         )
         train_model(
             model,
@@ -200,8 +200,8 @@ def spatial_integrate(
     if not os.path.exists(
         f"{ModelType.save_dir}/latent_embeddings_all_single_final.pkl"
     ):
-        print(
-            "---------------------------------- Phase 5. Evaluate final FuseMap model ----------------------------------"
+        logging.info(
+            "\n\n---------------------------------- Phase 5. Evaluate final FuseMap model ----------------------------------\n"
         )
         if os.path.exists(
             f"{ModelType.save_dir}/trained_model/FuseMap_final_model_final.pt"
@@ -219,8 +219,8 @@ def spatial_integrate(
         else:
             raise ValueError("No final model!")
 
-    print(
-        "---------------------------------- Finish ----------------------------------"
+    logging.info(
+        "\n\n---------------------------------- Finish ----------------------------------\n"
     )
 
     ### read out gene embedding

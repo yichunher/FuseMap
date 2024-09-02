@@ -1,3 +1,4 @@
+import logging
 import torch.nn.functional as F
 import sklearn
 import numpy as np
@@ -824,7 +825,7 @@ def compute_ae_loss_map(
         flagconfig.lambda_disc_single == 1
     ):  # and loss_dis.item()<sum(loss_AE_all).item()/DIS_LAMDA:
         flagconfig.lambda_disc_single = sum(loss_AE_all).item() / ModelType.DIS_LAMDA.value / loss_dis.item()
-        print(f"lambda_disc_single changed to {flagconfig.lambda_disc_single}")
+        logging.info(f"\n\nlambda_disc_single changed to {flagconfig.lambda_disc_single}\n")
         loss_dis = flagconfig.lambda_disc_single * loss_dis
 
     loss_all = {

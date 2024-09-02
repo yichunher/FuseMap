@@ -1,17 +1,27 @@
 import os, random, logging, warnings, numpy as np, pandas as pd
-
 warnings.filterwarnings("ignore")
 from fusemap import *
-
-# from fusemap.spatial_integrate import *
 import scanpy as sc
+from pathlib import Path
 
 
 def main(args):
     seed_all(0)
+    ### set up logging
+    Path(args.output_save_dir).mkdir(parents=True, exist_ok=True)
+    setup_logging(args.output_save_dir)
+
+    arg_dict = vars(args)
+    dict_pd = {}
+    for keys in arg_dict.keys():
+        dict_pd[keys] = [arg_dict[keys]]
+    pd.DataFrame(dict_pd).to_csv(args.output_save_dir  + "config.csv", index=False)
+    logging.info("\n\n\033[95mArguments:\033[0m \n%s\n\n", vars(args))
+    logging.info("\n\n\033[95mArguments:\033[0m \n%s\n\n", vars(ModelType))
+
 
     ### read data
-    # data_pth = []
+    logging.info("\n\nReading data...\n")
     X_input = []
     file_names = [
         args.input_data_folder_path + f
@@ -29,7 +39,9 @@ def main(args):
     kneighbor = ["delaunay"] * len(X_input)
     input_identity = ["ST"] * len(X_input)
 
+
     ### train model
+    logging.info("\n\nTraining model...\n")
     if args.mode == "integrate":
         spatial_integrate(X_input, args.output_save_dir, kneighbor, input_identity)
     elif args.mode == "map":
@@ -40,7 +52,8 @@ def main(args):
     else:
         raise ValueError(f"mode {args.mode} not recognized")
 
-    print("Done.")
+
+    logging.info("\n\nDone!")
 
     return
 

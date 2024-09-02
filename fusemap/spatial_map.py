@@ -1,3 +1,4 @@
+import logging
 from fusemap.model import Fuse_network
 from fusemap.preprocess import *
 from fusemap.dataset import *
@@ -64,8 +65,8 @@ def spatial_map(
     ModelType.var_name = [list(i.var.index) for i in adatas]
 
     all_unique_genes = sorted(list(get_allunique_gene_names(*ModelType.var_name)))
-    print(
-        f"number of genes in each section:{[len(i) for i in ModelType.var_name]}, Number of all genes: {len(all_unique_genes)}"
+    logging.info(
+        f"\n\nnumber of genes in each section:{[len(i) for i in ModelType.var_name]}, Number of all genes: {len(all_unique_genes)}\n"
     )
 
     ### load pretrain model
@@ -87,8 +88,8 @@ def spatial_map(
         else:
             PRETRAINED_GENE.append(i)
     pretrain_index = [TRAINED_GENE_NAME.index(i) for i in PRETRAINED_GENE]
-    print(
-        f"pretrain gene number:{len(PRETRAINED_GENE)}, new gene number:{len(new_train_gene)}"
+    logging.info(
+        f"\n\npretrain gene number:{len(PRETRAINED_GENE)}, new gene number:{len(new_train_gene)}\n"
     )
 
     adapt_model = Fuse_network(
@@ -115,7 +116,7 @@ def spatial_map(
     ModelType.epochs_run_pretrain = 0
     ModelType.epochs_run_final = 0
     if os.path.exists(ModelType.snapshot_path):
-        print("Loading snapshot")
+        logging.info("\n\nLoading snapshot\n")
         load_snapshot(adapt_model, ModelType.snapshot_path, device)
 
     ### construct graph and data
@@ -155,10 +156,10 @@ def spatial_map(
             flagconfig.lambda_disc_single = pickle.load(openfile)
 
     if not os.path.exists(
-        f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt"
+        f"{ModelType.save_dir}/trained_model/FuseMap_map_model_final.pt"
     ):
-        print(
-            "---------------------------------- Phase 1. Pretrain FuseMap model ----------------------------------"
+        logging.info(
+            "\n\n---------------------------------- Phase 1. Map FuseMap model ----------------------------------\n"
         )
         ### transfer model weight
         transfer_weight(TRAINED_MODEL, pretrain_index, adapt_model)
@@ -168,9 +169,10 @@ def spatial_map(
             molccf_path,
             TRAINED_X_NUM,
             ModelType.batch_size.value,
+            USE_REFERENCE_PCT=ModelType.USE_REFERENCE_PCT.value
         )
 
-        pretrain_model_map(
+        map_model(
             adapt_model,
             spatial_dataloader,
             feature_all,
@@ -185,97 +187,38 @@ def spatial_map(
             flagconfig,
         )
 
-        # pretrain_model(
-        #     adapt_model,
-        #     spatial_dataloader,
-        #     feature_all,
-        #     adj_all,
-        #     device,
-        #     train_mask,
-        #     val_mask,
-        #     flagconfig,
-        # )
-
     if not os.path.exists(
-        f"{ModelType.save_dir}/latent_embeddings_all_single_pretrain.pkl"
+        f"{ModelType.save_dir}/latent_embeddings_all_single_map.pkl"
     ):
-        print(
-            "---------------------------------- Phase 2. Evaluate pretrained FuseMap model ----------------------------------"
+        logging.info(
+            "\n\n---------------------------------- Phase 2. Evaluate mapped FuseMap model ----------------------------------\n"
         )
         if os.path.exists(
-            f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt"
+            f"{ModelType.save_dir}/trained_model/FuseMap_map_model_final.pt"
         ):
             read_model(
-                model,
+                adapt_model,
                 spatial_dataloader_test,
                 g_all,
                 feature_all,
                 adj_all,
                 device,
                 ModelType,
-                mode="pretrain",
+                mode="map",
             )
         else:
-            raise ValueError("No pretrained model!")
+            raise ValueError("No mapped model!")
 
-    if not os.path.exists(f"{ModelType.save_dir}/balance_weight_single.pkl"):
-        print(
-            "---------------------------------- Phase 3. Estimate_balancing_weight ----------------------------------"
-        )
-        balance_weight(model, adatas, ModelType.save_dir, ModelType.n_atlas, device)
 
-    if not os.path.exists(
-        f"{ModelType.save_dir}/trained_model/FuseMap_final_model_final.pt"
-    ):
-        model.load_state_dict(
-            torch.load(
-                f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt"
-            )
-        )
-        print(
-            "---------------------------------- Phase 4. Train final FuseMap model ----------------------------------"
-        )
-        train_model(
-            model,
-            spatial_dataloader,
-            feature_all,
-            adj_all,
-            device,
-            train_mask,
-            val_mask,
-            flagconfig,
-        )
-
-    if not os.path.exists(
-        f"{ModelType.save_dir}/latent_embeddings_all_single_final.pkl"
-    ):
-        print(
-            "---------------------------------- Phase 5. Evaluate final FuseMap model ----------------------------------"
-        )
-        if os.path.exists(
-            f"{ModelType.save_dir}/trained_model/FuseMap_final_model_final.pt"
-        ):
-            read_model(
-                model,
-                spatial_dataloader_test,
-                g_all,
-                feature_all,
-                adj_all,
-                device,
-                ModelType,
-                mode="final",
-            )
-        else:
-            raise ValueError("No final model!")
-
-    print(
-        "---------------------------------- Finish ----------------------------------"
+    logging.info(
+        "\n\n---------------------------------- Finish ----------------------------------\n"
     )
 
     ### read out gene embedding
-    read_gene_embedding(
-        model,
-        all_unique_genes,
+    read_gene_embedding_map(
+        adapt_model,
+        new_train_gene,
+        PRETRAINED_GENE,
         ModelType.save_dir,
         ModelType.n_atlas,
         ModelType.var_name,
@@ -284,7 +227,7 @@ def spatial_map(
     ### read out cell embedding
     annotation_transfer(
         adatas,
-        ModelType.save_dir,
+        ModelType.save_dir,use_key='map',
     )
 
     return

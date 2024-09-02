@@ -1,3 +1,4 @@
+import logging
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 import torch.distributions as D
 from pathlib import Path
@@ -212,12 +213,12 @@ def pretrain_model(
         flagconfig.align_anneal /= 2
 
         if ModelType.verbose == True:
-            print(
-                f"Train Epoch {epoch}/{ModelType.n_epochs}, \
+            logging.info(
+                f"\n\nTrain Epoch {epoch}/{ModelType.n_epochs}, \
             Loss dis: {loss_dis / len(spatial_dataloader)},\
             Loss AE: {[i / len(spatial_dataloader) for i in loss_atlas_i.values()]} , \
             Loss ae dis:{loss_ae_dis / len(spatial_dataloader)},\
-            Loss all:{loss_all_item / len(spatial_dataloader)}"
+            Loss all:{loss_all_item / len(spatial_dataloader)}\n"
             )
 
         save_snapshot(model, epoch, ModelType.epochs_run_final, ModelType.snapshot_path)
@@ -273,15 +274,15 @@ def pretrain_model(
                 )
 
                 if ModelType.verbose == True:
-                    print(
-                        f"Validation Epoch {epoch + 1}/{ModelType.n_epochs}, \
-                    Loss AE validation: {loss_atlas_val} "
+                    logging.info(
+                        f"\n\nValidation Epoch {epoch + 1}/{ModelType.n_epochs}, \
+                    Loss AE validation: {loss_atlas_val} \n"
                     )
 
             scheduler_dis.step(loss_atlas_val)
             scheduler_ae.step(loss_atlas_val)
             current_lr = optimizer_dis.param_groups[0]["lr"]
-            print(f"current lr:{current_lr}")
+            logging.info(f"\n\ncurrent lr:{current_lr}\n")
 
             # If the loss is lower than the best loss so far, save the model And reset the patience counter
             if loss_atlas_val < loss_atlas_val_best:
@@ -297,20 +298,20 @@ def pretrain_model(
 
             # If the patience counter is greater than or equal to the patience limit, stop training
             if patience_counter >= ModelType.patience_limit_pretrain.value:
-                print("Early stopping due to loss not improving - patience count")
+                logging.info("\n\nEarly stopping due to loss not improving - patience count\n")
                 os.rename(
                     f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model.pt",
                     f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt",
                 )
-                print("File name changed")
+                logging.info("\n\nFile name changed\n")
                 break
             if current_lr < ModelType.lr_limit_pretrain.value:
-                print("Early stopping due to loss not improving - learning rate")
+                logging.info("\n\nEarly stopping due to loss not improving - learning rate\n")
                 os.rename(
                     f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model.pt",
                     f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt",
                 )
-                print("File name changed")
+                logging.info("\n\nFile name changed\n")
                 break
 
         # torch.save(model.state_dict(), f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_{epoch}.pt")
@@ -320,7 +321,7 @@ def pretrain_model(
             f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model.pt",
             f"{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_final.pt",
         )
-        print("File name changed in the end")
+        logging.info("\n\nFile name changed in the end\n")
 
 
 def train_model(
@@ -466,12 +467,12 @@ def train_model(
         )
 
         if ModelType.verbose == True:
-            print(
-                f"Train Epoch {epoch + 1}/{ModelType.n_epochs.value}, \
+            logging.info(
+                f"\n\nTrain Epoch {epoch + 1}/{ModelType.n_epochs.value}, \
             Loss dis: {loss_dis / len(spatial_dataloader)},\
             Loss AE: {[i / len(spatial_dataloader) for i in loss_atlas_i.values()]} , \
             Loss ae dis:{loss_ae_dis / len(spatial_dataloader)},\
-            Loss all:{loss_all_item / len(spatial_dataloader)}"
+            Loss all:{loss_all_item / len(spatial_dataloader)}\n"
             )
 
         ################# validation
@@ -528,15 +529,15 @@ def train_model(
                     loss_atlas_val / len(spatial_dataloader) / ModelType.n_atlas
                 )
                 if ModelType.verbose == True:
-                    print(
-                        f"Validation Epoch {epoch + 1}/{ModelType.n_epochs.value}, \
-                    Loss AE validation: {loss_atlas_val} "
+                    logging.info(
+                        f"\n\nValidation Epoch {epoch + 1}/{ModelType.n_epochs.value}, \
+                    Loss AE validation: {loss_atlas_val} \n"
                     )
 
             scheduler_dis.step(loss_atlas_val)
             scheduler_ae.step(loss_atlas_val)
             current_lr = optimizer_dis.param_groups[0]["lr"]
-            print(f"current lr:{current_lr}")
+            logging.info(f"\n\ncurrent lr:{current_lr}\n")
 
             # If the loss is lower than the best loss so far, save the model And reset the patience counter
             if loss_atlas_val < loss_atlas_val_best:
@@ -552,21 +553,21 @@ def train_model(
             # If the patience counter is greater than or equal to the patience limit, stop training
             if patience_counter >= ModelType.patience_limit_final.value:
                 # torch.save(model.state_dict(), f"{save_dir}/trained_model/FuseMap_final_model_end.pt")
-                print("Early stopping due to loss not improving")
+                logging.info("\n\nEarly stopping due to loss not improving\n")
                 os.rename(
                     f"{ModelType.save_dir}/trained_model/FuseMap_final_model.pt",
                     f"{ModelType.save_dir}/trained_model/FuseMap_final_model_final.pt",
                 )
-                print("File name changed")
+                logging.info("\n\nFile name changed\n")
                 break
             if current_lr < ModelType.lr_limit_final.value:
                 # torch.save(model.state_dict(), f"{save_dir}/trained_model/FuseMap_final_model_end.pt")
-                print("Early stopping due to loss not improving - learning rate")
+                logging.info("\n\nEarly stopping due to loss not improving - learning rate\n")
                 os.rename(
                     f"{ModelType.save_dir}/trained_model/FuseMap_final_model.pt",
                     f"{ModelType.save_dir}/trained_model/FuseMap_final_model_final.pt",
                 )
-                print("File name changed")
+                logging.info("\n\nFile name changed\n")
                 break
 
     if os.path.exists(f"{ModelType.save_dir}/trained_model/FuseMap_final_model.pt"):
@@ -574,7 +575,7 @@ def train_model(
             f"{ModelType.save_dir}/trained_model/FuseMap_final_model.pt",
             f"{ModelType.save_dir}/trained_model/FuseMap_final_model_final.pt",
         )
-        print("File name changed in the end")
+        logging.info("\n\nFile name changed in the end\n")
 
 
 def read_model(
@@ -801,7 +802,7 @@ def add_pretrain_to_name(s):
         return s
 
 
-def transfer_weight(adapt_model, TRAINED_MODEL, pretrain_index):
+def transfer_weight(TRAINED_MODEL, pretrain_index, adapt_model):
     layers_to_transfer = [
         "discriminator_single.linear_0.weight",
         "discriminator_single.linear_0.bias",
@@ -856,11 +857,11 @@ def transfer_weight(adapt_model, TRAINED_MODEL, pretrain_index):
     adapt_model.discriminator_spatial.pred.bias.requires_grad = True
 
     # Print out to verify
-    # for name, param in self.adapt_model.named_parameters():
+    # for name, param in adapt_model.named_parameters():
     #     print(name, param.requires_grad)
 
 
-def load_ref_data(ref_dir, TRAINED_X_NUM, batch_size, USE_REFERENCE_PCT=1):
+def load_ref_data(ref_dir, TRAINED_X_NUM, batch_size, USE_REFERENCE_PCT=0.1):
     with open(ref_dir + f"/latent_embeddings_single.pkl", "rb") as openfile:
         latent_embeddings_single = pickle.load(openfile)
     with open(ref_dir + f"/latent_embeddings_spatial.pkl", "rb") as openfile:
@@ -889,7 +890,7 @@ def load_ref_data(ref_dir, TRAINED_X_NUM, batch_size, USE_REFERENCE_PCT=1):
     return dataloader_pretrain_single, dataloader_pretrain_spatial
 
 
-def pretrain_model_map(
+def map_model(
     adapt_model,
     spatial_dataloader,
     feature_all,
@@ -1062,12 +1063,12 @@ def pretrain_model_map(
         flagconfig.align_anneal /= 2
 
         if ModelType.verbose == True:
-            print(
-                f"Train Epoch {epoch}/{ModelType.n_epochs}, \
+            logging.info(
+                f"\n\nTrain Epoch {epoch}/{ModelType.n_epochs}, \
             Loss dis: {loss_dis / len(spatial_dataloader)},\
             Loss AE: {[i / len(spatial_dataloader) for i in loss_atlas_i.values()]} , \
             Loss ae dis:{loss_ae_dis / len(spatial_dataloader)},\
-            Loss all:{loss_all_item / len(spatial_dataloader)}"
+            Loss all:{loss_all_item / len(spatial_dataloader)}\n"
             )
 
         save_snapshot(
@@ -1081,49 +1082,25 @@ def pretrain_model_map(
             )
 
         ################# validation
-        if epoch > TRAIN_WITHOUT_EVAL:
-            self.adapt_model.eval()
+        if epoch > ModelType.TRAIN_WITHOUT_EVAL.value:
+            adapt_model.eval()
             with torch.no_grad():
                 for blocks_all in spatial_dataloader:
-                    row_index_all = {}
-                    col_index_all = {}
-                    for i_atlas in range(self.n_atlas):
-                        row_index = list(blocks_all[i_atlas]["spatial"][0])
-                        col_index = list(blocks_all[i_atlas]["spatial"][1])
-                        row_index_all[i_atlas] = torch.sort(
-                            torch.vstack(row_index).flatten()
-                        )[0].tolist()
-                        col_index_all[i_atlas] = torch.sort(
-                            torch.vstack(col_index).flatten()
-                        )[0].tolist()
+                    (
+                        batch_features_all,
+                        adj_all_block,
+                        adj_all_block_dis,
+                        val_mask_batch_single,
+                        val_mask_batch_spatial,
+                        flag_source_cat_single,
+                        flag_source_cat_spatial,
+                        _,
+                        _,
+                    ) = get_data(
+                        blocks_all, feature_all, adj_all, val_mask, device, adapt_model
+                    )
 
-                    batch_features_all = [
-                        torch.FloatTensor(
-                            feature_all[i][row_index_all[i], :].toarray()
-                        ).to(device)
-                        for i in range(self.n_atlas)
-                    ]
-                    adj_all_block = [
-                        torch.FloatTensor(
-                            adj_all[i][row_index_all[i], :]
-                            .tocsc()[:, col_index_all[i]]
-                            .todense()
-                        ).to(device)
-                        if self.input_identity[i] == "ST"
-                        else self.model.scrna_seq_adj["atlas" + str(i)]()[
-                            row_index_all[i], :
-                        ][:, col_index_all[i]]
-                        for i in range(self.n_atlas)
-                    ]
-                    val_mask_batch_single = [
-                        train_mask_i[row_index_all[blocks_all_ind]]
-                        for train_mask_i, blocks_all_ind in zip(val_mask, blocks_all)
-                    ]
-                    val_mask_batch_spatial = [
-                        train_mask_i[col_index_all[blocks_all_ind]]
-                        for train_mask_i, blocks_all_ind in zip(val_mask, blocks_all)
-                    ]
-
+                    ### difference: add pretrain data
                     pretrain_single_batch = next(dataloader_pretrain_single_cycle)
                     pretrain_single_batch = [
                         pretrain_single_batch[i].to(device)
@@ -1135,30 +1112,13 @@ def pretrain_model_map(
                         for i in range(TRAINED_X_NUM)
                     ]
 
-                    ### discriminator flags
-                    flag_shape_single = [
-                        len(row_index_all[i]) for i in range(self.n_atlas)
-                    ]
-                    flag_all_single = torch.cat(
-                        [torch.full((x,), i) for i, x in enumerate(flag_shape_single)]
-                    )
-                    flag_source_cat_single = flag_all_single.long().to(device)
-
-                    flag_shape_spatial = [
-                        len(col_index_all[i]) for i in range(self.n_atlas)
-                    ]
-                    flag_all_spatial = torch.cat(
-                        [torch.full((x,), i) for i, x in enumerate(flag_shape_spatial)]
-                    )
-                    flag_source_cat_spatial = flag_all_spatial.long().to(device)
-
-                    ########### discriminator pretrain
+                    ### difference: discriminator pretrain
                     flag_shape_single_pretrain = [
                         pretrain_single_batch[i].shape[0] for i in range(TRAINED_X_NUM)
                     ]
                     flag_all_single_pretrain = torch.cat(
                         [
-                            torch.full((x,), i + self.n_atlas)
+                            torch.full((x,), i + ModelType.n_atlas)
                             for i, x in enumerate(flag_shape_single_pretrain)
                         ]
                     )
@@ -1171,7 +1131,7 @@ def pretrain_model_map(
                     ]
                     flag_all_spatial_pretrain = torch.cat(
                         [
-                            torch.full((x,), i + self.n_atlas)
+                            torch.full((x,), i + ModelType.n_atlas)
                             for i, x in enumerate(flag_shape_spatial_pretrain)
                         ]
                     )
@@ -1180,7 +1140,8 @@ def pretrain_model_map(
                     )
 
                     # val AE part
-                    loss_part2 = self.compute_ae_loss_pretrain_map_v1(
+                    loss_part2 = compute_ae_loss_map(
+                        adapt_model,
                         flag_source_cat_single,
                         flag_source_cat_spatial,
                         anneal,
@@ -1192,38 +1153,60 @@ def pretrain_model_map(
                         pretrain_spatial_batch,
                         flag_source_cat_single_pretrain,
                         flag_source_cat_spatial_pretrain,
+                        flagconfig,
                     )
 
-                    for i in range(self.n_atlas):
+                    for i in range(ModelType.n_atlas):
                         loss_atlas_val += loss_part2["loss_AE_all"][i].item()
 
-                loss_atlas_val = loss_atlas_val / len(spatial_dataloader) / self.n_atlas
-                print(
-                    f"Validation Epoch {epoch + 1}/{self.n_epochs}, \
-                Loss AE validation: {loss_atlas_val} "
-                )
+                loss_atlas_val = loss_atlas_val / len(spatial_dataloader) / ModelType.n_atlas
+                if ModelType.verbose == True:
+                    logging.info(
+                        f"\n\nValidation Epoch {epoch + 1}/{ModelType.n_epochs.value}, \
+                    Loss AE validation: {loss_atlas_val} \n"
+                    )
 
-            self.scheduler_dis.step(loss_atlas_val)
-            self.scheduler_ae.step(loss_atlas_val)
-            current_lr = self.optimizer_dis.param_groups[0]["lr"]
-            print(f"current lr:{current_lr}")
+            scheduler_dis.step(loss_atlas_val)
+            scheduler_ae.step(loss_atlas_val)
+            current_lr = optimizer_dis.param_groups[0]["lr"]
+            logging.info(f"\n\ncurrent lr:{current_lr}\n")
 
             # If the loss is lower than the best loss so far, save the model And reset the patience counter
             if loss_atlas_val < loss_atlas_val_best:
                 loss_atlas_val_best = loss_atlas_val
                 patience_counter = 0
                 torch.save(
-                    self.adapt_model.state_dict(),
-                    f"{self.save_dir}/trained_model/FuseMap_final_model.pt",
+                    adapt_model.state_dict(),
+                    f"{ModelType.save_dir}/trained_model/FuseMap_map_model.pt",
                 )
 
             else:
                 patience_counter += 1
 
+
             # If the patience counter is greater than or equal to the patience limit, stop training
-            if patience_counter >= self.patience_limit_pretrain:
-                print("Early stopping due to loss not improving - patience count")
+            if patience_counter >= ModelType.patience_limit_final.value:
+                # torch.save(model.state_dict(), f"{save_dir}/trained_model/FuseMap_final_model_end.pt")
+                logging.info("\n\nEarly stopping due to loss not improving\n")
+                os.rename(
+                    f"{ModelType.save_dir}/trained_model/FuseMap_map_model.pt",
+                    f"{ModelType.save_dir}/trained_model/FuseMap_map_model_final.pt",
+                )
+                logging.info("\n\nFile name changed\n")
                 break
-            if current_lr < self.lr_limit_pretrain:
-                print("Early stopping due to loss not improving - learning rate")
+            if current_lr < ModelType.lr_limit_final.value:
+                # torch.save(model.state_dict(), f"{save_dir}/trained_model/FuseMap_final_model_end.pt")
+                logging.info("\n\nEarly stopping due to loss not improving - learning rate\n")
+                os.rename(
+                    f"{ModelType.save_dir}/trained_model/FuseMap_map_model.pt",
+                    f"{ModelType.save_dir}/trained_model/FuseMap_map_model_final.pt",
+                )
+                logging.info("\n\nFile name changed\n")
                 break
+
+    if os.path.exists(f"{ModelType.save_dir}/trained_model/FuseMap_map_model.pt"):
+        os.rename(
+            f"{ModelType.save_dir}/trained_model/FuseMap_map_model.pt",
+            f"{ModelType.save_dir}/trained_model/FuseMap_map_model_final.pt",
+        )
+        logging.info("\n\nFile name changed in the end\n")

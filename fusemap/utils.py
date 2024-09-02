@@ -1,5 +1,5 @@
+import logging
 import os
-
 try:
     import pickle5 as pickle
 except ModuleNotFoundError:
@@ -17,16 +17,12 @@ except ModuleNotFoundError:
     import pickle
 
 
+
 def seed_all(seed_value, cuda_deterministic=True):
-    print(
-        "---------------------------------- SEED ALL ---------------------------------- "
+    logging.info(
+        "\n\n---------------------------------- SEED ALL: {seed_value}  ----------------------------------\n"
     )
-    print(
-        f"                           Seed Num :   {seed_value}                                "
-    )
-    print(
-        "---------------------------------- SEED ALL ---------------------------------- "
-    )
+
     random.seed(seed_value)
     os.environ["PYTHONHASHSEED"] = str(seed_value)
     np.random.seed(seed_value)
@@ -45,6 +41,7 @@ def seed_all(seed_value, cuda_deterministic=True):
             torch.backends.cudnn.benchmark = True
 
 
+
 def save_obj(objt, name):
     with open(name + ".pkl", "wb") as f:
         pickle.dump(objt, f, pickle.HIGHEST_PROTOCOL)
@@ -56,8 +53,8 @@ def load_snapshot(model, snapshot_path, loc):
     model.load_state_dict(snapshot["MODEL_STATE"])
     epochs_run_pretrain = snapshot["EPOCHS_RUN_pretrain"]
     epochs_run_final = snapshot["EPOCHS_RUN_final"]
-    print(
-        f" Resuming training from snapshot at pretrain Epoch {epochs_run_pretrain}, final epoch {epochs_run_final}\n"
+    logging.info(
+        f"\n\nResuming training from snapshot at pretrain Epoch {epochs_run_pretrain}, final epoch {epochs_run_final}\n"
     )
 
 
@@ -68,8 +65,8 @@ def save_snapshot(model, epoch_pretrain, epoch_final, snapshot_path):
         "EPOCHS_RUN_final": epoch_final,
     }
     torch.save(snapshot, snapshot_path)
-    print(
-        f"Pretrain Epoch {epoch_pretrain}, final Epoch {epoch_final} | Training snapshot saved at {snapshot_path}\n"
+    logging.info(
+        f"\n\nPretrain Epoch {epoch_pretrain}, final Epoch {epoch_final} | Training snapshot saved at {snapshot_path}\n"
     )
 
 
@@ -88,17 +85,37 @@ def average_embeddings(adata, category, obsm_latent):
 
 
 def read_gene_embedding(model, all_unique_genes, save_dir, n_atlas, var_name):
-    ad_gene_embedding = ad.AnnData(X=model.gene_embedding.detach().cpu().numpy().T)
-    ad_gene_embedding.obs.index = all_unique_genes
-    for i in range(n_atlas):
-        ad_gene_embedding.obs["sample" + str(i)] = ""
-        for gene in var_name[i]:
-            ad_gene_embedding.obs.loc[gene, "sample" + str(i)] = f"sample_{str(i)}"
-    ad_gene_embedding.obs["type"] = ad_gene_embedding.obs[
-        [f"sample{i}" for i in range(n_atlas)]
-    ].apply(lambda row: "_".join(row.values.astype(str)), axis=1)
+    if not os.path.exists(f"{save_dir}/ad_gene_embedding.h5ad"):
+        ad_gene_embedding = ad.AnnData(X=model.gene_embedding.detach().cpu().numpy().T)
+        ad_gene_embedding.obs.index = all_unique_genes
+        for i in range(n_atlas):
+            ad_gene_embedding.obs["sample" + str(i)] = ""
+            for gene in var_name[i]:
+                ad_gene_embedding.obs.loc[gene, "sample" + str(i)] = f"sample_{str(i)}"
+        ad_gene_embedding.obs["type"] = ad_gene_embedding.obs[
+            [f"sample{i}" for i in range(n_atlas)]
+        ].apply(lambda row: "_".join(row.values.astype(str)), axis=1)
 
-    ad_gene_embedding.write_h5ad(f"{save_dir}/ad_gene_embedding.h5ad")
+        ad_gene_embedding.write_h5ad(f"{save_dir}/ad_gene_embedding.h5ad")
+    return
+
+
+def read_gene_embedding_map(model,  new_train_gene, PRETRAINED_GENE, save_dir, n_atlas, var_name):
+    if not os.path.exists(f"{save_dir}/ad_gene_embedding.h5ad"):
+        emb_new = model.gene_embedding_new.detach().cpu().numpy().T
+        emb_pretrain = model.gene_embedding_pretrained.detach().cpu().numpy().T
+        gene_emb=np.vstack((emb_pretrain, emb_new))
+        ad_gene_embedding = ad.AnnData(X=gene_emb)
+        ad_gene_embedding.obs.index = new_train_gene+PRETRAINED_GENE
+        for i in range(n_atlas):
+            ad_gene_embedding.obs["sample" + str(i)] = ""
+            for gene in var_name[i]:
+                ad_gene_embedding.obs.loc[gene, "sample" + str(i)] = f"sample_{str(i)}"
+        ad_gene_embedding.obs["type"] = ad_gene_embedding.obs[
+            [f"sample{i}" for i in range(n_atlas)]
+        ].apply(lambda row: "_".join(row.values.astype(str)), axis=1)
+
+        ad_gene_embedding.write_h5ad(f"{save_dir}/ad_gene_embedding.h5ad")
     return
 
 
@@ -121,17 +138,13 @@ def generate_ad_embed(save_dir, X_input, ttype, use_key="final"):
     return ad_embed
 
 
-def annotation_transfer(X_input, save_dir):
+def annotation_transfer(X_input, save_dir,use_key="final"):
     if not os.path.exists(f"{save_dir}/ad_celltype_embedding.h5ad"):
-        ad_embed = generate_ad_embed(save_dir, X_input, ttype="single", use_key="final")
+        ad_embed = generate_ad_embed(save_dir, X_input, ttype="single", use_key=use_key)
         ad_embed.write_h5ad(save_dir + "/ad_celltype_embedding.h5ad")
 
     if not os.path.exists(f"{save_dir}/ad_tissueregion_embedding.h5ad"):
-        default_label_key_list_tissueregion = [
-            "gt_tissue_region_main",
-            "gt_tissue_region_sub",
-        ]
         ad_embed = generate_ad_embed(
-            save_dir, X_input, ttype="spatial", use_key="final"
+            save_dir, X_input, ttype="spatial", use_key=use_key
         )
         ad_embed.write_h5ad(save_dir + "/ad_tissueregion_embedding.h5ad")
