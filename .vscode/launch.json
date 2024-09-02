@@ -39,5 +39,19 @@
             ],
             "justMyCode": true,
         },
+        {
+            "name": "AD_map",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal",
+            "python": "/home/jialiulab/.conda/envs/fusemap_glue/bin/python", 
+            "args": [
+                "--input_data_folder_path", "/home/jialiulab/disk1/yichun/FuseMap/input_data/AD_map/",
+                "--output_save_dir", "/home/jialiulab/disk1/yichun/FuseMap/output/AD_map1/",
+                "--mode", "map",
+            ],
+            "justMyCode": true,
+        },
     ]
 }

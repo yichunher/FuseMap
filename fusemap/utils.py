@@ -1,3 +1,4 @@
+from torch.utils.data import DataLoader, TensorDataset
 import logging
 import os
 try:
@@ -10,7 +11,7 @@ import pandas as pd
 import numpy as np
 import dgl
 import random
-
+from fusemap.model import NNTransfer
 try:
     import pickle5 as pickle
 except ModuleNotFoundError:
@@ -138,7 +139,7 @@ def generate_ad_embed(save_dir, X_input, ttype, use_key="final"):
     return ad_embed
 
 
-def annotation_transfer(X_input, save_dir,use_key="final"):
+def read_cell_embedding(X_input, save_dir,use_key="final"):
     if not os.path.exists(f"{save_dir}/ad_celltype_embedding.h5ad"):
         ad_embed = generate_ad_embed(save_dir, X_input, ttype="single", use_key=use_key)
         ad_embed.write_h5ad(save_dir + "/ad_celltype_embedding.h5ad")
@@ -147,4 +148,60 @@ def annotation_transfer(X_input, save_dir,use_key="final"):
         ad_embed = generate_ad_embed(
             save_dir, X_input, ttype="spatial", use_key=use_key
         )
+        ad_embed.write_h5ad(save_dir + "/ad_tissueregion_embedding.h5ad")
+
+
+def transfer_annotation(X_input, save_dir, molccf_path):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    ### transfer cell type
+    # Load the .pkl file
+    ad_embed = ad.read_h5ad(save_dir + "/ad_celltype_embedding.h5ad")
+    if 'fusemap_celltype' not in ad_embed.obs.columns:
+        with open('/home/jialiulab/disk1/yichun/FuseMap/molCCF/transfer/le_gt_cell_type_main_STARmap.pkl', 'rb') as file:
+            le_gt_cell_type_main_STARmap = pickle.load(file)
+        
+        NNmodel = NNTransfer(input_dim=64,output_dim=len(le_gt_cell_type_main_STARmap))
+        NNmodel.load_state_dict(torch.load(molccf_path+"/transfer/NNtransfer_cell_type_main_STARmap.pt"))
+    
+        dataset = TensorDataset(torch.Tensor(ad_embed.X))
+        dataloader = DataLoader(dataset, batch_size=256, shuffle=False)
+
+        NNmodel.to(device)
+        NNmodel.eval()
+        all_predictions = []
+        with torch.no_grad():
+            for inputs in dataloader:
+                inputs = inputs[0].to(device)
+                outputs = NNmodel(inputs)
+                _, predicted = torch.max(outputs, 1)
+                all_predictions.extend(predicted.detach().cpu().numpy())
+        ad_embed.obs['fusemap_celltype']=[le_gt_cell_type_main_STARmap[i] for i in all_predictions]
+        ad_embed.write_h5ad(save_dir + "/ad_celltype_embedding.h5ad")
+
+
+
+    ### transfer tissue niche
+    # Load the .pkl file
+    ad_embed = ad.read_h5ad(save_dir + "/ad_tissueregion_embedding.h5ad")
+    if 'fusemap_tissueregion' not in ad_embed.obs.columns:
+        with open('/home/jialiulab/disk1/yichun/FuseMap/molCCF/transfer/le_gt_tissue_region_main_STARmap.pkl', 'rb') as file:
+            le_gt_tissue_region_main_STARmap = pickle.load(file)
+        
+        NNmodel = NNTransfer(input_dim=64,output_dim=len(le_gt_tissue_region_main_STARmap))
+        NNmodel.load_state_dict(torch.load(molccf_path+"/transfer/NNtransfer_tissue_region_main_STARmap.pt"))
+
+        dataset = TensorDataset(torch.Tensor(ad_embed.X))
+        dataloader = DataLoader(dataset, batch_size=256, shuffle=False)
+
+        NNmodel.to(device)
+        NNmodel.eval()
+        all_predictions = []
+        with torch.no_grad():
+            for inputs in dataloader:
+                inputs = inputs[0].to(device)
+                outputs = NNmodel(inputs)
+                _, predicted = torch.max(outputs, 1)
+                all_predictions.extend(predicted.detach().cpu().numpy())
+        ad_embed.obs['fusemap_tissueregion']=[le_gt_tissue_region_main_STARmap[i] for i in all_predictions]
         ad_embed.write_h5ad(save_dir + "/ad_tissueregion_embedding.h5ad")

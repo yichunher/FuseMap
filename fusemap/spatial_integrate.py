@@ -233,7 +233,7 @@ def spatial_integrate(
     )
 
     ### read out cell embedding
-    annotation_transfer(
+    read_cell_embedding(
         adatas,
         ModelType.save_dir,
     )

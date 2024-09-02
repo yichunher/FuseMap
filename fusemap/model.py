@@ -305,3 +305,19 @@ class Fuse_network(nn.Module):
 
     def add_adaptdecoder_module(self, key, var_index, gene_pretrain, gene_new):
         self.decoder[key] = FuseMapAdaptDecoder(var_index, gene_pretrain, gene_new)
+
+
+
+
+class NNTransfer(nn.Module):
+    def __init__(self, input_dim=128, output_dim=10):
+        super(NNTransfer, self).__init__()
+        self.fc1 = nn.Linear(input_dim, 256)
+        self.fc2 = nn.Linear(256, output_dim)
+        self.activate = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        x = torch.relu(self.fc1(x))
+        x = self.fc2(x)
+        x= self.activate(x)
+        return x

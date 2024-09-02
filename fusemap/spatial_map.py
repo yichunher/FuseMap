@@ -225,9 +225,15 @@ def spatial_map(
     )
 
     ### read out cell embedding
-    annotation_transfer(
+    read_cell_embedding(
         adatas,
         ModelType.save_dir,use_key='map',
     )
 
+    ### transfer molCCF cell annotations
+    transfer_annotation(
+        adatas,
+        ModelType.save_dir,
+        molccf_path,
+    )
     return
