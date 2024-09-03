@@ -56,7 +56,7 @@ def compute_dis_loss_pretrain(
         model.encoder["atlas" + str(i)](batch_features_all[i], adj_all[i])
         for i in range(ModelType.n_atlas)
     ]
-    z_mean_cat_single = torch.cat([z_all[i][0] for i in range(ModelType.n_atlas)])[
+    z_mean_cat_single = torch.cat([z_all[i][3] for i in range(ModelType.n_atlas)])[
         mask_batch_single_all, :
     ]
 
@@ -119,24 +119,25 @@ def compute_ae_loss_pretrain(
         for i in range(ModelType.n_atlas)
     ]
 
-    z_distribution_all = [
-        D.Normal(z_all[i][0], z_all[i][1]) for i in range(ModelType.n_atlas)
-    ]
-
-    z_sample_all = [z_distribution_all[i].rsample() for i in range(ModelType.n_atlas)]
-
     z_spatial_all = [z_all[i][2] for i in range(ModelType.n_atlas)]
 
+    # z_sample_all[i], 
+
     decoder_all = [
-        model.decoder["atlas" + str(i)](z_sample_all[i], z_spatial_all[i], adj_all[i])
+        model.decoder["atlas" + str(i)](z_spatial_all[i], adj_all[i])
         for i in range(ModelType.n_atlas)
     ]
 
     ### compute AE loss
+    # z_distribution_loss = [
+    #     D.Normal(
+    #         z_all[i][0][mask_batch_single[i], :], z_all[i][1][mask_batch_single[i], :]
+    #     )
+    #     for i in range(ModelType.n_atlas)
+    # ]
     z_distribution_loss = [
-        D.Normal(
-            z_all[i][0][mask_batch_single[i], :], z_all[i][1][mask_batch_single[i], :]
-        )
+            z_all[i][0]
+        
         for i in range(ModelType.n_atlas)
     ]
     loss_AE_all = [
@@ -152,7 +153,7 @@ def compute_ae_loss_pretrain(
     mask_batch_single_all = torch.hstack(mask_batch_single)
     mask_batch_spatial_all = torch.hstack(mask_batch_spatial)
 
-    z_mean_cat_single = torch.cat([z_all[i][0] for i in range(ModelType.n_atlas)])[
+    z_mean_cat_single = torch.cat([z_all[i][3] for i in range(ModelType.n_atlas)])[
         mask_batch_single_all, :
     ]
     z_mean_cat_spatial = torch.cat(z_spatial_all)[mask_batch_spatial_all, :]
@@ -237,7 +238,7 @@ def compute_dis_loss(
         model.encoder["atlas" + str(i)](batch_features_all[i], adj_all[i])
         for i in range(ModelType.n_atlas)
     ]
-    z_mean_cat_single = torch.cat([z_all[i][0] for i in range(ModelType.n_atlas)])[
+    z_mean_cat_single = torch.cat([z_all[i][3] for i in range(ModelType.n_atlas)])[
         mask_batch_single_all, :
     ]
 
@@ -305,23 +306,22 @@ def compute_ae_loss(
         for i in range(ModelType.n_atlas)
     ]
 
-    z_distribution_all = [
-        D.Normal(z_all[i][0], z_all[i][1]) for i in range(ModelType.n_atlas)
-    ]
-    z_sample_all = [z_distribution_all[i].rsample() for i in range(ModelType.n_atlas)]
-
     z_spatial_all = [z_all[i][2] for i in range(ModelType.n_atlas)]
 
     decoder_all = [
-        model.decoder["atlas" + str(i)](z_sample_all[i], z_spatial_all[i], adj_all[i])
+        model.decoder["atlas" + str(i)]( z_spatial_all[i], adj_all[i])
         for i in range(ModelType.n_atlas)
     ]
 
     ### compute AE loss
+    # z_distribution_loss = [
+    #     D.Normal(
+    #         z_all[i][0][mask_batch_single[i], :], z_all[i][1][mask_batch_single[i], :]
+    #     )
+    #     for i in range(ModelType.n_atlas)
+    # ]
     z_distribution_loss = [
-        D.Normal(
-            z_all[i][0][mask_batch_single[i], :], z_all[i][1][mask_batch_single[i], :]
-        )
+        z_all[i][0]
         for i in range(ModelType.n_atlas)
     ]
     loss_AE_all = [
@@ -337,7 +337,7 @@ def compute_ae_loss(
     mask_batch_single_all = torch.hstack(mask_batch_single)
     mask_batch_spatial_all = torch.hstack(mask_batch_spatial)
 
-    z_mean_cat_single = torch.cat([z_all[i][0] for i in range(ModelType.n_atlas)])[
+    z_mean_cat_single = torch.cat([z_all[i][3] for i in range(ModelType.n_atlas)])[
         mask_batch_single_all, :
     ]
     z_mean_cat_spatial = torch.cat(z_spatial_all)[mask_batch_spatial_all, :]
@@ -591,7 +591,7 @@ def compute_dis_loss_map(
         adapt_model.encoder["atlas" + str(i)](batch_features_all[i], adj_all[i])
         for i in range(ModelType.n_atlas)
     ]
-    z_mean_cat_single = torch.cat([z_all[i][0] for i in range(ModelType.n_atlas)])[
+    z_mean_cat_single = torch.cat([z_all[i][1] for i in range(ModelType.n_atlas)])[
         mask_batch_single_all, :
     ]
     z_mean_cat_single = torch.vstack(
@@ -702,16 +702,16 @@ def compute_ae_loss_map(
         for i in range(ModelType.n_atlas)
     ]
 
-    z_distribution_all = [
-        D.Normal(z_all[i][0], z_all[i][1]) for i in range(ModelType.n_atlas)
-    ]
-    z_sample_all = [z_distribution_all[i].rsample() for i in range(ModelType.n_atlas)]
+    # z_distribution_all = [
+    #     z_all[i][0] for i in range(ModelType.n_atlas)
+    # ]
+    # z_sample_all = [z_distribution_all[i].rsample() for i in range(ModelType.n_atlas)]
 
     z_spatial_all = [z_all[i][2] for i in range(ModelType.n_atlas)]
 
     decoder_all = [
         adapt_model.decoder["atlas" + str(i)](
-            z_sample_all[i],
+            z_all[i][1],
             z_spatial_all[i],
             adj_all[i],
             adapt_model.gene_embedding_pretrained,
@@ -722,9 +722,7 @@ def compute_ae_loss_map(
 
     ### compute AE loss
     z_distribution_loss = [
-        D.Normal(
-            z_all[i][0][mask_batch_single[i], :], z_all[i][1][mask_batch_single[i], :]
-        )
+            z_all[i][0] 
         for i in range(ModelType.n_atlas)
     ]
     loss_AE_all = [
@@ -740,7 +738,7 @@ def compute_ae_loss_map(
     mask_batch_single_all = torch.hstack(mask_batch_single)
     mask_batch_spatial_all = torch.hstack(mask_batch_spatial)
 
-    z_mean_cat_single = torch.cat([z_all[i][0] for i in range(ModelType.n_atlas)])[
+    z_mean_cat_single = torch.cat([z_all[i][1] for i in range(ModelType.n_atlas)])[
         mask_batch_single_all, :
     ]
     z_mean_cat_single = torch.vstack(

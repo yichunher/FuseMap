@@ -32,8 +32,13 @@ def main(args):
     for ind, file_name_i in enumerate(file_names):
         X = sc.read_h5ad(file_name_i)
         if "x" not in X.obs.columns:
-            X.obs["x"] = X.obs["col"]
-            X.obs["y"] = X.obs["row"]
+            try:
+                X.obs["x"] = X.obs["col"]
+                X.obs["y"] = X.obs["row"]
+            except:
+                raise ValueError(
+                    "Please provide spatial coordinates in the obs['x'] and obs['y'] columns"
+                )
         X.obs["name"] = f"section{ind}"
         X_input.append(X)
     kneighbor = ["delaunay"] * len(X_input)
@@ -43,11 +48,12 @@ def main(args):
     ### train model
     logging.info("\n\nTraining model...\n")
     if args.mode == "integrate":
-        spatial_integrate(X_input, args.output_save_dir, kneighbor, input_identity)
+        spatial_integrate(X_input, args, kneighbor, input_identity
+                          )
     elif args.mode == "map":
         molccf_path = "/home/jialiulab/disk1/yichun/FuseMap/molCCF/"
         spatial_map(
-            molccf_path, X_input, args.output_save_dir, kneighbor, input_identity
+            molccf_path, X_input, args, kneighbor, input_identity
         )
     else:
         raise ValueError(f"mode {args.mode} not recognized")

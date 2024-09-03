@@ -22,6 +22,16 @@ def parse_input_args():
         type=str,
         required=True,
     )
+    parser.add_argument(
+        "--keep_celltype",
+        type=str,
+        default="",
+    )
+    parser.add_argument(
+        "--keep_tissueregion",
+        type=str,
+        default="",
+    )
     args = parser.parse_args()
     return args
 
@@ -56,6 +66,6 @@ class ModelType(Enum):
     patience_limit_pretrain = 4
     EPS = 1e-10
     DIS_LAMDA = 2
-    TRAIN_WITHOUT_EVAL = 5
+    TRAIN_WITHOUT_EVAL = 10
     USE_REFERENCE_PCT = 0.02
     verbose = False

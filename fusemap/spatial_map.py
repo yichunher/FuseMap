@@ -27,7 +27,7 @@ except ModuleNotFoundError:
 def spatial_map(
     molccf_path,
     X_input,
-    save_dir,
+    args,
     kneighbor,
     input_identity,
     data_pth=None,
@@ -39,7 +39,7 @@ def spatial_map(
         preprocess_save = False
     ModelType.preprocess_save = preprocess_save
     ModelType.data_pth = data_pth
-    ModelType.save_dir = save_dir
+    ModelType.save_dir = args.output_save_dir
     ModelType.kneighbor = kneighbor
     ModelType.input_identity = input_identity
     ModelType.snapshot_path = f"{ModelType.save_dir}/snapshot.pt"
@@ -227,7 +227,10 @@ def spatial_map(
     ### read out cell embedding
     read_cell_embedding(
         adatas,
-        ModelType.save_dir,use_key='map',
+        ModelType.save_dir,
+        args.keep_celltype,
+        args.keep_tissueregion,
+        use_key='map',
     )
 
     ### transfer molCCF cell annotations

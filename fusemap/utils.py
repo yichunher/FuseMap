@@ -120,7 +120,7 @@ def read_gene_embedding_map(model,  new_train_gene, PRETRAINED_GENE, save_dir, n
     return
 
 
-def generate_ad_embed(save_dir, X_input, ttype, use_key="final"):
+def generate_ad_embed(save_dir, X_input, keep_label, ttype, use_key="final"):
     with open(
         save_dir + f"/latent_embeddings_all_{ttype}_{use_key}.pkl", "rb"
     ) as openfile:
@@ -134,19 +134,25 @@ def generate_ad_embed(save_dir, X_input, ttype, use_key="final"):
         ad_embed_1.obs["y"] = list(X_input_i.obs["y"])
         ad_embed_1.obs["name"] = list(X_input_i.obs["name"])  # f'sample{ind}'
         ad_embed_1.obs["batch"] = f"sample{ind}"
+        if keep_label!="":
+            try:
+                ad_embed_1.obs[keep_label] = list(X_input_i.obs[keep_label])
+            except:
+                ad_embed_1.obs[keep_label] = 'NA'
+
         ad_list.append(ad_embed_1)
     ad_embed = ad.concat(ad_list)
     return ad_embed
 
 
-def read_cell_embedding(X_input, save_dir,use_key="final"):
+def read_cell_embedding(X_input, save_dir,keep_celltype, keep_tissueregion, use_key="final"):
     if not os.path.exists(f"{save_dir}/ad_celltype_embedding.h5ad"):
-        ad_embed = generate_ad_embed(save_dir, X_input, ttype="single", use_key=use_key)
+        ad_embed = generate_ad_embed(save_dir, X_input, keep_celltype, ttype="single", use_key=use_key)
         ad_embed.write_h5ad(save_dir + "/ad_celltype_embedding.h5ad")
 
     if not os.path.exists(f"{save_dir}/ad_tissueregion_embedding.h5ad"):
         ad_embed = generate_ad_embed(
-            save_dir, X_input, ttype="spatial", use_key=use_key
+            save_dir, X_input, keep_tissueregion, ttype="spatial", use_key=use_key
         )
         ad_embed.write_h5ad(save_dir + "/ad_tissueregion_embedding.h5ad")
 

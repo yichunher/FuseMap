@@ -5,14 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: Current File",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal"
-        }
-        {
-            "name": "tutorial_integrate",
+            "name": "integrate_tutorial",
             "type": "debugpy",
             "request": "launch",
             "program": "main.py",
@@ -20,13 +13,31 @@
             "python": "/home/jialiulab/.conda/envs/fusemap_glue/bin/python", 
             "args": [
                 "--input_data_folder_path", "/home/jialiulab/disk1/yichun/FuseMap/input_data/tutorial_integrate/",
-                "--output_save_dir", "/home/jialiulab/disk1/yichun/FuseMap/output/tutorial_integrate2/",
+                "--output_save_dir", "/home/jialiulab/disk1/yichun/FuseMap/output/tutorial_integrate3/",
                 "--mode", "integrate",
+                "--keep_celltype","gtTaxonomyRank4",
+                "--keep_tissueregion","gtTissueRegion",
             ],
             "justMyCode": true,
         },
         {
-            "name": "tutorial_map",
+            "name": "integrate_mouse_type",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal",
+            "python": "/home/jialiulab/.conda/envs/fusemap_glue/bin/python", 
+            "args": [
+                "--input_data_folder_path", "/home/jialiulab/disk1/yichun/FuseMap/input_data/mouse_tissue_type_integrate/",
+                "--output_save_dir", "/home/jialiulab/disk1/yichun/FuseMap/output/mouse_type_integrate2/",
+                "--mode", "integrate",
+                "--keep_celltype","gtTaxonomyRank4",
+                "--keep_tissueregion","gtTissueRegion",
+            ],
+            "justMyCode": true,
+        },
+        {
+            "name": "map_tutorial",
             "type": "debugpy",
             "request": "launch",
             "program": "main.py",
@@ -34,13 +45,15 @@
             "python": "/home/jialiulab/.conda/envs/fusemap_glue/bin/python", 
             "args": [
                 "--input_data_folder_path", "/home/jialiulab/disk1/yichun/FuseMap/input_data/tutorial_map/",
-                "--output_save_dir", "/home/jialiulab/disk1/yichun/FuseMap/output/tutorial_map1/",
+                "--output_save_dir", "/home/jialiulab/disk1/yichun/FuseMap/output/tutorial_map2/",
                 "--mode", "map",
+                "--keep_celltype","gtTaxonomyRank4",
+                "--keep_tissueregion","gtTissueRegion",
             ],
             "justMyCode": true,
         },
         {
-            "name": "AD_map",
+            "name": "map_AD",
             "type": "debugpy",
             "request": "launch",
             "program": "main.py",
@@ -48,8 +61,10 @@
             "python": "/home/jialiulab/.conda/envs/fusemap_glue/bin/python", 
             "args": [
                 "--input_data_folder_path", "/home/jialiulab/disk1/yichun/FuseMap/input_data/AD_map/",
-                "--output_save_dir", "/home/jialiulab/disk1/yichun/FuseMap/output/AD_map1/",
+                "--output_save_dir", "/home/jialiulab/disk1/yichun/FuseMap/output/AD_map2/",
                 "--mode", "map",
+                "--keep_celltype","top_level_cell_type",
+                "--keep_tissueregion","region",
             ],
             "justMyCode": true,
         },

@@ -233,9 +233,7 @@ def pretrain_model(
         if epoch > ModelType.TRAIN_WITHOUT_EVAL.value:
             model.eval()
             with torch.no_grad():
-                for ind, blocks_all in enumerate(spatial_dataloader):
-                    # if ind not in random_numbers:
-                    #     continue
+                for blocks_all in spatial_dataloader:
 
                     (
                         batch_features_all,
@@ -390,12 +388,7 @@ def train_model(
 
         model.train()
 
-        # random_numbers = random.sample(range(len(spatial_dataloader)+1), 1000)
-
-        for ind, blocks_all in enumerate(spatial_dataloader):
-            # if ind not in random_numbers:
-            #     continue
-
+        for  blocks_all in spatial_dataloader:
             (
                 batch_features_all,
                 adj_all_block,
@@ -634,14 +627,14 @@ def read_model(
                 for i in range(ModelType.n_atlas)
             ]
             z_distribution_all = [
-                D.Normal(z_all[i][0], z_all[i][1]) for i in range(ModelType.n_atlas)
+                z_all[i][3] for i in range(ModelType.n_atlas)
             ]
 
             z_spatial_all = [z_all[i][2] for i in range(ModelType.n_atlas)]
 
             for i in range(ModelType.n_atlas):
                 g_all[i].nodes[row_index_all[i]].data["single_feat_hidden"] = (
-                    z_distribution_all[i].loc.detach().cpu()
+                    z_distribution_all[i].detach().cpu()
                 )
                 g_all[i].nodes[col_index_all[i]].data["spatial_feat_hidden"] = (
                     z_spatial_all[i].detach().cpu()
@@ -937,14 +930,8 @@ def map_model(
         verbose=True,
     )
 
-    # latent_embeddings_all_single_pretrain = [i.to(device) for i in latent_embeddings_all_single_pretrain]
-    # latent_embeddings_all_spatial_pretrain = [i.to(device) for i in latent_embeddings_all_spatial_pretrain]
-
     dataloader_pretrain_single_cycle = itertools.cycle(dataloader_pretrain_single)
     dataloader_pretrain_spatial_cycle = itertools.cycle(dataloader_pretrain_spatial)
-
-    # Determine the maximum number of iterations based on the longer DataLoader
-    # max_iterations = max(len(dataloader_pretrain_single), len(dataloader_pretrain_spatial))
 
     for epoch in tqdm(
         range(ModelType.epochs_run_pretrain + 1, ModelType.n_epochs.value)

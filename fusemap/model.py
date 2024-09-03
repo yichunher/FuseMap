@@ -1,3 +1,4 @@
+import torch.distributions as D
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -127,18 +128,17 @@ class FuseMapEncoder(nn.Module):
         h_2 = self.activation_1(h_2)
         h_2 = self.dropout_1(h_2)
 
-        # z_mean, z_log_var = torch.chunk(h_2,chunks=2,dim=-1)
-        # z_log_var = F.softplus(z_log_var)
 
         z_mean = self.mean(h_2)
         z_log_var = F.softplus(self.log_var(h_2))
 
-        # self.dropout_2 = nn.Dropout(p=dropout_rate, inplace=False)
-        # adj = self.dropout_2(adj)
+        z_sample = D.Normal(z_mean, z_log_var)
+        z_sample_r = z_sample.rsample()
+
+        # z_spatial = torch.mm(adj.T, z_sample_r)
         z_spatial = torch.mm(adj.T, z_mean)
-        # except RuntimeError:
-        #     print(adj.shape,adj, x.shape,x)
-        return z_mean, z_log_var, z_spatial
+
+        return z_sample, z_sample_r, z_spatial, z_mean
 
 
 class FuseMapDecoder(nn.Module):
@@ -148,7 +148,7 @@ class FuseMapDecoder(nn.Module):
         self.var_index = var_index
         self.activation_3 = nn.LeakyReLU(negative_slope=0.2)
 
-    def forward(self, z, z_spatial, adj):
+    def forward(self, z_spatial, adj):
         h_4 = torch.mm(adj, z_spatial)
         x_recon_spatial = torch.mm(h_4, self.gene_embedding[:, self.var_index])
         x_recon_spatial = self.activation_3(x_recon_spatial)
