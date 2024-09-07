@@ -10,10 +10,40 @@ Welcome to FuseMap's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   modules
+    Overview <self>
+    Installation <install>
+    Tutorials <tutorials>
+    API Reference <api>
+    About <about>
 
-Indices and tables
-==================
+
+FuseMap: spatial transcripomics integration with universal gene, cell, and tissue embeddings.
+---------------------------------------------------------------------------------------------
+xxx
+
+
+.. image:: _static/framework.png
+    :width: 75%
+    :align: center
+
+
+Usage
+------------------------------------------
+
+Spatial integration
+^^^^^^^^^^^^^^^^^^^
+:mod:`fusmap.spatial_integration` provides xxx
+
+
+Spatial mapping
+^^^^^^^^^^^^^^^^^^^
+:mod:`fusmap.spatial_map` provides xxx
+
+
+
+
+Indices
+------------------------------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
