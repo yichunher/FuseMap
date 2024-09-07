@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FuseMap &mdash; FuseMap 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="fusemap package" href="fusemap.html" />
+    <link rel="prev" title="Welcome to FuseMap’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            FuseMap
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">FuseMap</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fusemap.html">fusemap package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main.html">main module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">FuseMap</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">FuseMap</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="fusemap">
+<h1>FuseMap<a class="headerlink" href="#fusemap" title="Permalink to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fusemap.html">fusemap package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fusemap.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fusemap.html#module-fusemap.config">fusemap.config module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.config.FlagConfig"><code class="docutils literal notranslate"><span class="pre">FlagConfig</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.FlagConfig.align_anneal"><code class="docutils literal notranslate"><span class="pre">FlagConfig.align_anneal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.FlagConfig.lambda_disc_single"><code class="docutils literal notranslate"><span class="pre">FlagConfig.lambda_disc_single</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType"><code class="docutils literal notranslate"><span class="pre">ModelType</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.DIS_LAMDA"><code class="docutils literal notranslate"><span class="pre">ModelType.DIS_LAMDA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.EPS"><code class="docutils literal notranslate"><span class="pre">ModelType.EPS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.TRAIN_WITHOUT_EVAL"><code class="docutils literal notranslate"><span class="pre">ModelType.TRAIN_WITHOUT_EVAL</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.USE_REFERENCE_PCT"><code class="docutils literal notranslate"><span class="pre">ModelType.USE_REFERENCE_PCT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.align_noise_coef"><code class="docutils literal notranslate"><span class="pre">ModelType.align_noise_coef</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.batch_size"><code class="docutils literal notranslate"><span class="pre">ModelType.batch_size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.dropout_rate"><code class="docutils literal notranslate"><span class="pre">ModelType.dropout_rate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.hidden_dim"><code class="docutils literal notranslate"><span class="pre">ModelType.hidden_dim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.lambda_ae_single"><code class="docutils literal notranslate"><span class="pre">ModelType.lambda_ae_single</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.lambda_ae_spatial"><code class="docutils literal notranslate"><span class="pre">ModelType.lambda_ae_spatial</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.lambda_disc_spatial"><code class="docutils literal notranslate"><span class="pre">ModelType.lambda_disc_spatial</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.latent_dim"><code class="docutils literal notranslate"><span class="pre">ModelType.latent_dim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.learning_rate"><code class="docutils literal notranslate"><span class="pre">ModelType.learning_rate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.lr_factor_final"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_factor_final</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.lr_factor_pretrain"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_factor_pretrain</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.lr_limit_final"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_limit_final</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.lr_limit_pretrain"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_limit_pretrain</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.lr_patience_final"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_patience_final</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.lr_patience_pretrain"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_patience_pretrain</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.n_epochs"><code class="docutils literal notranslate"><span class="pre">ModelType.n_epochs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.optim_kw"><code class="docutils literal notranslate"><span class="pre">ModelType.optim_kw</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.patience_limit_final"><code class="docutils literal notranslate"><span class="pre">ModelType.patience_limit_final</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.patience_limit_pretrain"><code class="docutils literal notranslate"><span class="pre">ModelType.patience_limit_pretrain</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.pca_dim"><code class="docutils literal notranslate"><span class="pre">ModelType.pca_dim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.use_input"><code class="docutils literal notranslate"><span class="pre">ModelType.use_input</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.config.ModelType.verbose"><code class="docutils literal notranslate"><span class="pre">ModelType.verbose</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.config.parse_input_args"><code class="docutils literal notranslate"><span class="pre">parse_input_args()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fusemap.html#module-fusemap.dataset">fusemap.dataset module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.dataset.CustomGraphDataLoader"><code class="docutils literal notranslate"><span class="pre">CustomGraphDataLoader</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.dataset.CustomGraphDataset"><code class="docutils literal notranslate"><span class="pre">CustomGraphDataset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.dataset.MapPretrainDataLoader"><code class="docutils literal notranslate"><span class="pre">MapPretrainDataLoader</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.dataset.MapPretrainDataset"><code class="docutils literal notranslate"><span class="pre">MapPretrainDataset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.dataset.construct_data"><code class="docutils literal notranslate"><span class="pre">construct_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.dataset.construct_mask"><code class="docutils literal notranslate"><span class="pre">construct_mask()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.dataset.get_feature_sparse"><code class="docutils literal notranslate"><span class="pre">get_feature_sparse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fusemap.html#module-fusemap.logger">fusemap.logger module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.logger.MultipleHeaderFilter"><code class="docutils literal notranslate"><span class="pre">MultipleHeaderFilter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.logger.MultipleHeaderFilter.filter"><code class="docutils literal notranslate"><span class="pre">MultipleHeaderFilter.filter()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.logger.setup_logging"><code class="docutils literal notranslate"><span class="pre">setup_logging()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fusemap.html#module-fusemap.loss">fusemap.loss module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.loss.AE_Gene_loss"><code class="docutils literal notranslate"><span class="pre">AE_Gene_loss()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.loss.compute_ae_loss"><code class="docutils literal notranslate"><span class="pre">compute_ae_loss()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.loss.compute_ae_loss_map"><code class="docutils literal notranslate"><span class="pre">compute_ae_loss_map()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.loss.compute_ae_loss_pretrain"><code class="docutils literal notranslate"><span class="pre">compute_ae_loss_pretrain()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.loss.compute_dis_loss"><code class="docutils literal notranslate"><span class="pre">compute_dis_loss()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.loss.compute_dis_loss_map"><code class="docutils literal notranslate"><span class="pre">compute_dis_loss_map()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.loss.compute_dis_loss_pretrain"><code class="docutils literal notranslate"><span class="pre">compute_dis_loss_pretrain()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.loss.compute_gene_embedding_loss"><code class="docutils literal notranslate"><span class="pre">compute_gene_embedding_loss()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.loss.get_balance_weight"><code class="docutils literal notranslate"><span class="pre">get_balance_weight()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.loss.get_balance_weight_subsample"><code class="docutils literal notranslate"><span class="pre">get_balance_weight_subsample()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.loss.prod"><code class="docutils literal notranslate"><span class="pre">prod()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fusemap.html#module-fusemap.model">fusemap.model module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.model.Adj_model"><code class="docutils literal notranslate"><span class="pre">Adj_model</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.model.Adj_model.forward"><code class="docutils literal notranslate"><span class="pre">Adj_model.forward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.model.Adj_model.training"><code class="docutils literal notranslate"><span class="pre">Adj_model.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.model.Discriminator"><code class="docutils literal notranslate"><span class="pre">Discriminator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.model.Discriminator.forward"><code class="docutils literal notranslate"><span class="pre">Discriminator.forward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.model.Discriminator.training"><code class="docutils literal notranslate"><span class="pre">Discriminator.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.model.FuseMapAdaptDecoder"><code class="docutils literal notranslate"><span class="pre">FuseMapAdaptDecoder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.model.FuseMapAdaptDecoder.forward"><code class="docutils literal notranslate"><span class="pre">FuseMapAdaptDecoder.forward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.model.FuseMapAdaptDecoder.training"><code class="docutils literal notranslate"><span class="pre">FuseMapAdaptDecoder.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.model.FuseMapDecoder"><code class="docutils literal notranslate"><span class="pre">FuseMapDecoder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.model.FuseMapDecoder.forward"><code class="docutils literal notranslate"><span class="pre">FuseMapDecoder.forward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.model.FuseMapDecoder.training"><code class="docutils literal notranslate"><span class="pre">FuseMapDecoder.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.model.FuseMapEncoder"><code class="docutils literal notranslate"><span class="pre">FuseMapEncoder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.model.FuseMapEncoder.forward"><code class="docutils literal notranslate"><span class="pre">FuseMapEncoder.forward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.model.FuseMapEncoder.training"><code class="docutils literal notranslate"><span class="pre">FuseMapEncoder.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.model.Fuse_network"><code class="docutils literal notranslate"><span class="pre">Fuse_network</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.model.Fuse_network.add_adaptdecoder_module"><code class="docutils literal notranslate"><span class="pre">Fuse_network.add_adaptdecoder_module()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.model.Fuse_network.add_decoder_module"><code class="docutils literal notranslate"><span class="pre">Fuse_network.add_decoder_module()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.model.Fuse_network.add_encoder_module"><code class="docutils literal notranslate"><span class="pre">Fuse_network.add_encoder_module()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.model.Fuse_network.training"><code class="docutils literal notranslate"><span class="pre">Fuse_network.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.model.NNTransfer"><code class="docutils literal notranslate"><span class="pre">NNTransfer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.model.NNTransfer.forward"><code class="docutils literal notranslate"><span class="pre">NNTransfer.forward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fusemap.html#fusemap.model.NNTransfer.training"><code class="docutils literal notranslate"><span class="pre">NNTransfer.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.model.reset_parameters"><code class="docutils literal notranslate"><span class="pre">reset_parameters()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fusemap.html#module-fusemap.preprocess">fusemap.preprocess module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.preprocess.construct_graph"><code class="docutils literal notranslate"><span class="pre">construct_graph()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.preprocess.get_allunique_gene_names"><code class="docutils literal notranslate"><span class="pre">get_allunique_gene_names()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.preprocess.get_spatial_input"><code class="docutils literal notranslate"><span class="pre">get_spatial_input()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.preprocess.get_unique_gene_indices"><code class="docutils literal notranslate"><span class="pre">get_unique_gene_indices()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.preprocess.preprocess_adata"><code class="docutils literal notranslate"><span class="pre">preprocess_adata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.preprocess.preprocess_adj_sparse"><code class="docutils literal notranslate"><span class="pre">preprocess_adj_sparse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.preprocess.preprocess_raw"><code class="docutils literal notranslate"><span class="pre">preprocess_raw()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fusemap.html#module-fusemap.spatial_integrate">fusemap.spatial_integrate module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.spatial_integrate.spatial_integrate"><code class="docutils literal notranslate"><span class="pre">spatial_integrate()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fusemap.html#module-fusemap.spatial_map">fusemap.spatial_map module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.spatial_map.spatial_map"><code class="docutils literal notranslate"><span class="pre">spatial_map()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fusemap.html#module-fusemap.train">fusemap.train module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.train.train"><code class="docutils literal notranslate"><span class="pre">train()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fusemap.html#module-fusemap.train_model">fusemap.train_model module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.train_model.add_pretrain_to_name"><code class="docutils literal notranslate"><span class="pre">add_pretrain_to_name()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.train_model.balance_weight"><code class="docutils literal notranslate"><span class="pre">balance_weight()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.train_model.get_data"><code class="docutils literal notranslate"><span class="pre">get_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.train_model.load_ref_data"><code class="docutils literal notranslate"><span class="pre">load_ref_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.train_model.load_ref_model"><code class="docutils literal notranslate"><span class="pre">load_ref_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.train_model.map_model"><code class="docutils literal notranslate"><span class="pre">map_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.train_model.pretrain_model"><code class="docutils literal notranslate"><span class="pre">pretrain_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.train_model.read_model"><code class="docutils literal notranslate"><span class="pre">read_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.train_model.train_model"><code class="docutils literal notranslate"><span class="pre">train_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.train_model.transfer_weight"><code class="docutils literal notranslate"><span class="pre">transfer_weight()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fusemap.html#module-fusemap.utils">fusemap.utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.utils.average_embeddings"><code class="docutils literal notranslate"><span class="pre">average_embeddings()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.utils.generate_ad_embed"><code class="docutils literal notranslate"><span class="pre">generate_ad_embed()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.utils.load_snapshot"><code class="docutils literal notranslate"><span class="pre">load_snapshot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.utils.read_cell_embedding"><code class="docutils literal notranslate"><span class="pre">read_cell_embedding()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.utils.read_gene_embedding"><code class="docutils literal notranslate"><span class="pre">read_gene_embedding()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.utils.read_gene_embedding_map"><code class="docutils literal notranslate"><span class="pre">read_gene_embedding_map()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.utils.save_obj"><code class="docutils literal notranslate"><span class="pre">save_obj()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.utils.save_snapshot"><code class="docutils literal notranslate"><span class="pre">save_snapshot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.utils.seed_all"><code class="docutils literal notranslate"><span class="pre">seed_all()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fusemap.html#fusemap.utils.transfer_annotation"><code class="docutils literal notranslate"><span class="pre">transfer_annotation()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fusemap.html#module-fusemap">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="main.html">main module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="main.html#main.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to FuseMap’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="fusemap.html" class="btn btn-neutral float-right" title="fusemap package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Yichun He.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

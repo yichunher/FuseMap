@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fusemap.train_model &mdash; FuseMap 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            FuseMap
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">FuseMap</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">FuseMap</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">fusemap.train_model</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for fusemap.train_model</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">ReduceLROnPlateau</span>
+<span class="kn">import</span> <span class="nn">torch.distributions</span> <span class="k">as</span> <span class="nn">D</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">dgl.dataloading</span> <span class="k">as</span> <span class="nn">dgl_dataload</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">fusemap.config</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">fusemap.dataset</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">fusemap.utils</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">fusemap.loss</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">anndata</span> <span class="k">as</span> <span class="nn">ad</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span> <span class="nn">scanpy</span> <span class="k">as</span> <span class="nn">sc</span>
+<span class="kn">import</span> <span class="nn">dgl</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pickle5</span> <span class="k">as</span> <span class="nn">pickle</span>
+<span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pickle</span>
+
+
+<div class="viewcode-block" id="get_data"><a class="viewcode-back" href="../../fusemap.html#fusemap.train_model.get_data">[docs]</a><span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="n">blocks_all</span><span class="p">,</span> <span class="n">feature_all</span><span class="p">,</span> <span class="n">adj_all</span><span class="p">,</span> <span class="n">train_mask</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+    <span class="n">row_index_all</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">col_index_all</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i_atlas</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">):</span>
+        <span class="n">row_index</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">blocks_all</span><span class="p">[</span><span class="n">i_atlas</span><span class="p">][</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">col_index</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">blocks_all</span><span class="p">[</span><span class="n">i_atlas</span><span class="p">][</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">row_index_all</span><span class="p">[</span><span class="n">i_atlas</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">row_index</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">())[</span>
+            <span class="mi">0</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">col_index_all</span><span class="p">[</span><span class="n">i_atlas</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">col_index</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">())[</span>
+            <span class="mi">0</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="n">batch_features_all</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">feature_all</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">row_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">:]</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="n">adj_all_block</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span>
+            <span class="n">adj_all</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">row_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">:]</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()[:,</span> <span class="n">col_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">todense</span><span class="p">()</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">input_identity</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ST&quot;</span>
+        <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">scrna_seq_adj</span><span class="p">[</span><span class="s2">&quot;atlas&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]()[</span><span class="n">row_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">:][</span>
+            <span class="p">:,</span> <span class="n">col_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">adj_all_block_dis</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span>
+            <span class="n">adj_all</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">row_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">:]</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()[:,</span> <span class="n">col_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">todense</span><span class="p">()</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">input_identity</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ST&quot;</span>
+        <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">scrna_seq_adj</span><span class="p">[</span><span class="s2">&quot;atlas&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]()[</span><span class="n">row_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">:][</span>
+            <span class="p">:,</span> <span class="n">col_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="n">train_mask_batch_single</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">train_mask_i</span><span class="p">[</span><span class="n">row_index_all</span><span class="p">[</span><span class="n">blocks_all_ind</span><span class="p">]]</span>
+        <span class="k">for</span> <span class="n">train_mask_i</span><span class="p">,</span> <span class="n">blocks_all_ind</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">train_mask</span><span class="p">,</span> <span class="n">blocks_all</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">train_mask_batch_spatial</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">train_mask_i</span><span class="p">[</span><span class="n">col_index_all</span><span class="p">[</span><span class="n">blocks_all_ind</span><span class="p">]]</span>
+        <span class="k">for</span> <span class="n">train_mask_i</span><span class="p">,</span> <span class="n">blocks_all_ind</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">train_mask</span><span class="p">,</span> <span class="n">blocks_all</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="c1">### discriminator flags</span>
+    <span class="n">flag_shape_single</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">row_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)]</span>
+    <span class="n">flag_all_single</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">x</span><span class="p">,),</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">flag_shape_single</span><span class="p">)]</span>
+    <span class="p">)</span>
+    <span class="n">flag_source_cat_single</span> <span class="o">=</span> <span class="n">flag_all_single</span><span class="o">.</span><span class="n">long</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="n">flag_shape_spatial</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">col_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)]</span>
+    <span class="n">flag_all_spatial</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">x</span><span class="p">,),</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">flag_shape_spatial</span><span class="p">)]</span>
+    <span class="p">)</span>
+    <span class="n">flag_source_cat_spatial</span> <span class="o">=</span> <span class="n">flag_all_spatial</span><span class="o">.</span><span class="n">long</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">batch_features_all</span><span class="p">,</span>
+        <span class="n">adj_all_block</span><span class="p">,</span>
+        <span class="n">adj_all_block_dis</span><span class="p">,</span>
+        <span class="n">train_mask_batch_single</span><span class="p">,</span>
+        <span class="n">train_mask_batch_spatial</span><span class="p">,</span>
+        <span class="n">flag_source_cat_single</span><span class="p">,</span>
+        <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+        <span class="n">row_index_all</span><span class="p">,</span>
+        <span class="n">col_index_all</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="pretrain_model"><a class="viewcode-back" href="../../fusemap.html#fusemap.train_model.pretrain_model">[docs]</a><span class="k">def</span> <span class="nf">pretrain_model</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span>
+    <span class="n">spatial_dataloader</span><span class="p">,</span>
+    <span class="n">feature_all</span><span class="p">,</span>
+    <span class="n">adj_all</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">,</span>
+    <span class="n">train_mask</span><span class="p">,</span>
+    <span class="n">val_mask</span><span class="p">,</span>
+    <span class="n">flagconfig</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">loss_atlas_val_best</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+    <span class="n">patience_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">optimizer_dis</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">,</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">optim_kw</span><span class="o">.</span><span class="n">value</span><span class="p">)(</span>
+        <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">discriminator_single</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">discriminator_spatial</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+        <span class="p">),</span>
+        <span class="n">lr</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">learning_rate</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">optimizer_ae</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">,</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">optim_kw</span><span class="o">.</span><span class="n">value</span><span class="p">)(</span>
+        <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">scrna_seq_adj</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+        <span class="p">),</span>
+        <span class="n">lr</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">learning_rate</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">scheduler_dis</span> <span class="o">=</span> <span class="n">ReduceLROnPlateau</span><span class="p">(</span>
+        <span class="n">optimizer_dis</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span>
+        <span class="n">factor</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">lr_factor_pretrain</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="n">patience</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">lr_patience_pretrain</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">scheduler_ae</span> <span class="o">=</span> <span class="n">ReduceLROnPlateau</span><span class="p">(</span>
+        <span class="n">optimizer_ae</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span>
+        <span class="n">factor</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">lr_factor_pretrain</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="n">patience</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">lr_patience_pretrain</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+        <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">epochs_run_pretrain</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">n_epochs</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    <span class="p">):</span>
+        <span class="n">loss_dis</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">loss_ae_dis</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">loss_all_item</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">loss_atlas_i</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">):</span>
+            <span class="n">loss_atlas_i</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">loss_atlas_val</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">anneal</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">max</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">flagconfig</span><span class="o">.</span><span class="n">align_anneal</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">flagconfig</span><span class="o">.</span><span class="n">align_anneal</span>
+            <span class="k">else</span> <span class="mi">0</span>
+        <span class="p">)</span>
+
+        <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">blocks_all</span> <span class="ow">in</span> <span class="n">spatial_dataloader</span><span class="p">:</span>
+            <span class="p">(</span>
+                <span class="n">batch_features_all</span><span class="p">,</span>
+                <span class="n">adj_all_block</span><span class="p">,</span>
+                <span class="n">adj_all_block_dis</span><span class="p">,</span>
+                <span class="n">train_mask_batch_single</span><span class="p">,</span>
+                <span class="n">train_mask_batch_spatial</span><span class="p">,</span>
+                <span class="n">flag_source_cat_single</span><span class="p">,</span>
+                <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+                <span class="n">_</span><span class="p">,</span>
+                <span class="n">_</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">(</span><span class="n">blocks_all</span><span class="p">,</span> <span class="n">feature_all</span><span class="p">,</span> <span class="n">adj_all</span><span class="p">,</span> <span class="n">train_mask</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+            <span class="c1"># Train discriminator part</span>
+            <span class="n">loss_part1</span> <span class="o">=</span> <span class="n">compute_dis_loss_pretrain</span><span class="p">(</span>
+                <span class="n">model</span><span class="p">,</span>
+                <span class="n">flag_source_cat_single</span><span class="p">,</span>
+                <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+                <span class="n">anneal</span><span class="p">,</span>
+                <span class="n">batch_features_all</span><span class="p">,</span>
+                <span class="n">adj_all_block_dis</span><span class="p">,</span>
+                <span class="n">train_mask_batch_single</span><span class="p">,</span>
+                <span class="n">train_mask_batch_spatial</span><span class="p">,</span>
+                <span class="n">flagconfig</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">(</span><span class="n">set_to_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">loss_part1</span><span class="p">[</span><span class="s2">&quot;dis&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer_dis</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            <span class="n">loss_dis</span> <span class="o">+=</span> <span class="n">loss_part1</span><span class="p">[</span><span class="s2">&quot;dis&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+            <span class="c1"># Train AE part</span>
+            <span class="n">loss_part2</span> <span class="o">=</span> <span class="n">compute_ae_loss_pretrain</span><span class="p">(</span>
+                <span class="n">model</span><span class="p">,</span>
+                <span class="n">flag_source_cat_single</span><span class="p">,</span>
+                <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+                <span class="n">anneal</span><span class="p">,</span>
+                <span class="n">batch_features_all</span><span class="p">,</span>
+                <span class="n">adj_all_block</span><span class="p">,</span>
+                <span class="n">train_mask_batch_single</span><span class="p">,</span>
+                <span class="n">train_mask_batch_spatial</span><span class="p">,</span>
+                <span class="n">flagconfig</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">(</span><span class="n">set_to_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">loss_part2</span><span class="p">[</span><span class="s2">&quot;loss_all&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer_ae</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">use_llm_gene_embedding</span><span class="o">==</span><span class="s1">&#39;combine&#39;</span><span class="p">:</span>
+                <span class="n">loss_part3</span> <span class="o">=</span> <span class="n">compute_gene_embedding_loss</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">(</span><span class="n">set_to_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">loss_part3</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+                <span class="n">optimizer_ae</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">):</span>
+                <span class="n">loss_atlas_i</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">loss_part2</span><span class="p">[</span><span class="s2">&quot;loss_AE_all&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">loss_all_item</span> <span class="o">+=</span> <span class="n">loss_part2</span><span class="p">[</span><span class="s2">&quot;loss_all&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">loss_ae_dis</span> <span class="o">+=</span> <span class="n">loss_part2</span><span class="p">[</span><span class="s2">&quot;dis_ae&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+        <span class="n">flagconfig</span><span class="o">.</span><span class="n">align_anneal</span> <span class="o">/=</span> <span class="mi">2</span>
+
+        <span class="k">if</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">verbose</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Train Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_epochs</span><span class="si">}</span><span class="s2">, </span><span class="se">\</span>
+<span class="s2">            Loss dis: </span><span class="si">{</span><span class="n">loss_dis</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">spatial_dataloader</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span><span class="se">\</span>
+<span class="s2">            Loss AE: </span><span class="si">{</span><span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">spatial_dataloader</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">loss_atlas_i</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span><span class="si">}</span><span class="s2"> , </span><span class="se">\</span>
+<span class="s2">            Loss ae dis:</span><span class="si">{</span><span class="n">loss_ae_dis</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">spatial_dataloader</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span><span class="se">\</span>
+<span class="s2">            Loss all:</span><span class="si">{</span><span class="n">loss_all_item</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">spatial_dataloader</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">save_snapshot</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">epochs_run_final</span><span class="p">,</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">snapshot_path</span><span class="p">,</span><span class="n">ModelType</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/lambda_disc_single.pkl&quot;</span><span class="p">):</span>
+            <span class="n">save_obj</span><span class="p">(</span>
+                <span class="n">flagconfig</span><span class="o">.</span><span class="n">lambda_disc_single</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/lambda_disc_single&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1">################# validation</span>
+        <span class="k">if</span> <span class="n">epoch</span> <span class="o">&gt;</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">TRAIN_WITHOUT_EVAL</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">blocks_all</span> <span class="ow">in</span> <span class="n">spatial_dataloader</span><span class="p">:</span>
+
+                    <span class="p">(</span>
+                        <span class="n">batch_features_all</span><span class="p">,</span>
+                        <span class="n">adj_all_block</span><span class="p">,</span>
+                        <span class="n">adj_all_block_dis</span><span class="p">,</span>
+                        <span class="n">val_mask_batch_single</span><span class="p">,</span>
+                        <span class="n">val_mask_batch_spatial</span><span class="p">,</span>
+                        <span class="n">flag_source_cat_single</span><span class="p">,</span>
+                        <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+                        <span class="n">_</span><span class="p">,</span>
+                        <span class="n">_</span><span class="p">,</span>
+                    <span class="p">)</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">(</span>
+                        <span class="n">blocks_all</span><span class="p">,</span> <span class="n">feature_all</span><span class="p">,</span> <span class="n">adj_all</span><span class="p">,</span> <span class="n">val_mask</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">model</span>
+                    <span class="p">)</span>
+
+                    <span class="c1"># val AE part</span>
+                    <span class="n">loss_part2</span> <span class="o">=</span> <span class="n">compute_ae_loss_pretrain</span><span class="p">(</span>
+                        <span class="n">model</span><span class="p">,</span>
+                        <span class="n">flag_source_cat_single</span><span class="p">,</span>
+                        <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+                        <span class="n">anneal</span><span class="p">,</span>
+                        <span class="n">batch_features_all</span><span class="p">,</span>
+                        <span class="n">adj_all_block</span><span class="p">,</span>
+                        <span class="n">val_mask_batch_single</span><span class="p">,</span>
+                        <span class="n">val_mask_batch_spatial</span><span class="p">,</span>
+                        <span class="n">flagconfig</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">):</span>
+                        <span class="n">loss_atlas_val</span> <span class="o">+=</span> <span class="n">loss_part2</span><span class="p">[</span><span class="s2">&quot;loss_AE_all&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                        <span class="c1"># if np.isnan(loss_part2[&#39;loss_AE_all&#39;][i].item()):</span>
+                        <span class="c1">#     p=0</span>
+
+                <span class="n">loss_atlas_val</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">loss_atlas_val</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">spatial_dataloader</span><span class="p">)</span> <span class="o">/</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span>
+                <span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">verbose</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Validation Epoch </span><span class="si">{</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_epochs</span><span class="si">}</span><span class="s2">, </span><span class="se">\</span>
+<span class="s2">                    Loss AE validation: </span><span class="si">{</span><span class="n">loss_atlas_val</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+
+            <span class="n">scheduler_dis</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">loss_atlas_val</span><span class="p">)</span>
+            <span class="n">scheduler_ae</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">loss_atlas_val</span><span class="p">)</span>
+            <span class="n">current_lr</span> <span class="o">=</span> <span class="n">optimizer_dis</span><span class="o">.</span><span class="n">param_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">verbose</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">current lr:</span><span class="si">{</span><span class="n">current_lr</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># If the loss is lower than the best loss so far, save the model And reset the patience counter</span>
+            <span class="k">if</span> <span class="n">loss_atlas_val</span> <span class="o">&lt;</span> <span class="n">loss_atlas_val_best</span><span class="p">:</span>
+                <span class="n">loss_atlas_val_best</span> <span class="o">=</span> <span class="n">loss_atlas_val</span>
+                <span class="n">patience_counter</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_pretrain_model.pt&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">patience_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># If the patience counter is greater than or equal to the patience limit, stop training</span>
+            <span class="k">if</span> <span class="n">patience_counter</span> <span class="o">&gt;=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">patience_limit_pretrain</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Early stopping due to loss not improving - patience count</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_pretrain_model.pt&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_pretrain_model_final.pt&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">File name changed</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">current_lr</span> <span class="o">&lt;</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">lr_limit_pretrain</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Early stopping due to loss not improving - learning rate</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_pretrain_model.pt&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_pretrain_model_final.pt&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">File name changed</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">break</span>
+
+        <span class="c1"># torch.save(model.state_dict(), f&quot;{ModelType.save_dir}/trained_model/FuseMap_pretrain_model_{epoch}.pt&quot;)</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_pretrain_model.pt&quot;</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_pretrain_model.pt&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_pretrain_model_final.pt&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">File name changed in the end</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="train_model"><a class="viewcode-back" href="../../fusemap.html#fusemap.train_model.train_model">[docs]</a><span class="k">def</span> <span class="nf">train_model</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span>
+    <span class="n">spatial_dataloader</span><span class="p">,</span>
+    <span class="n">feature_all</span><span class="p">,</span>
+    <span class="n">adj_all</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">,</span>
+    <span class="n">train_mask</span><span class="p">,</span>
+    <span class="n">val_mask</span><span class="p">,</span>
+    <span class="n">flagconfig</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/balance_weight_single.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">openfile</span><span class="p">:</span>
+        <span class="n">balance_weight_single</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">openfile</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/balance_weight_spatial.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">openfile</span><span class="p">:</span>
+        <span class="n">balance_weight_spatial</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">openfile</span><span class="p">)</span>
+    <span class="n">balance_weight_single</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">balance_weight_single</span><span class="p">]</span>
+    <span class="n">balance_weight_spatial</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">balance_weight_spatial</span><span class="p">]</span>
+
+    <span class="n">loss_atlas_val_best</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+    <span class="n">patience_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">optimizer_dis</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">,</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">optim_kw</span><span class="o">.</span><span class="n">value</span><span class="p">)(</span>
+        <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">discriminator_single</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">discriminator_spatial</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+        <span class="p">),</span>
+        <span class="n">lr</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">learning_rate</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">optimizer_ae</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">,</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">optim_kw</span><span class="o">.</span><span class="n">value</span><span class="p">)(</span>
+        <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">scrna_seq_adj</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+        <span class="p">),</span>
+        <span class="n">lr</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">learning_rate</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">scheduler_dis</span> <span class="o">=</span> <span class="n">ReduceLROnPlateau</span><span class="p">(</span>
+        <span class="n">optimizer_dis</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span>
+        <span class="n">factor</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">lr_factor_final</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="n">patience</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">lr_patience_final</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">scheduler_ae</span> <span class="o">=</span> <span class="n">ReduceLROnPlateau</span><span class="p">(</span>
+        <span class="n">optimizer_ae</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span>
+        <span class="n">factor</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">lr_factor_final</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="n">patience</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">lr_patience_final</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">epochs_run_final</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">n_epochs</span><span class="o">.</span><span class="n">value</span><span class="p">)):</span>
+        <span class="n">loss_dis</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">loss_ae_dis</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">loss_all_item</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">loss_atlas_i</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">):</span>
+            <span class="n">loss_atlas_i</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">loss_atlas_val</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">anneal</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">max</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">flagconfig</span><span class="o">.</span><span class="n">align_anneal</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">flagconfig</span><span class="o">.</span><span class="n">align_anneal</span>
+            <span class="k">else</span> <span class="mi">0</span>
+        <span class="p">)</span>
+
+        <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+
+        <span class="k">for</span>  <span class="n">blocks_all</span> <span class="ow">in</span> <span class="n">spatial_dataloader</span><span class="p">:</span>
+            <span class="p">(</span>
+                <span class="n">batch_features_all</span><span class="p">,</span>
+                <span class="n">adj_all_block</span><span class="p">,</span>
+                <span class="n">adj_all_block_dis</span><span class="p">,</span>
+                <span class="n">train_mask_batch_single</span><span class="p">,</span>
+                <span class="n">train_mask_batch_spatial</span><span class="p">,</span>
+                <span class="n">flag_source_cat_single</span><span class="p">,</span>
+                <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+                <span class="n">row_index_all</span><span class="p">,</span>
+                <span class="n">col_index_all</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">(</span><span class="n">blocks_all</span><span class="p">,</span> <span class="n">feature_all</span><span class="p">,</span> <span class="n">adj_all</span><span class="p">,</span> <span class="n">train_mask</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+            <span class="n">balance_weight_single_block</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">balance_weight_single</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">row_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
+            <span class="p">]</span>
+
+            <span class="n">balance_weight_spatial_block</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">balance_weight_spatial</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">col_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
+            <span class="p">]</span>
+
+            <span class="c1"># Train discriminator part</span>
+            <span class="n">loss_part1</span> <span class="o">=</span> <span class="n">compute_dis_loss</span><span class="p">(</span>
+                <span class="n">model</span><span class="p">,</span>
+                <span class="n">flag_source_cat_single</span><span class="p">,</span>
+                <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+                <span class="n">anneal</span><span class="p">,</span>
+                <span class="n">batch_features_all</span><span class="p">,</span>
+                <span class="n">adj_all_block_dis</span><span class="p">,</span>
+                <span class="n">train_mask_batch_single</span><span class="p">,</span>
+                <span class="n">train_mask_batch_spatial</span><span class="p">,</span>
+                <span class="n">balance_weight_single_block</span><span class="p">,</span>
+                <span class="n">balance_weight_spatial_block</span><span class="p">,</span>
+                <span class="n">flagconfig</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">(</span><span class="n">set_to_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">loss_part1</span><span class="p">[</span><span class="s2">&quot;dis&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer_dis</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            <span class="n">loss_dis</span> <span class="o">+=</span> <span class="n">loss_part1</span><span class="p">[</span><span class="s2">&quot;dis&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+            <span class="c1"># Train AE part</span>
+            <span class="n">loss_part2</span> <span class="o">=</span> <span class="n">compute_ae_loss</span><span class="p">(</span>
+                <span class="n">model</span><span class="p">,</span>
+                <span class="n">flag_source_cat_single</span><span class="p">,</span>
+                <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+                <span class="n">anneal</span><span class="p">,</span>
+                <span class="n">batch_features_all</span><span class="p">,</span>
+                <span class="n">adj_all_block</span><span class="p">,</span>
+                <span class="n">train_mask_batch_single</span><span class="p">,</span>
+                <span class="n">train_mask_batch_spatial</span><span class="p">,</span>
+                <span class="n">balance_weight_single_block</span><span class="p">,</span>
+                <span class="n">balance_weight_spatial_block</span><span class="p">,</span>
+                <span class="n">flagconfig</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">(</span><span class="n">set_to_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">loss_part2</span><span class="p">[</span><span class="s2">&quot;loss_all&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer_ae</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">use_llm_gene_embedding</span><span class="o">==</span><span class="s1">&#39;combine&#39;</span><span class="p">:</span>
+                <span class="n">loss_part3</span> <span class="o">=</span> <span class="n">compute_gene_embedding_loss</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">(</span><span class="n">set_to_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">loss_part3</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+                <span class="n">optimizer_ae</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">):</span>
+                <span class="n">loss_atlas_i</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">loss_part2</span><span class="p">[</span><span class="s2">&quot;loss_AE_all&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">loss_all_item</span> <span class="o">+=</span> <span class="n">loss_part2</span><span class="p">[</span><span class="s2">&quot;loss_all&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">loss_ae_dis</span> <span class="o">+=</span> <span class="n">loss_part2</span><span class="p">[</span><span class="s2">&quot;dis_ae&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+        <span class="n">flagconfig</span><span class="o">.</span><span class="n">align_anneal</span> <span class="o">/=</span> <span class="mi">2</span>
+
+        <span class="n">save_snapshot</span><span class="p">(</span>
+            <span class="n">model</span><span class="p">,</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">epochs_run_pretrain</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">snapshot_path</span><span class="p">,</span><span class="n">ModelType</span><span class="o">.</span><span class="n">verbose</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">verbose</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Train Epoch </span><span class="si">{</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_epochs</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">, </span><span class="se">\</span>
+<span class="s2">            Loss dis: </span><span class="si">{</span><span class="n">loss_dis</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">spatial_dataloader</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span><span class="se">\</span>
+<span class="s2">            Loss AE: </span><span class="si">{</span><span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">spatial_dataloader</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">loss_atlas_i</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span><span class="si">}</span><span class="s2"> , </span><span class="se">\</span>
+<span class="s2">            Loss ae dis:</span><span class="si">{</span><span class="n">loss_ae_dis</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">spatial_dataloader</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span><span class="se">\</span>
+<span class="s2">            Loss all:</span><span class="si">{</span><span class="n">loss_all_item</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">spatial_dataloader</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1">################# validation</span>
+        <span class="k">if</span> <span class="n">epoch</span> <span class="o">&gt;</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">TRAIN_WITHOUT_EVAL</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">blocks_all</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">spatial_dataloader</span><span class="p">):</span>
+                    <span class="c1"># if ind not in random_numbers:</span>
+                    <span class="c1">#     continue</span>
+
+                    <span class="p">(</span>
+                        <span class="n">batch_features_all</span><span class="p">,</span>
+                        <span class="n">adj_all_block</span><span class="p">,</span>
+                        <span class="n">adj_all_block_dis</span><span class="p">,</span>
+                        <span class="n">val_mask_batch_single</span><span class="p">,</span>
+                        <span class="n">val_mask_batch_spatial</span><span class="p">,</span>
+                        <span class="n">flag_source_cat_single</span><span class="p">,</span>
+                        <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+                        <span class="n">row_index_all</span><span class="p">,</span>
+                        <span class="n">col_index_all</span><span class="p">,</span>
+                    <span class="p">)</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">(</span>
+                        <span class="n">blocks_all</span><span class="p">,</span> <span class="n">feature_all</span><span class="p">,</span> <span class="n">adj_all</span><span class="p">,</span> <span class="n">val_mask</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">model</span>
+                    <span class="p">)</span>
+
+                    <span class="n">balance_weight_single_block</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="n">balance_weight_single</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">row_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
+                    <span class="p">]</span>
+
+                    <span class="n">balance_weight_spatial_block</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="n">balance_weight_spatial</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">col_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
+                    <span class="p">]</span>
+
+                    <span class="c1"># val AE part</span>
+                    <span class="n">loss_part2</span> <span class="o">=</span> <span class="n">compute_ae_loss</span><span class="p">(</span>
+                        <span class="n">model</span><span class="p">,</span>
+                        <span class="n">flag_source_cat_single</span><span class="p">,</span>
+                        <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+                        <span class="n">anneal</span><span class="p">,</span>
+                        <span class="n">batch_features_all</span><span class="p">,</span>
+                        <span class="n">adj_all_block</span><span class="p">,</span>
+                        <span class="n">val_mask_batch_single</span><span class="p">,</span>
+                        <span class="n">val_mask_batch_spatial</span><span class="p">,</span>
+                        <span class="n">balance_weight_single_block</span><span class="p">,</span>
+                        <span class="n">balance_weight_spatial_block</span><span class="p">,</span>
+                        <span class="n">flagconfig</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">):</span>
+                        <span class="n">loss_atlas_val</span> <span class="o">+=</span> <span class="n">loss_part2</span><span class="p">[</span><span class="s2">&quot;loss_AE_all&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+                <span class="n">loss_atlas_val</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">loss_atlas_val</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">spatial_dataloader</span><span class="p">)</span> <span class="o">/</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">verbose</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Validation Epoch </span><span class="si">{</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_epochs</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">, </span><span class="se">\</span>
+<span class="s2">                    Loss AE validation: </span><span class="si">{</span><span class="n">loss_atlas_val</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+
+            <span class="n">scheduler_dis</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">loss_atlas_val</span><span class="p">)</span>
+            <span class="n">scheduler_ae</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">loss_atlas_val</span><span class="p">)</span>
+            <span class="n">current_lr</span> <span class="o">=</span> <span class="n">optimizer_dis</span><span class="o">.</span><span class="n">param_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">verbose</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">current lr:</span><span class="si">{</span><span class="n">current_lr</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># If the loss is lower than the best loss so far, save the model And reset the patience counter</span>
+            <span class="k">if</span> <span class="n">loss_atlas_val</span> <span class="o">&lt;</span> <span class="n">loss_atlas_val_best</span><span class="p">:</span>
+                <span class="n">loss_atlas_val_best</span> <span class="o">=</span> <span class="n">loss_atlas_val</span>
+                <span class="n">patience_counter</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_final_model.pt&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">patience_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># If the patience counter is greater than or equal to the patience limit, stop training</span>
+            <span class="k">if</span> <span class="n">patience_counter</span> <span class="o">&gt;=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">patience_limit_final</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="c1"># torch.save(model.state_dict(), f&quot;{save_dir}/trained_model/FuseMap_final_model_end.pt&quot;)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Early stopping due to loss not improving</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_final_model.pt&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_final_model_final.pt&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">File name changed</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">current_lr</span> <span class="o">&lt;</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">lr_limit_final</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="c1"># torch.save(model.state_dict(), f&quot;{save_dir}/trained_model/FuseMap_final_model_end.pt&quot;)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Early stopping due to loss not improving - learning rate</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_final_model.pt&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_final_model_final.pt&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">File name changed</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">break</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_final_model.pt&quot;</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_final_model.pt&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_final_model_final.pt&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">File name changed in the end</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="read_model"><a class="viewcode-back" href="../../fusemap.html#fusemap.train_model.read_model">[docs]</a><span class="k">def</span> <span class="nf">read_model</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span> <span class="n">spatial_dataloader_test</span><span class="p">,</span> <span class="n">g_all</span><span class="p">,</span> <span class="n">feature_all</span><span class="p">,</span> <span class="n">adj_all</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">ModelType</span><span class="p">,</span> <span class="n">mode</span>
+<span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">_model_final.pt&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+        <span class="n">learnt_scrna_seq_adj</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">input_identity</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;scrna&quot;</span><span class="p">:</span>
+                <span class="n">learnt_scrna_seq_adj</span><span class="p">[</span><span class="s2">&quot;atlas&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">scrna_seq_adj</span><span class="p">[</span><span class="s2">&quot;atlas&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+                <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">blocks_all</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">spatial_dataloader_test</span><span class="p">):</span>
+            <span class="n">row_index_all</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">col_index_all</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">i_atlas</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">):</span>
+                <span class="n">row_index</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">blocks_all</span><span class="p">[</span><span class="n">i_atlas</span><span class="p">][</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">col_index</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">blocks_all</span><span class="p">[</span><span class="n">i_atlas</span><span class="p">][</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">row_index_all</span><span class="p">[</span><span class="n">i_atlas</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">row_index</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">())[</span>
+                    <span class="mi">0</span>
+                <span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                <span class="n">col_index_all</span><span class="p">[</span><span class="n">i_atlas</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">col_index</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">())[</span>
+                    <span class="mi">0</span>
+                <span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+            <span class="n">batch_features_all</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">feature_all</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">row_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">:]</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
+                    <span class="n">device</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="n">adj_all_block_dis</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span>
+                    <span class="n">adj_all</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">row_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">:]</span>
+                    <span class="o">.</span><span class="n">tocsc</span><span class="p">()[:,</span> <span class="n">col_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+                    <span class="o">.</span><span class="n">todense</span><span class="p">()</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">input_identity</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ST&quot;</span>
+                <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">scrna_seq_adj</span><span class="p">[</span><span class="s2">&quot;atlas&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]()[</span><span class="n">row_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">:][</span>
+                    <span class="p">:,</span> <span class="n">col_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
+            <span class="p">]</span>
+
+            <span class="n">z_all</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">encoder</span><span class="p">[</span><span class="s2">&quot;atlas&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)](</span>
+                    <span class="n">batch_features_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">adj_all_block_dis</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="n">z_distribution_all</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">z_all</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
+            <span class="p">]</span>
+
+            <span class="n">z_spatial_all</span> <span class="o">=</span> <span class="p">[</span><span class="n">z_all</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)]</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">):</span>
+                <span class="n">g_all</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">row_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;single_feat_hidden&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">z_distribution_all</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+                <span class="p">)</span>
+                <span class="n">g_all</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">col_index_all</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;spatial_feat_hidden&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">z_spatial_all</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+                <span class="p">)</span>
+
+    <span class="n">latent_embeddings_all_single</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">g_all</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">ndata</span><span class="p">[</span><span class="s2">&quot;single_feat_hidden&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">latent_embeddings_all_spatial</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">g_all</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">ndata</span><span class="p">[</span><span class="s2">&quot;spatial_feat_hidden&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="n">save_obj</span><span class="p">(</span>
+        <span class="n">latent_embeddings_all_single</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/latent_embeddings_all_single_</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">save_obj</span><span class="p">(</span>
+        <span class="n">latent_embeddings_all_spatial</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/latent_embeddings_all_spatial_</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="balance_weight"><a class="viewcode-back" href="../../fusemap.html#fusemap.train_model.balance_weight">[docs]</a><span class="k">def</span> <span class="nf">balance_weight</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">adatas</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">,</span> <span class="n">n_atlas</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/latent_embeddings_all_single_pretrain.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">openfile</span><span class="p">:</span>
+        <span class="n">latent_embeddings_all_single</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">openfile</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/latent_embeddings_all_spatial_pretrain.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">openfile</span><span class="p">:</span>
+        <span class="n">latent_embeddings_all_spatial</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">openfile</span><span class="p">)</span>
+
+    <span class="n">adatas_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">ad</span><span class="o">.</span><span class="n">AnnData</span><span class="p">(</span>
+            <span class="n">obs</span><span class="o">=</span><span class="n">adatas</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">obsm</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;single&quot;</span><span class="p">:</span> <span class="n">latent_embeddings_all_single</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="s2">&quot;spatial&quot;</span><span class="p">:</span> <span class="n">latent_embeddings_all_spatial</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_atlas</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/ad_fusemap_single_leiden.pkl&quot;</span><span class="p">):</span>
+        <span class="n">leiden_adata_single</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">leiden_adata_spatial</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">ad_fusemap_single_leiden</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">ad_fusemap_spatial_leiden</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">adata_</span> <span class="ow">in</span> <span class="n">adatas_</span><span class="p">:</span>
+            <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span>
+                <span class="n">adata_</span><span class="p">,</span>
+                <span class="n">n_pcs</span><span class="o">=</span><span class="n">adata_</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">use_rep</span><span class="o">=</span><span class="s2">&quot;single&quot;</span><span class="p">,</span>
+                <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;cosine&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">leiden</span><span class="p">(</span><span class="n">adata_</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">key_added</span><span class="o">=</span><span class="s2">&quot;fusemap_single_leiden&quot;</span><span class="p">)</span>
+            <span class="n">ad_fusemap_single_leiden</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">adata_</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;fusemap_single_leiden&quot;</span><span class="p">]))</span>
+            <span class="n">leiden_adata_single</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">average_embeddings</span><span class="p">(</span><span class="n">adata_</span><span class="p">,</span> <span class="s2">&quot;fusemap_single_leiden&quot;</span><span class="p">,</span> <span class="s2">&quot;single&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span>
+                <span class="n">adata_</span><span class="p">,</span>
+                <span class="n">n_pcs</span><span class="o">=</span><span class="n">adata_</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">use_rep</span><span class="o">=</span><span class="s2">&quot;spatial&quot;</span><span class="p">,</span>
+                <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;cosine&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">leiden</span><span class="p">(</span><span class="n">adata_</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">key_added</span><span class="o">=</span><span class="s2">&quot;fusemap_spatial_leiden&quot;</span><span class="p">)</span>
+            <span class="n">ad_fusemap_spatial_leiden</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">adata_</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;fusemap_spatial_leiden&quot;</span><span class="p">]))</span>
+            <span class="n">leiden_adata_spatial</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">average_embeddings</span><span class="p">(</span><span class="n">adata_</span><span class="p">,</span> <span class="s2">&quot;fusemap_spatial_leiden&quot;</span><span class="p">,</span> <span class="s2">&quot;spatial&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">save_obj</span><span class="p">(</span><span class="n">ad_fusemap_single_leiden</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/ad_fusemap_single_leiden&quot;</span><span class="p">)</span>
+        <span class="n">save_obj</span><span class="p">(</span><span class="n">ad_fusemap_spatial_leiden</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/ad_fusemap_spatial_leiden&quot;</span><span class="p">)</span>
+        <span class="n">save_obj</span><span class="p">(</span><span class="n">leiden_adata_single</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/leiden_adata_single&quot;</span><span class="p">)</span>
+        <span class="n">save_obj</span><span class="p">(</span><span class="n">leiden_adata_spatial</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/leiden_adata_spatial&quot;</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/ad_fusemap_single_leiden.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">openfile</span><span class="p">:</span>
+            <span class="n">ad_fusemap_single_leiden</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">openfile</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/ad_fusemap_spatial_leiden.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">openfile</span><span class="p">:</span>
+            <span class="n">ad_fusemap_spatial_leiden</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">openfile</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/leiden_adata_single.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">openfile</span><span class="p">:</span>
+                <span class="n">leiden_adata_single</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">openfile</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/leiden_adata_spatial.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">openfile</span><span class="p">:</span>
+                <span class="n">leiden_adata_spatial</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">openfile</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="c1">### need to convert</span>
+            <span class="n">leiden_adata_single</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ad_fusemap_single_leiden</span><span class="p">)):</span>
+                <span class="n">leiden_adata_single</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">sc</span><span class="o">.</span><span class="n">read_h5ad</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/pickle_convert/PRETRAINED_leiden_adata_single_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">.h5ad&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="n">leiden_adata_spatial</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ad_fusemap_single_leiden</span><span class="p">)):</span>
+                <span class="n">leiden_adata_spatial</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">sc</span><span class="o">.</span><span class="n">read_h5ad</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/pickle_convert/PRETRAINED_leiden_adata_spatial_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">.h5ad&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">adata_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">adatas_</span><span class="p">):</span>
+            <span class="n">adata_</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;fusemap_single_leiden&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ad_fusemap_single_leiden</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+            <span class="n">adata_</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;fusemap_spatial_leiden&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ad_fusemap_spatial_leiden</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">leiden_adata_single</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="c1"># raise ValueError(&#39;balance weight&#39;)</span>
+        <span class="n">balance_weight_single</span> <span class="o">=</span> <span class="n">get_balance_weight_subsample</span><span class="p">(</span>
+            <span class="n">leiden_adata_single</span><span class="p">,</span> <span class="n">adatas_</span><span class="p">,</span> <span class="s2">&quot;fusemap_single_leiden&quot;</span>
+        <span class="p">)</span>
+        <span class="n">balance_weight_spatial</span> <span class="o">=</span> <span class="n">get_balance_weight_subsample</span><span class="p">(</span>
+            <span class="n">leiden_adata_spatial</span><span class="p">,</span> <span class="n">adatas_</span><span class="p">,</span> <span class="s2">&quot;fusemap_spatial_leiden&quot;</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">balance_weight_single</span> <span class="o">=</span> <span class="n">get_balance_weight</span><span class="p">(</span>
+            <span class="n">adatas</span><span class="p">,</span> <span class="n">leiden_adata_single</span><span class="p">,</span> <span class="n">adatas_</span><span class="p">,</span> <span class="s2">&quot;fusemap_single_leiden&quot;</span>
+        <span class="p">)</span>
+        <span class="n">balance_weight_spatial</span> <span class="o">=</span> <span class="n">get_balance_weight</span><span class="p">(</span>
+            <span class="n">adatas</span><span class="p">,</span> <span class="n">leiden_adata_spatial</span><span class="p">,</span> <span class="n">adatas_</span><span class="p">,</span> <span class="s2">&quot;fusemap_spatial_leiden&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">balance_weight_single</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">balance_weight_single</span><span class="p">]</span>
+    <span class="n">balance_weight_spatial</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">balance_weight_spatial</span>
+    <span class="p">]</span>
+
+    <span class="n">save_obj</span><span class="p">(</span><span class="n">balance_weight_single</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/balance_weight_single&quot;</span><span class="p">)</span>
+    <span class="n">save_obj</span><span class="p">(</span><span class="n">balance_weight_spatial</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/balance_weight_spatial&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_ref_model"><a class="viewcode-back" href="../../fusemap.html#fusemap.train_model.load_ref_model">[docs]</a><span class="k">def</span> <span class="nf">load_ref_model</span><span class="p">(</span>
+    <span class="n">ref_dir</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">PRETRAINED_MODEL_PATH</span> <span class="o">=</span> <span class="n">ref_dir</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;/pretrain_model.pt&quot;</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">PRETRAINED_MODEL_PATH</span><span class="p">):</span>
+        <span class="n">TRAINED_MODEL</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">PRETRAINED_MODEL_PATH</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">TRAINED_X_NUM</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="s2">&quot;decoder&quot;</span> <span class="ow">in</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">TRAINED_MODEL</span><span class="o">.</span><span class="n">keys</span><span class="p">()])</span>
+
+        <span class="n">TRAINED_GENE_EMBED</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">read_h5ad</span><span class="p">(</span><span class="n">ref_dir</span> <span class="o">+</span> <span class="s2">&quot;/ad_gene_embedding.h5ad&quot;</span><span class="p">)</span>
+        <span class="n">TRAINED_GENE_NAME</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">TRAINED_GENE_EMBED</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No pretrained model found!&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">TRAINED_MODEL</span><span class="p">,</span> <span class="n">TRAINED_X_NUM</span><span class="p">,</span> <span class="n">TRAINED_GENE_EMBED</span><span class="p">,</span> <span class="n">TRAINED_GENE_NAME</span></div>
+
+
+<div class="viewcode-block" id="add_pretrain_to_name"><a class="viewcode-back" href="../../fusemap.html#fusemap.train_model.add_pretrain_to_name">[docs]</a><span class="k">def</span> <span class="nf">add_pretrain_to_name</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s2">&quot;discriminator_single&quot;</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;discriminator_single&quot;</span><span class="p">,</span> <span class="s2">&quot;discriminator_single_pretrain&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s2">&quot;discriminator_spatial&quot;</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;discriminator_spatial&quot;</span><span class="p">,</span> <span class="s2">&quot;discriminator_spatial_pretrain&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">s</span></div>
+
+
+<div class="viewcode-block" id="transfer_weight"><a class="viewcode-back" href="../../fusemap.html#fusemap.train_model.transfer_weight">[docs]</a><span class="k">def</span> <span class="nf">transfer_weight</span><span class="p">(</span><span class="n">TRAINED_MODEL</span><span class="p">,</span> <span class="n">pretrain_index</span><span class="p">,</span> <span class="n">adapt_model</span><span class="p">):</span>
+    <span class="n">layers_to_transfer</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;discriminator_single.linear_0.weight&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;discriminator_single.linear_0.bias&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;discriminator_single.linear_1.weight&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;discriminator_single.linear_1.bias&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;discriminator_spatial.linear_0.weight&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;discriminator_spatial.linear_0.bias&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;discriminator_spatial.linear_1.weight&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;discriminator_spatial.linear_1.bias&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">transferred_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">TRAINED_MODEL</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">layers_to_transfer</span>
+    <span class="p">}</span>
+    <span class="n">transferred_dict_pretrain</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">add_pretrain_to_name</span><span class="p">(</span><span class="n">k</span><span class="p">):</span> <span class="n">v</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">TRAINED_MODEL</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">layers_to_transfer</span>
+    <span class="p">}</span>
+    <span class="n">transferred_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">transferred_dict_pretrain</span><span class="p">)</span>
+
+    <span class="n">new_model_dict</span> <span class="o">=</span> <span class="n">adapt_model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
+    <span class="n">new_model_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">transferred_dict</span><span class="p">)</span>
+    <span class="n">adapt_model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">new_model_dict</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="c1"># Assuming the pretrained parameters go into the first &#39;n&#39; units</span>
+        <span class="n">adapt_model</span><span class="o">.</span><span class="n">discriminator_single_pretrain</span><span class="o">.</span><span class="n">pred</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">TRAINED_MODEL</span><span class="p">[</span><span class="s2">&quot;discriminator_single.pred.weight&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">adapt_model</span><span class="o">.</span><span class="n">discriminator_single_pretrain</span><span class="o">.</span><span class="n">pred</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">TRAINED_MODEL</span><span class="p">[</span><span class="s2">&quot;discriminator_single.pred.bias&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">adapt_model</span><span class="o">.</span><span class="n">discriminator_spatial_pretrain</span><span class="o">.</span><span class="n">pred</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">TRAINED_MODEL</span><span class="p">[</span><span class="s2">&quot;discriminator_spatial.pred.weight&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">adapt_model</span><span class="o">.</span><span class="n">discriminator_spatial_pretrain</span><span class="o">.</span><span class="n">pred</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">TRAINED_MODEL</span><span class="p">[</span><span class="s2">&quot;discriminator_spatial.pred.bias&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">adapt_model</span><span class="o">.</span><span class="n">gene_embedding_pretrained</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">TRAINED_MODEL</span><span class="p">[</span><span class="s2">&quot;gene_embedding&quot;</span><span class="p">][:,</span> <span class="n">pretrain_index</span><span class="p">]</span>
+        <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">adapt_model</span><span class="o">.</span><span class="n">discriminator_single_pretrain</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+        <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">adapt_model</span><span class="o">.</span><span class="n">discriminator_spatial_pretrain</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+        <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">adapt_model</span><span class="o">.</span><span class="n">gene_embedding_pretrained</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">adapt_model</span><span class="o">.</span><span class="n">discriminator_single</span><span class="o">.</span><span class="n">pred</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">adapt_model</span><span class="o">.</span><span class="n">discriminator_single</span><span class="o">.</span><span class="n">pred</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">adapt_model</span><span class="o">.</span><span class="n">discriminator_spatial</span><span class="o">.</span><span class="n">pred</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">adapt_model</span><span class="o">.</span><span class="n">discriminator_spatial</span><span class="o">.</span><span class="n">pred</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+    <span class="c1"># Print out to verify</span>
+    <span class="c1"># for name, param in adapt_model.named_parameters():</span>
+    <span class="c1">#     print(name, param.requires_grad)</span>
+
+
+<div class="viewcode-block" id="load_ref_data"><a class="viewcode-back" href="../../fusemap.html#fusemap.train_model.load_ref_data">[docs]</a><span class="k">def</span> <span class="nf">load_ref_data</span><span class="p">(</span><span class="n">ref_dir</span><span class="p">,</span> <span class="n">TRAINED_X_NUM</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">USE_REFERENCE_PCT</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ref_dir</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;/latent_embeddings_single.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">openfile</span><span class="p">:</span>
+        <span class="n">latent_embeddings_single</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">openfile</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ref_dir</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;/latent_embeddings_spatial.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">openfile</span><span class="p">:</span>
+        <span class="n">latent_embeddings_spatial</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">openfile</span><span class="p">)</span>
+
+    <span class="n">ds_pretrain_single</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">MapPretrainDataset</span><span class="p">(</span><span class="n">latent_embeddings_single</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">TRAINED_X_NUM</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">dataloader_pretrain_single</span> <span class="o">=</span> <span class="n">MapPretrainDataLoader</span><span class="p">(</span>
+        <span class="n">ds_pretrain_single</span><span class="p">,</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">batch_size</span> <span class="o">*</span> <span class="n">USE_REFERENCE_PCT</span> <span class="o">*</span> <span class="mi">4</span><span class="p">),</span>
+        <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">n_atlas</span><span class="o">=</span><span class="n">TRAINED_X_NUM</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">ds_pretrain_spatial</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">MapPretrainDataset</span><span class="p">(</span><span class="n">latent_embeddings_spatial</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">TRAINED_X_NUM</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">dataloader_pretrain_spatial</span> <span class="o">=</span> <span class="n">MapPretrainDataLoader</span><span class="p">(</span>
+        <span class="n">ds_pretrain_spatial</span><span class="p">,</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">batch_size</span> <span class="o">*</span> <span class="n">USE_REFERENCE_PCT</span><span class="p">),</span>
+        <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">n_atlas</span><span class="o">=</span><span class="n">TRAINED_X_NUM</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dataloader_pretrain_single</span><span class="p">,</span> <span class="n">dataloader_pretrain_spatial</span></div>
+
+
+<div class="viewcode-block" id="map_model"><a class="viewcode-back" href="../../fusemap.html#fusemap.train_model.map_model">[docs]</a><span class="k">def</span> <span class="nf">map_model</span><span class="p">(</span>
+    <span class="n">adapt_model</span><span class="p">,</span>
+    <span class="n">spatial_dataloader</span><span class="p">,</span>
+    <span class="n">feature_all</span><span class="p">,</span>
+    <span class="n">adj_all</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">,</span>
+    <span class="n">train_mask</span><span class="p">,</span>
+    <span class="n">val_mask</span><span class="p">,</span>
+    <span class="n">ref_dir</span><span class="p">,</span>
+    <span class="n">dataloader_pretrain_single</span><span class="p">,</span>
+    <span class="n">dataloader_pretrain_spatial</span><span class="p">,</span>
+    <span class="n">TRAINED_X_NUM</span><span class="p">,</span>
+    <span class="n">flagconfig</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">loss_atlas_val_best</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+    <span class="n">patience_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">optimizer_dis</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">,</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">optim_kw</span><span class="o">.</span><span class="n">value</span><span class="p">)(</span>
+        <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+            <span class="n">adapt_model</span><span class="o">.</span><span class="n">discriminator_single</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+            <span class="n">adapt_model</span><span class="o">.</span><span class="n">discriminator_spatial</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+        <span class="p">),</span>
+        <span class="n">lr</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">learning_rate</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">optimizer_ae</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">,</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">optim_kw</span><span class="o">.</span><span class="n">value</span><span class="p">)(</span>
+        <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+            <span class="n">adapt_model</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+            <span class="n">adapt_model</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+            <span class="n">adapt_model</span><span class="o">.</span><span class="n">scrna_seq_adj</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+        <span class="p">),</span>
+        <span class="n">lr</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">learning_rate</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">scheduler_dis</span> <span class="o">=</span> <span class="n">ReduceLROnPlateau</span><span class="p">(</span>
+        <span class="n">optimizer_dis</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span>
+        <span class="n">factor</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">lr_factor_pretrain</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="n">patience</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">lr_patience_pretrain</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">scheduler_ae</span> <span class="o">=</span> <span class="n">ReduceLROnPlateau</span><span class="p">(</span>
+        <span class="n">optimizer_ae</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span>
+        <span class="n">factor</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">lr_factor_pretrain</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="n">patience</span><span class="o">=</span><span class="n">ModelType</span><span class="o">.</span><span class="n">lr_patience_pretrain</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">dataloader_pretrain_single_cycle</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">cycle</span><span class="p">(</span><span class="n">dataloader_pretrain_single</span><span class="p">)</span>
+    <span class="n">dataloader_pretrain_spatial_cycle</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">cycle</span><span class="p">(</span><span class="n">dataloader_pretrain_spatial</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+        <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">epochs_run_pretrain</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">n_epochs</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    <span class="p">):</span>
+        <span class="n">loss_dis</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">loss_ae_dis</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">loss_all_item</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">loss_atlas_i</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">):</span>
+            <span class="n">loss_atlas_i</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">loss_atlas_val</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">anneal</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">max</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">flagconfig</span><span class="o">.</span><span class="n">align_anneal</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">flagconfig</span><span class="o">.</span><span class="n">align_anneal</span>
+            <span class="k">else</span> <span class="mi">0</span>
+        <span class="p">)</span>
+
+        <span class="n">adapt_model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">blocks_all</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">spatial_dataloader</span><span class="p">):</span>
+            <span class="p">(</span>
+                <span class="n">batch_features_all</span><span class="p">,</span>
+                <span class="n">adj_all_block</span><span class="p">,</span>
+                <span class="n">adj_all_block_dis</span><span class="p">,</span>
+                <span class="n">train_mask_batch_single</span><span class="p">,</span>
+                <span class="n">train_mask_batch_spatial</span><span class="p">,</span>
+                <span class="n">flag_source_cat_single</span><span class="p">,</span>
+                <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+                <span class="n">_</span><span class="p">,</span>
+                <span class="n">_</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">(</span>
+                <span class="n">blocks_all</span><span class="p">,</span> <span class="n">feature_all</span><span class="p">,</span> <span class="n">adj_all</span><span class="p">,</span> <span class="n">train_mask</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">adapt_model</span>
+            <span class="p">)</span>
+
+            <span class="c1">### difference: add pretrain data</span>
+            <span class="n">pretrain_single_batch</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">dataloader_pretrain_single_cycle</span><span class="p">)</span>
+            <span class="n">pretrain_single_batch</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">pretrain_single_batch</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">TRAINED_X_NUM</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="n">pretrain_spatial_batch</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">dataloader_pretrain_spatial_cycle</span><span class="p">)</span>
+            <span class="n">pretrain_spatial_batch</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">pretrain_spatial_batch</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">TRAINED_X_NUM</span><span class="p">)</span>
+            <span class="p">]</span>
+
+            <span class="c1">### add difference: add discriminator pretrain</span>
+            <span class="n">flag_shape_single_pretrain</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">pretrain_single_batch</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">TRAINED_X_NUM</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="n">flag_all_single_pretrain</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">x</span><span class="p">,),</span> <span class="n">i</span> <span class="o">+</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">flag_shape_single_pretrain</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">flag_source_cat_single_pretrain</span> <span class="o">=</span> <span class="n">flag_all_single_pretrain</span><span class="o">.</span><span class="n">long</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+            <span class="n">flag_shape_spatial_pretrain</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">pretrain_spatial_batch</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">TRAINED_X_NUM</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="n">flag_all_spatial_pretrain</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">x</span><span class="p">,),</span> <span class="n">i</span> <span class="o">+</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">flag_shape_spatial_pretrain</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">flag_source_cat_spatial_pretrain</span> <span class="o">=</span> <span class="n">flag_all_spatial_pretrain</span><span class="o">.</span><span class="n">long</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
+                <span class="n">device</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Train discriminator part</span>
+            <span class="n">loss_part1</span> <span class="o">=</span> <span class="n">compute_dis_loss_map</span><span class="p">(</span>
+                <span class="n">adapt_model</span><span class="p">,</span>
+                <span class="n">flag_source_cat_single</span><span class="p">,</span>
+                <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+                <span class="n">anneal</span><span class="p">,</span>
+                <span class="n">batch_features_all</span><span class="p">,</span>
+                <span class="n">adj_all_block_dis</span><span class="p">,</span>
+                <span class="n">train_mask_batch_single</span><span class="p">,</span>
+                <span class="n">train_mask_batch_spatial</span><span class="p">,</span>
+                <span class="n">pretrain_single_batch</span><span class="p">,</span>
+                <span class="n">pretrain_spatial_batch</span><span class="p">,</span>
+                <span class="n">flag_source_cat_single_pretrain</span><span class="p">,</span>
+                <span class="n">flag_source_cat_spatial_pretrain</span><span class="p">,</span>
+                <span class="n">flagconfig</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">adapt_model</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">(</span><span class="n">set_to_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">loss_part1</span><span class="p">[</span><span class="s2">&quot;dis&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer_dis</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            <span class="n">loss_dis</span> <span class="o">+=</span> <span class="n">loss_part1</span><span class="p">[</span><span class="s2">&quot;dis&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+            <span class="c1"># Train AE part</span>
+            <span class="n">loss_part2</span> <span class="o">=</span> <span class="n">compute_ae_loss_map</span><span class="p">(</span>
+                <span class="n">adapt_model</span><span class="p">,</span>
+                <span class="n">flag_source_cat_single</span><span class="p">,</span>
+                <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+                <span class="n">anneal</span><span class="p">,</span>
+                <span class="n">batch_features_all</span><span class="p">,</span>
+                <span class="n">adj_all_block</span><span class="p">,</span>
+                <span class="n">train_mask_batch_single</span><span class="p">,</span>
+                <span class="n">train_mask_batch_spatial</span><span class="p">,</span>
+                <span class="n">pretrain_single_batch</span><span class="p">,</span>
+                <span class="n">pretrain_spatial_batch</span><span class="p">,</span>
+                <span class="n">flag_source_cat_single_pretrain</span><span class="p">,</span>
+                <span class="n">flag_source_cat_spatial_pretrain</span><span class="p">,</span>
+                <span class="n">flagconfig</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">adapt_model</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">(</span><span class="n">set_to_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">loss_part2</span><span class="p">[</span><span class="s2">&quot;loss_all&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer_ae</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">):</span>
+                <span class="n">loss_atlas_i</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">loss_part2</span><span class="p">[</span><span class="s2">&quot;loss_AE_all&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">loss_all_item</span> <span class="o">+=</span> <span class="n">loss_part2</span><span class="p">[</span><span class="s2">&quot;loss_all&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">loss_ae_dis</span> <span class="o">+=</span> <span class="n">loss_part2</span><span class="p">[</span><span class="s2">&quot;dis_ae&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+        <span class="n">flagconfig</span><span class="o">.</span><span class="n">align_anneal</span> <span class="o">/=</span> <span class="mi">2</span>
+
+        <span class="k">if</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">verbose</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Train Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_epochs</span><span class="si">}</span><span class="s2">, </span><span class="se">\</span>
+<span class="s2">            Loss dis: </span><span class="si">{</span><span class="n">loss_dis</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">spatial_dataloader</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span><span class="se">\</span>
+<span class="s2">            Loss AE: </span><span class="si">{</span><span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">spatial_dataloader</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">loss_atlas_i</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span><span class="si">}</span><span class="s2"> , </span><span class="se">\</span>
+<span class="s2">            Loss ae dis:</span><span class="si">{</span><span class="n">loss_ae_dis</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">spatial_dataloader</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span><span class="se">\</span>
+<span class="s2">            Loss all:</span><span class="si">{</span><span class="n">loss_all_item</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">spatial_dataloader</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">save_snapshot</span><span class="p">(</span>
+            <span class="n">adapt_model</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">epochs_run_final</span><span class="p">,</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">snapshot_path</span><span class="p">,</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">verbose</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/lambda_disc_single.pkl&quot;</span><span class="p">):</span>
+            <span class="n">save_obj</span><span class="p">(</span>
+                <span class="n">flagconfig</span><span class="o">.</span><span class="n">lambda_disc_single</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/lambda_disc_single&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1">################# validation</span>
+        <span class="k">if</span> <span class="n">epoch</span> <span class="o">&gt;</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">TRAIN_WITHOUT_EVAL</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="n">adapt_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">blocks_all</span> <span class="ow">in</span> <span class="n">spatial_dataloader</span><span class="p">:</span>
+                    <span class="p">(</span>
+                        <span class="n">batch_features_all</span><span class="p">,</span>
+                        <span class="n">adj_all_block</span><span class="p">,</span>
+                        <span class="n">adj_all_block_dis</span><span class="p">,</span>
+                        <span class="n">val_mask_batch_single</span><span class="p">,</span>
+                        <span class="n">val_mask_batch_spatial</span><span class="p">,</span>
+                        <span class="n">flag_source_cat_single</span><span class="p">,</span>
+                        <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+                        <span class="n">_</span><span class="p">,</span>
+                        <span class="n">_</span><span class="p">,</span>
+                    <span class="p">)</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">(</span>
+                        <span class="n">blocks_all</span><span class="p">,</span> <span class="n">feature_all</span><span class="p">,</span> <span class="n">adj_all</span><span class="p">,</span> <span class="n">val_mask</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">adapt_model</span>
+                    <span class="p">)</span>
+
+                    <span class="c1">### difference: add pretrain data</span>
+                    <span class="n">pretrain_single_batch</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">dataloader_pretrain_single_cycle</span><span class="p">)</span>
+                    <span class="n">pretrain_single_batch</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="n">pretrain_single_batch</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">TRAINED_X_NUM</span><span class="p">)</span>
+                    <span class="p">]</span>
+                    <span class="n">pretrain_spatial_batch</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">dataloader_pretrain_spatial_cycle</span><span class="p">)</span>
+                    <span class="n">pretrain_spatial_batch</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="n">pretrain_spatial_batch</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">TRAINED_X_NUM</span><span class="p">)</span>
+                    <span class="p">]</span>
+
+                    <span class="c1">### difference: discriminator pretrain</span>
+                    <span class="n">flag_shape_single_pretrain</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="n">pretrain_single_batch</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">TRAINED_X_NUM</span><span class="p">)</span>
+                    <span class="p">]</span>
+                    <span class="n">flag_all_single_pretrain</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+                        <span class="p">[</span>
+                            <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">x</span><span class="p">,),</span> <span class="n">i</span> <span class="o">+</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
+                            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">flag_shape_single_pretrain</span><span class="p">)</span>
+                        <span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="n">flag_source_cat_single_pretrain</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">flag_all_single_pretrain</span><span class="o">.</span><span class="n">long</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="p">)</span>
+
+                    <span class="n">flag_shape_spatial_pretrain</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="n">pretrain_spatial_batch</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">TRAINED_X_NUM</span><span class="p">)</span>
+                    <span class="p">]</span>
+                    <span class="n">flag_all_spatial_pretrain</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+                        <span class="p">[</span>
+                            <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">x</span><span class="p">,),</span> <span class="n">i</span> <span class="o">+</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
+                            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">flag_shape_spatial_pretrain</span><span class="p">)</span>
+                        <span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="n">flag_source_cat_spatial_pretrain</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">flag_all_spatial_pretrain</span><span class="o">.</span><span class="n">long</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="p">)</span>
+
+                    <span class="c1"># val AE part</span>
+                    <span class="n">loss_part2</span> <span class="o">=</span> <span class="n">compute_ae_loss_map</span><span class="p">(</span>
+                        <span class="n">adapt_model</span><span class="p">,</span>
+                        <span class="n">flag_source_cat_single</span><span class="p">,</span>
+                        <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+                        <span class="n">anneal</span><span class="p">,</span>
+                        <span class="n">batch_features_all</span><span class="p">,</span>
+                        <span class="n">adj_all_block</span><span class="p">,</span>
+                        <span class="n">val_mask_batch_single</span><span class="p">,</span>
+                        <span class="n">val_mask_batch_spatial</span><span class="p">,</span>
+                        <span class="n">pretrain_single_batch</span><span class="p">,</span>
+                        <span class="n">pretrain_spatial_batch</span><span class="p">,</span>
+                        <span class="n">flag_source_cat_single_pretrain</span><span class="p">,</span>
+                        <span class="n">flag_source_cat_spatial_pretrain</span><span class="p">,</span>
+                        <span class="n">flagconfig</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">):</span>
+                        <span class="n">loss_atlas_val</span> <span class="o">+=</span> <span class="n">loss_part2</span><span class="p">[</span><span class="s2">&quot;loss_AE_all&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+                <span class="n">loss_atlas_val</span> <span class="o">=</span> <span class="n">loss_atlas_val</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">spatial_dataloader</span><span class="p">)</span> <span class="o">/</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span>
+                <span class="k">if</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">verbose</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Validation Epoch </span><span class="si">{</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_epochs</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">, </span><span class="se">\</span>
+<span class="s2">                    Loss AE validation: </span><span class="si">{</span><span class="n">loss_atlas_val</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+
+            <span class="n">scheduler_dis</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">loss_atlas_val</span><span class="p">)</span>
+            <span class="n">scheduler_ae</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">loss_atlas_val</span><span class="p">)</span>
+            <span class="n">current_lr</span> <span class="o">=</span> <span class="n">optimizer_dis</span><span class="o">.</span><span class="n">param_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">verbose</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">current lr:</span><span class="si">{</span><span class="n">current_lr</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># If the loss is lower than the best loss so far, save the model And reset the patience counter</span>
+            <span class="k">if</span> <span class="n">loss_atlas_val</span> <span class="o">&lt;</span> <span class="n">loss_atlas_val_best</span><span class="p">:</span>
+                <span class="n">loss_atlas_val_best</span> <span class="o">=</span> <span class="n">loss_atlas_val</span>
+                <span class="n">patience_counter</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+                    <span class="n">adapt_model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_map_model.pt&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">patience_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+
+            <span class="c1"># If the patience counter is greater than or equal to the patience limit, stop training</span>
+            <span class="k">if</span> <span class="n">patience_counter</span> <span class="o">&gt;=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">patience_limit_final</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="c1"># torch.save(model.state_dict(), f&quot;{save_dir}/trained_model/FuseMap_final_model_end.pt&quot;)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Early stopping due to loss not improving</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_map_model.pt&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_map_model_final.pt&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">File name changed</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">current_lr</span> <span class="o">&lt;</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">lr_limit_final</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="c1"># torch.save(model.state_dict(), f&quot;{save_dir}/trained_model/FuseMap_final_model_end.pt&quot;)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Early stopping due to loss not improving - learning rate</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_map_model.pt&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_map_model_final.pt&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">File name changed</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">break</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_map_model.pt&quot;</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_map_model.pt&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ModelType</span><span class="o">.</span><span class="n">save_dir</span><span class="si">}</span><span class="s2">/trained_model/FuseMap_map_model_final.pt&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">File name changed in the end</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Yichun He.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

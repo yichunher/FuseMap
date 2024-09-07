@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fusemap.dataset &mdash; FuseMap 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            FuseMap
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">FuseMap</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">FuseMap</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">fusemap.dataset</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for fusemap.dataset</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">scipy.sparse</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">import</span> <span class="nn">dgl</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">TensorDataset</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+
+<div class="viewcode-block" id="get_feature_sparse"><a class="viewcode-back" href="../../fusemap.html#fusemap.dataset.get_feature_sparse">[docs]</a><span class="k">def</span> <span class="nf">get_feature_sparse</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">feature</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">feature</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># .to(device)</span></div>
+
+
+<div class="viewcode-block" id="construct_mask"><a class="viewcode-back" href="../../fusemap.html#fusemap.dataset.construct_mask">[docs]</a><span class="k">def</span> <span class="nf">construct_mask</span><span class="p">(</span><span class="n">n_atlas</span><span class="p">,</span> <span class="n">spatial_dataset_list</span><span class="p">,</span> <span class="n">g_all</span><span class="p">):</span>
+    <span class="n">train_pct</span> <span class="o">=</span> <span class="mf">0.85</span>
+    <span class="c1"># np.random.seed(0)</span>
+    <span class="n">num_train</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">train_pct</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">spatial_dataset_list</span><span class="p">]</span>
+    <span class="n">nodes_order</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">g_i</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">())</span> <span class="k">for</span> <span class="n">g_i</span> <span class="ow">in</span> <span class="n">g_all</span><span class="p">]</span>
+    <span class="n">train_id</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">nodes_order_i</span><span class="p">[:</span><span class="n">num_train_i</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">nodes_order_i</span><span class="p">,</span> <span class="n">num_train_i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">nodes_order</span><span class="p">,</span> <span class="n">num_train</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="c1"># val_mask=[nodes_order_i[num_train_i:] for nodes_order_i,num_train_i in zip(nodes_order,num_train)]</span>
+    <span class="n">train_mask</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">spatial_dataset_list</span>
+    <span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_atlas</span><span class="p">):</span>
+        <span class="n">train_mask</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">train_id</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">train_mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">bool</span><span class="p">()</span>
+    <span class="n">val_mask</span> <span class="o">=</span> <span class="p">[</span><span class="o">~</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">train_mask</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">train_mask</span><span class="p">,</span> <span class="n">val_mask</span></div>
+
+
+<div class="viewcode-block" id="construct_data"><a class="viewcode-back" href="../../fusemap.html#fusemap.dataset.construct_data">[docs]</a><span class="k">def</span> <span class="nf">construct_data</span><span class="p">(</span><span class="n">n_atlas</span><span class="p">,</span> <span class="n">adatas</span><span class="p">,</span> <span class="n">input_identity</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+    <span class="n">adj_all</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">g_all</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_atlas</span><span class="p">):</span>
+        <span class="n">adata</span> <span class="o">=</span> <span class="n">adatas</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">input_identity</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ST&quot;</span><span class="p">:</span>
+            <span class="n">adj_coo</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;adj_normalized&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tocoo</span><span class="p">()</span>
+            <span class="c1"># adj_all.append(adj_coo.todense())</span>
+            <span class="n">adj_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;adj_normalized&quot;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">adj_raw</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">scrna_seq_adj</span><span class="p">[</span><span class="s2">&quot;atlas&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]()</span>  <span class="c1"># .weight</span>
+            <span class="n">adj_coo</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">coo_matrix</span><span class="p">(</span><span class="n">adj_raw</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+            <span class="n">adj_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">adj_raw</span><span class="p">)</span>
+        <span class="n">g_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dgl</span><span class="o">.</span><span class="n">graph</span><span class="p">((</span><span class="n">adj_coo</span><span class="o">.</span><span class="n">row</span><span class="p">,</span> <span class="n">adj_coo</span><span class="o">.</span><span class="n">col</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">adj_all</span><span class="p">,</span> <span class="n">g_all</span></div>
+
+
+<div class="viewcode-block" id="CustomGraphDataset"><a class="viewcode-back" href="../../fusemap.html#fusemap.dataset.CustomGraphDataset">[docs]</a><span class="k">class</span> <span class="nc">CustomGraphDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">adata</span><span class="p">,</span> <span class="n">useinput</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g</span> <span class="o">=</span> <span class="n">g</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_nodes</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_nodes</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="c1"># return  X[idx], batch_idx[idx], library_size[idx], x_input[idx], idx</span>
+        <span class="k">return</span> <span class="n">idx</span></div>
+
+
+<div class="viewcode-block" id="CustomGraphDataLoader"><a class="viewcode-back" href="../../fusemap.html#fusemap.dataset.CustomGraphDataLoader">[docs]</a><span class="k">class</span> <span class="nc">CustomGraphDataLoader</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_all</span><span class="p">,</span> <span class="n">sampler</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="p">,</span> <span class="n">n_atlas</span><span class="p">,</span> <span class="n">drop_last</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset_all</span> <span class="o">=</span> <span class="n">dataset_all</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span> <span class="o">=</span> <span class="n">sampler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span> <span class="o">=</span> <span class="n">shuffle</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_atlas</span> <span class="o">=</span> <span class="n">n_atlas</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_atlas</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">DataLoader</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dataset_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                    <span class="n">shuffle</span><span class="o">=</span><span class="n">shuffle</span><span class="p">,</span>
+                    <span class="n">drop_last</span><span class="o">=</span><span class="n">drop_last</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">cell_num</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset_all</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_value_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">cell_num</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dataloader_iter_before</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">dataloader_iter_after</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_value_index</span><span class="p">):</span>
+            <span class="n">dataloader_iter_before</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">cycle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_value_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">):</span>
+            <span class="n">dataloader_iter_after</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">cycle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">indices_max</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">max_value_index</span><span class="p">]:</span>
+            <span class="n">blocks</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_value_index</span><span class="p">):</span>
+                <span class="n">indices_i</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">dataloader_iter_before</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">blocks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;single&quot;</span><span class="p">:</span> <span class="n">indices_i</span><span class="p">,</span>
+                    <span class="s2">&quot;spatial&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">sample_blocks</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">dataset_all</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="n">indices_i</span>
+                    <span class="p">),</span>
+                <span class="p">}</span>
+            <span class="n">blocks</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">max_value_index</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;single&quot;</span><span class="p">:</span> <span class="n">indices_max</span><span class="p">,</span>
+                <span class="s2">&quot;spatial&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">sample_blocks</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dataset_all</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">max_value_index</span><span class="p">]</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="n">indices_max</span>
+                <span class="p">),</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_value_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">):</span>
+                <span class="n">indices_i</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">dataloader_iter_after</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">blocks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;single&quot;</span><span class="p">:</span> <span class="n">indices_i</span><span class="p">,</span>
+                    <span class="s2">&quot;spatial&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">sample_blocks</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">dataset_all</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="n">indices_i</span>
+                    <span class="p">),</span>
+                <span class="p">}</span>
+            <span class="k">yield</span> <span class="n">blocks</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="p">])</span></div>
+        <span class="c1"># return 100</span>
+
+
+<div class="viewcode-block" id="MapPretrainDataset"><a class="viewcode-back" href="../../fusemap.html#fusemap.dataset.MapPretrainDataset">[docs]</a><span class="k">class</span> <span class="nc">MapPretrainDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="MapPretrainDataLoader"><a class="viewcode-back" href="../../fusemap.html#fusemap.dataset.MapPretrainDataLoader">[docs]</a><span class="k">class</span> <span class="nc">MapPretrainDataLoader</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_all</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="p">,</span> <span class="n">n_atlas</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset_all</span> <span class="o">=</span> <span class="n">dataset_all</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span> <span class="o">=</span> <span class="n">shuffle</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_atlas</span> <span class="o">=</span> <span class="n">n_atlas</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_atlas</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">DataLoader</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dataset_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                    <span class="n">shuffle</span><span class="o">=</span><span class="n">shuffle</span><span class="p">,</span>
+                    <span class="n">drop_last</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">cell_num</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset_all</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_value_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">cell_num</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dataloader_iter_before</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">dataloader_iter_after</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_value_index</span><span class="p">):</span>
+            <span class="n">dataloader_iter_before</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">cycle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_value_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">):</span>
+            <span class="n">dataloader_iter_after</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">cycle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">atlasdata_max</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">max_value_index</span><span class="p">]:</span>
+            <span class="n">blocks</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_value_index</span><span class="p">):</span>
+                <span class="n">atlasdata_i</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">dataloader_iter_before</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">blocks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">atlasdata_i</span>
+
+            <span class="n">blocks</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">max_value_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">atlasdata_max</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_value_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">):</span>
+                <span class="n">atlasdata_i</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">dataloader_iter_after</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">blocks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">atlasdata_i</span>
+            <span class="k">yield</span> <span class="n">blocks</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="p">])</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Yichun He.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
