@@ -1,13 +1,18 @@
+
 .. _Tutorials:
 
 Tutorials
 ================================================================================
 
 .. note::
-    Tutorials are under construction. A model training tutorial is coming
-    Soon :sup:`TM`.
+    We provide explanatory notebooks for FuseMap's spatial integration and mapping functionalities.
 
 .. nbgallery::
 
-    Individual cell search <notebooks/tutorial_sample_data>
-    Gene signature based search <notebooks/tutorial_sample_data>
+    Spatial integration across technologies <notebooks/spatial_integrate_tech>
+    Spatial integration across organs <notebooks/spatial_integrate_species>
+    Spatial imputation <notebooks/spatial_impute>
+
+
+    Spatial mapping to mouse brain atlas <notebooks/spatial_map_mousebrain>
+    Spatial mapping to mouse/human organs <notebooks/spatial_map_mousehuman>
