@@ -3,9 +3,6 @@
 API Reference
 ================================================================================
 
-.. note::
-    API documentation is under construction. Current documentation is focused
-    on core functionality.
 
 .. toctree::
     :maxdepth: 1
@@ -18,37 +15,38 @@ API Reference
     :caption: Core Functionality
     :hidden:
 
-    modules/cell_annotation
-    modules/cell_embedding
-    modules/cell_query
-    modules/interpreter
+    modules/spatial_integrate
+    modules/spatial_map
 
+    
+    
 .. toctree::
     :maxdepth: 2
     :caption: Model Training
     :hidden:
 
-    modules/data_models
-    modules/nn_models
-    modules/training_models
-    modules/triplet_selector
-    modules/zarr_data_models
-    modules/zarr_dataset
+    modules/loss
+    modules/model
+    modules/train
+    modules/train_model
+    modules/dataset
+
 
 .. toctree::
     :maxdepth: 2
     :caption: Utilities
     :hidden:
 
-    modules/ontologies
+    modules/config
+    modules/logger
+    modules/preprocess
     modules/utils
-    modules/visualizations
 
 Core Functionality
 --------------------------------------------------------------------------------
 
-These modules provide functionality for utilizing SCimilarity embeddings for a
-variety of tasks, including cell type annotation, cell queries, and gene
-attribution scoring.
+These modules provide functionality for FuseMap for a
+variety of tasks, including xx and xx.
 
-* :mod:`scimilarity.cell_annotation`
+* :mod:`fusemap.spatial_integrate`
+* :mod:`fusemap.spatial_map`

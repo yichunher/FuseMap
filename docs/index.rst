@@ -36,12 +36,12 @@ Usage
 
 Spatial integration
 ^^^^^^^^^^^^^^^^^^^^^
-:mod:`fusmap.spatial_integration` provides xxx
+:mod:`fusemap.spatial_integration` provides xxx
 
 
 Spatial mapping
 ^^^^^^^^^^^^^^^^^^^
-:mod:`fusmap.spatial_map` provides xxx
+:mod:`fusemap.spatial_map` provides xxx
 
 
 And more!
