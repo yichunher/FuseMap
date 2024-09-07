@@ -227,7 +227,7 @@ def pretrain_model(
             Loss all:{loss_all_item / len(spatial_dataloader)}\n"
             )
 
-        save_snapshot(model, epoch, ModelType.epochs_run_final, ModelType.snapshot_path)
+        save_snapshot(model, epoch, ModelType.epochs_run_final, ModelType.snapshot_path,ModelType.verbose)
 
         if not os.path.exists(f"{ModelType.save_dir}/lambda_disc_single.pkl"):
             save_obj(
@@ -459,7 +459,7 @@ def train_model(
                 model.zero_grad(set_to_none=True)
                 loss_part3.backward()
                 optimizer_ae.step()
-                
+
             for i in range(ModelType.n_atlas):
                 loss_atlas_i[i] += loss_part2["loss_AE_all"][i].item()
             loss_all_item += loss_part2["loss_all"].item()
@@ -468,7 +468,7 @@ def train_model(
         flagconfig.align_anneal /= 2
 
         save_snapshot(
-            model, ModelType.epochs_run_pretrain, epoch, ModelType.snapshot_path
+            model, ModelType.epochs_run_pretrain, epoch, ModelType.snapshot_path,ModelType.verbose
         )
 
         if ModelType.verbose == True:
@@ -1071,7 +1071,7 @@ def map_model(
             )
 
         save_snapshot(
-            adapt_model, epoch, ModelType.epochs_run_final, ModelType.snapshot_path
+            adapt_model, epoch, ModelType.epochs_run_final, ModelType.snapshot_path, ModelType.verbose
         )
 
         if not os.path.exists(f"{ModelType.save_dir}/lambda_disc_single.pkl"):

@@ -59,16 +59,17 @@ def load_snapshot(model, snapshot_path, loc):
     )
 
 
-def save_snapshot(model, epoch_pretrain, epoch_final, snapshot_path):
+def save_snapshot(model, epoch_pretrain, epoch_final, snapshot_path,verbose):
     snapshot = {
         "MODEL_STATE": model.state_dict(),
         "EPOCHS_RUN_pretrain": epoch_pretrain,
         "EPOCHS_RUN_final": epoch_final,
     }
     torch.save(snapshot, snapshot_path)
-    logging.info(
-        f"\n\nPretrain Epoch {epoch_pretrain}, final Epoch {epoch_final} | Training snapshot saved at {snapshot_path}\n"
-    )
+    if verbose == True:
+        logging.info(
+            f"\n\nPretrain Epoch {epoch_pretrain}, final Epoch {epoch_final} | Training snapshot saved at {snapshot_path}\n"
+        )
 
 
 def average_embeddings(adata, category, obsm_latent):
@@ -115,6 +116,7 @@ def read_gene_embedding_map(model,  new_train_gene, PRETRAINED_GENE, save_dir, n
         ad_gene_embedding.obs["type"] = ad_gene_embedding.obs[
             [f"sample{i}" for i in range(n_atlas)]
         ].apply(lambda row: "_".join(row.values.astype(str)), axis=1)
+        ad_gene_embedding.obs['type'] = 'type'+ad_gene_embedding.obs['type'].astype('str')
 
         ad_gene_embedding.write_h5ad(f"{save_dir}/ad_gene_embedding.h5ad")
     return
@@ -146,7 +148,9 @@ def generate_ad_embed(save_dir, X_input, keep_label, ttype, use_key="final"):
 
     origin_concat=ad.concat(X_input,join='outer').obs
     ad_embed.obs.index = origin_concat.index
-    ad_embed.obsm['origin_column']=origin_concat    
+    for i in origin_concat.columns:
+        if i not in ad_embed.obs.columns:
+            ad_embed.obs[i]=origin_concat[i]
     return ad_embed
 
 
