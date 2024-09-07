@@ -32,6 +32,11 @@ def parse_input_args():
         type=str,
         default="",
     )
+    parser.add_argument(
+        "--use_llm_gene_embedding",
+        default=False,
+    )
+    
     args = parser.parse_args()
     return args
 
@@ -46,12 +51,11 @@ class ModelType(Enum):
     hidden_dim = 512
     latent_dim = 64
     dropout_rate = 0.2
-    n_epochs = 20
+    n_epochs = 16
     batch_size = 64
     learning_rate = 0.001
     optim_kw = "RMSprop"
     use_input = "norm"
-    harmonized_gene = True
     lambda_ae_single = 1
     lambda_disc_spatial = 1
     lambda_ae_spatial = 1
@@ -63,7 +67,7 @@ class ModelType(Enum):
     lr_patience_final = 3
     lr_factor_final = 0.5
     lr_limit_final = 0.00001
-    patience_limit_pretrain = 4
+    patience_limit_pretrain = 3
     EPS = 1e-10
     DIS_LAMDA = 2
     TRAIN_WITHOUT_EVAL = 10

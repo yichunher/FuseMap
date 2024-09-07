@@ -33,11 +33,6 @@ def spatial_map(
     data_pth=None,
 ):
     ### preprocess
-    if "spatial_input" in X_input[0].obsm:
-        preprocess_save = True
-    else:
-        preprocess_save = False
-    ModelType.preprocess_save = preprocess_save
     ModelType.data_pth = data_pth
     ModelType.save_dir = args.output_save_dir
     ModelType.kneighbor = kneighbor
@@ -47,15 +42,14 @@ def spatial_map(
     Path(f"{ModelType.save_dir}/trained_model").mkdir(parents=True, exist_ok=True)
 
     ModelType.n_atlas = len(X_input)
-    if ModelType.preprocess_save == False:
-        preprocess_raw(
-            X_input,
-            ModelType.kneighbor,
-            ModelType.input_identity,
-            ModelType.use_input.value,
-            ModelType.n_atlas,
-            ModelType.data_pth,
-        )
+    preprocess_raw(
+        X_input,
+        ModelType.kneighbor,
+        ModelType.input_identity,
+        ModelType.use_input.value,
+        ModelType.n_atlas,
+        ModelType.data_pth,
+    )
     for i in range(ModelType.n_atlas):
         X_input[i].var.index = [i.upper() for i in X_input[i].var.index]
     adatas = X_input

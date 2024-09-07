@@ -1,8 +1,10 @@
 import torch.distributions as D
 import torch.nn as nn
 import torch.nn.functional as F
-
-
+try:
+    import pickle5 as pickle
+except ModuleNotFoundError:
+    import pickle
 import torch
 import numpy as np
 import itertools
@@ -133,12 +135,11 @@ class FuseMapEncoder(nn.Module):
         z_log_var = F.softplus(self.log_var(h_2))
 
         z_sample = D.Normal(z_mean, z_log_var)
-        z_sample_r = z_sample.rsample()
+        # z_sample_r = z_sample.rsample()
 
-        # z_spatial = torch.mm(adj.T, z_sample_r)
         z_spatial = torch.mm(adj.T, z_mean)
 
-        return z_sample, z_sample_r, z_spatial, z_mean
+        return z_sample, None, z_spatial, z_mean
 
 
 class FuseMapDecoder(nn.Module):
@@ -193,7 +194,6 @@ class Fuse_network(nn.Module):
         var_name,
         all_unique_genes,
         use_input,
-        harmonized_gene,
         n_atlas,
         input_identity,
         n_obs,
@@ -202,6 +202,7 @@ class Fuse_network(nn.Module):
         pretrain_n_atlas=0,
         PRETRAINED_GENE=None,
         new_train_gene=None,
+        use_llm_gene_embedding=False,
     ):
         super(Fuse_network, self).__init__()
         self.encoder = {}
@@ -217,7 +218,7 @@ class Fuse_network(nn.Module):
 
         ##### build gene embedding
         self.var_index = []
-        if harmonized_gene:
+        if use_llm_gene_embedding=='false':
             if pretrain_model:
                 self.gene_embedding_pretrained = nn.Parameter(
                     torch.zeros(latent_dim, len(PRETRAINED_GENE))
@@ -238,18 +239,62 @@ class Fuse_network(nn.Module):
                         [all_unique_genes.index(i) for i in var_name[ij]]
                     )
                 reset_parameters(self.gene_embedding)
-        else:
+
+        elif use_llm_gene_embedding=='combine':
             if pretrain_model:
-                raise ValueError("Not implemented!")
-            self.gene_embedding = nn.Parameter(
-                torch.zeros(latent_dim, sum(len(lst) for lst in var_name))
-            )
-            adata_num_gene = [len(lst) for lst in var_name]
-            cummu_sum = list(itertools.accumulate(adata_num_gene))
-            cummu_sum.insert(0, 0)
-            for ij in range(n_atlas):
-                self.var_index.append(list(np.arange(cummu_sum[ij], cummu_sum[ij + 1])))
-            reset_parameters(self.gene_embedding)
+                raise ValueError("pretrain_model is not supported for use_llm_gene_embedding")
+            else:
+                self.gene_embedding = nn.Parameter(
+                    torch.zeros(latent_dim, len(all_unique_genes))
+                )
+                for ij in range(n_atlas):
+                    self.var_index.append(
+                        [all_unique_genes.index(i) for i in var_name[ij]]
+                    )
+                reset_parameters(self.gene_embedding)
+
+                path_genept="./jupyter_notebook/data/GenePT_emebdding_v2/GenePT_gene_protein_embedding_model_3_text_pca.pickle"
+                with open(path_genept, "rb") as fp:
+                    GPT_3_5_gene_embeddings = pickle.load(fp)  
+
+                self.llm_gene_embedding = torch.zeros(latent_dim, len(all_unique_genes))    
+                for i,gene in enumerate(all_unique_genes):
+                    if gene in GPT_3_5_gene_embeddings.keys():
+                        self.llm_gene_embedding[:,i] = torch.tensor(GPT_3_5_gene_embeddings[gene])
+
+                # Calculate gene embedding loss
+                ground_truth_matrix = self.llm_gene_embedding.T
+                ind = torch.sum(ground_truth_matrix,axis=1)!=0
+                ground_truth_matrix=ground_truth_matrix[ind,:]
+                
+                self.llm_ind=ind
+                ground_truth_matrix_normalized = ground_truth_matrix / ground_truth_matrix.norm(dim=1, keepdim=True)
+                self.ground_truth_rel_matrix = torch.matmul(ground_truth_matrix_normalized, ground_truth_matrix_normalized.T)
+
+        elif use_llm_gene_embedding=='true':
+            if pretrain_model:
+                raise ValueError("pretrain_model is not supported for use_llm_gene_embedding")
+            else:
+                self.gene_embedding =  torch.zeros(latent_dim, len(all_unique_genes))
+                for ij in range(n_atlas):
+                    self.var_index.append(
+                        [all_unique_genes.index(i) for i in var_name[ij]]
+                    )
+
+                path_genept="./jupyter_notebook/data/GenePT_emebdding_v2/GenePT_gene_protein_embedding_model_3_text_pca.pickle"
+                with open(path_genept, "rb") as fp:
+                    GPT_3_5_gene_embeddings = pickle.load(fp)    
+                # reset_parameters(self.gene_embedding)
+                # ind=0
+                for i,gene in enumerate(all_unique_genes):
+                    if gene in GPT_3_5_gene_embeddings.keys():
+                        # print(gene)
+                        # ind+=1
+                        self.gene_embedding[:,i] = torch.tensor(GPT_3_5_gene_embeddings[gene])
+                self.gene_embedding=nn.Parameter(self.gene_embedding)
+                self.gene_embedding.requires_grad = False
+        else:
+            raise ValueError("use_llm_gene_embedding should be either 'true' or 'false' or 'combine'")
 
         ##### build decoders
         if pretrain_model:

@@ -159,7 +159,7 @@ def pretrain_model(
 
         model.train()
 
-        for blocks_all in tqdm(spatial_dataloader):
+        for blocks_all in spatial_dataloader:
             (
                 batch_features_all,
                 adj_all_block,
@@ -204,6 +204,12 @@ def pretrain_model(
             model.zero_grad(set_to_none=True)
             loss_part2["loss_all"].backward()
             optimizer_ae.step()
+
+            if ModelType.use_llm_gene_embedding=='combine':
+                loss_part3 = compute_gene_embedding_loss(model)
+                model.zero_grad(set_to_none=True)
+                loss_part3.backward()
+                optimizer_ae.step()
 
             for i in range(ModelType.n_atlas):
                 loss_atlas_i[i] += loss_part2["loss_AE_all"][i].item()
@@ -448,6 +454,12 @@ def train_model(
             loss_part2["loss_all"].backward()
             optimizer_ae.step()
 
+            if ModelType.use_llm_gene_embedding=='combine':
+                loss_part3 = compute_gene_embedding_loss(model)
+                model.zero_grad(set_to_none=True)
+                loss_part3.backward()
+                optimizer_ae.step()
+                
             for i in range(ModelType.n_atlas):
                 loss_atlas_i[i] += loss_part2["loss_AE_all"][i].item()
             loss_all_item += loss_part2["loss_all"].item()

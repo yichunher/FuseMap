@@ -40,6 +40,7 @@ def main(args):
                     "Please provide spatial coordinates in the obs['x'] and obs['y'] columns"
                 )
         X.obs["name"] = f"section{ind}"
+        X.obs['file_name'] = file_name_i.split('/')[-1]
         X_input.append(X)
     kneighbor = ["delaunay"] * len(X_input)
     input_identity = ["ST"] * len(X_input)

@@ -134,6 +134,7 @@ def generate_ad_embed(save_dir, X_input, keep_label, ttype, use_key="final"):
         ad_embed_1.obs["y"] = list(X_input_i.obs["y"])
         ad_embed_1.obs["name"] = list(X_input_i.obs["name"])  # f'sample{ind}'
         ad_embed_1.obs["batch"] = f"sample{ind}"
+        ad_embed_1.obs["file_name"] = list(X_input_i.obs["file_name"])
         if keep_label!="":
             try:
                 ad_embed_1.obs[keep_label] = list(X_input_i.obs[keep_label])
@@ -142,6 +143,10 @@ def generate_ad_embed(save_dir, X_input, keep_label, ttype, use_key="final"):
 
         ad_list.append(ad_embed_1)
     ad_embed = ad.concat(ad_list)
+
+    origin_concat=ad.concat(X_input,join='outer').obs
+    ad_embed.obs.index = origin_concat.index
+    ad_embed.obsm['origin_column']=origin_concat    
     return ad_embed
 
 

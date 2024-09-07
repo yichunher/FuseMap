@@ -33,11 +33,6 @@ def spatial_integrate(
     data_pth=None,
 ):
     ### preprocess
-    if "spatial_input" in X_input[0].obsm:
-        preprocess_save = True
-    else:
-        preprocess_save = False
-    ModelType.preprocess_save = preprocess_save
     ModelType.data_pth = data_pth
     ModelType.save_dir = args.output_save_dir
     ModelType.kneighbor = kneighbor
@@ -47,15 +42,14 @@ def spatial_integrate(
     Path(f"{ModelType.save_dir}/trained_model").mkdir(parents=True, exist_ok=True)
 
     ModelType.n_atlas = len(X_input)
-    if ModelType.preprocess_save == False:
-        preprocess_raw(
-            X_input,
-            ModelType.kneighbor,
-            ModelType.input_identity,
-            ModelType.use_input.value,
-            ModelType.n_atlas,
-            ModelType.data_pth,
-        )
+    preprocess_raw(
+        X_input,
+        ModelType.kneighbor,
+        ModelType.input_identity,
+        ModelType.use_input.value,
+        ModelType.n_atlas,
+        ModelType.data_pth,
+    )
     for i in range(ModelType.n_atlas):
         X_input[i].var.index = [i.upper() for i in X_input[i].var.index]
     adatas = X_input
@@ -79,14 +73,17 @@ def spatial_integrate(
         ModelType.var_name,
         all_unique_genes,
         ModelType.use_input.value,
-        ModelType.harmonized_gene,
         ModelType.n_atlas,
         ModelType.input_identity,
         ModelType.n_obs,
         ModelType.n_epochs.value,
+        use_llm_gene_embedding=args.use_llm_gene_embedding
     )
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
+    if args.use_llm_gene_embedding=='combine':
+        model.ground_truth_rel_matrix=model.ground_truth_rel_matrix.to(device)
+    ModelType.use_llm_gene_embedding=args.use_llm_gene_embedding
 
     ModelType.epochs_run_pretrain = 0
     ModelType.epochs_run_final = 0

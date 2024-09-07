@@ -1,6 +1,10 @@
 input_data/
 input_data/*
 input_data/*/*
+input_data/*/*/*
+input_data/*/*/*/*
+input_data/*/*/*/*/*
+input_data/*/*/*/*/*/*
 jupyter_notebook/
 jupyter_notebook/*
 jupyter_notebook/*/*

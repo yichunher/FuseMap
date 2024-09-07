@@ -7,7 +7,7 @@ import torch.distributions as D
 import pandas as pd
 from sparse import COO
 from fusemap.config import *
-
+import torch.nn as nn
 
 def AE_Gene_loss(recon_x, x, z_distribution):
     if recon_x.shape[0] == 0:
@@ -37,6 +37,23 @@ def prod(x):
 pretrain loss
 """
 
+
+def compute_gene_embedding_loss(
+        model
+        ):
+    # Calculate gene embedding loss
+    learned_matrix = model.gene_embedding.T
+
+    learned_matrix=learned_matrix[model.llm_ind,:]
+
+    learned_matrix_normalized = learned_matrix / learned_matrix.norm(dim=1, keepdim=True)
+    predicted_matrix = torch.matmul(learned_matrix_normalized, learned_matrix_normalized.T)
+
+    loss_fn = nn.MSELoss()
+    loss_part3 = loss_fn(predicted_matrix, model.ground_truth_rel_matrix)
+    return loss_part3
+
+                
 
 def compute_dis_loss_pretrain(
     model,
@@ -97,7 +114,6 @@ def compute_dis_loss_pretrain(
     loss_dis_spatial = loss_dis_spatial.sum() / loss_dis_spatial.numel()
 
     loss_dis = flagconfig.lambda_disc_single * (loss_dis_single + loss_dis_spatial)
-    # loss_dis = lambda_disc_single * (loss_dis_single )
 
     loss_all = {"dis": loss_dis}
     return loss_all
@@ -128,13 +144,6 @@ def compute_ae_loss_pretrain(
         for i in range(ModelType.n_atlas)
     ]
 
-    ### compute AE loss
-    # z_distribution_loss = [
-    #     D.Normal(
-    #         z_all[i][0][mask_batch_single[i], :], z_all[i][1][mask_batch_single[i], :]
-    #     )
-    #     for i in range(ModelType.n_atlas)
-    # ]
     z_distribution_loss = [
             z_all[i][0]
         

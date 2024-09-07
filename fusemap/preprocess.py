@@ -140,12 +140,13 @@ def preprocess_adj_sparse(adatas, n_atlas, input_identity):
 def get_spatial_input(adatas, n_atlas, use_input):
     for i_atlas in range(n_atlas):
         adata = adatas[i_atlas]
-        if use_input == "pca":
-            adata.obsm["spatial_input"] = adata.obsm["X_pca"]
-        if use_input == "raw":
-            adata.obsm["spatial_input"] = adata.layers["counts"]
-        if use_input == "norm":
-            adata.obsm["spatial_input"] = adata.X
+        if not "spatial_input" in adata.obsm:
+            if use_input == "pca":
+                adata.obsm["spatial_input"] = adata.obsm["X_pca"]
+            if use_input == "raw":
+                adata.obsm["spatial_input"] = adata.layers["counts"]
+            if use_input == "norm":
+                adata.obsm["spatial_input"] = adata.X
 
 
 def get_unique_gene_indices(gene_list):
