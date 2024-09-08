@@ -1,6 +1,6 @@
 import logging
 import torch.nn.functional as F
-import sklearn
+# import sklearn
 import numpy as np
 import torch
 import torch.distributions as D
@@ -203,6 +203,9 @@ def compute_ae_loss_pretrain(
 
     loss_dis = flagconfig.lambda_disc_single * (loss_dis_single + loss_dis_spatial)
 
+    if ModelType.use_llm_gene_embedding=='combine':
+        loss_part3 = compute_gene_embedding_loss(model)*10
+        
     if (
         flagconfig.lambda_disc_single == 1
     ):  # and loss_dis.item()<sum(loss_AE_all).item()/DIS_LAMDA:
@@ -215,7 +218,7 @@ def compute_ae_loss_pretrain(
     loss_all = {
         "dis_ae": loss_dis,
         "loss_AE_all": loss_AE_all,
-        "loss_all": -loss_dis + sum(loss_AE_all),
+        "loss_all": -loss_dis + sum(loss_AE_all)+loss_part3,
     }
     return loss_all
 
@@ -393,6 +396,10 @@ def compute_ae_loss(
 
     loss_dis = flagconfig.lambda_disc_single * (loss_dis_single + loss_dis_spatial)
 
+
+    if ModelType.use_llm_gene_embedding=='combine':
+        loss_part3 = compute_gene_embedding_loss(model)*10
+        
     if (
         flagconfig.lambda_disc_single == 1
     ):  # and loss_dis.item()<sum(loss_AE_all).item()/DIS_LAMDA:
@@ -405,7 +412,7 @@ def compute_ae_loss(
     loss_all = {
         "dis_ae": loss_dis,
         "loss_AE_all": loss_AE_all,
-        "loss_all": -loss_dis + sum(loss_AE_all),
+        "loss_all": -loss_dis + sum(loss_AE_all)+loss_part3,
     }
     return loss_all
 

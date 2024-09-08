@@ -4,7 +4,8 @@ import scipy
 from scipy.spatial import Delaunay
 from scipy.sparse.csr import csr_matrix
 import scanpy as sc
-from sklearn.neighbors import NearestNeighbors
+# from sklearn.neighbors import NearestNeighbors
+from scipy.spatial import cKDTree
 import logging
 
 def preprocess_raw(
@@ -96,10 +97,14 @@ def construct_graph(adatas, n_atlas, kneighbor, input_identity):
                         data = np.array(adata.obs[["x", "y", "z"]])
 
                     knn_k = 10
-                    nbrs = NearestNeighbors(
-                        n_neighbors=knn_k + 1, algorithm="auto"
-                    ).fit(data)
-                    distances, indices = nbrs.kneighbors(data)
+                    # nbrs = NearestNeighbors(
+                    #     n_neighbors=knn_k + 1, algorithm="auto"
+                    # ).fit(data)
+                    # distances, indices = nbrs.kneighbors(data)
+
+                    tree = cKDTree(data)
+                    # Query the tree for the k-nearest neighbors
+                    distances, indices = tree.query(data, k=knn_k + 1)
 
                     # Create an adjacency matrix
                     num_spots = data.shape[0]
@@ -147,7 +152,9 @@ def get_spatial_input(adatas, n_atlas, use_input):
                 adata.obsm["spatial_input"] = adata.layers["counts"]
             if use_input == "norm":
                 adata.obsm["spatial_input"] = adata.X
-
+        else:
+            if isinstance(adata.obsm['spatial_input'], np.ndarray):
+                adata.obsm['spatial_input'] = csr_matrix(adata.obsm['spatial_input'])
 
 def get_unique_gene_indices(gene_list):
     unique_genes, indices = np.unique(gene_list, return_index=True)

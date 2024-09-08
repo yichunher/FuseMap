@@ -205,11 +205,11 @@ def pretrain_model(
             loss_part2["loss_all"].backward()
             optimizer_ae.step()
 
-            if ModelType.use_llm_gene_embedding=='combine':
-                loss_part3 = compute_gene_embedding_loss(model)
-                model.zero_grad(set_to_none=True)
-                loss_part3.backward()
-                optimizer_ae.step()
+            # if ModelType.use_llm_gene_embedding=='combine':
+            #     loss_part3 = compute_gene_embedding_loss(model)
+            #     model.zero_grad(set_to_none=True)
+            #     loss_part3.backward()
+            #     optimizer_ae.step()
 
             for i in range(ModelType.n_atlas):
                 loss_atlas_i[i] += loss_part2["loss_AE_all"][i].item()
@@ -286,7 +286,8 @@ def pretrain_model(
             scheduler_dis.step(loss_atlas_val)
             scheduler_ae.step(loss_atlas_val)
             current_lr = optimizer_dis.param_groups[0]["lr"]
-            logging.info(f"\n\ncurrent lr:{current_lr}\n")
+            if ModelType.verbose == True:
+                logging.info(f"\n\ncurrent lr:{current_lr}\n")
 
             # If the loss is lower than the best loss so far, save the model And reset the patience counter
             if loss_atlas_val < loss_atlas_val_best:
@@ -454,11 +455,11 @@ def train_model(
             loss_part2["loss_all"].backward()
             optimizer_ae.step()
 
-            if ModelType.use_llm_gene_embedding=='combine':
-                loss_part3 = compute_gene_embedding_loss(model)
-                model.zero_grad(set_to_none=True)
-                loss_part3.backward()
-                optimizer_ae.step()
+            # if ModelType.use_llm_gene_embedding=='combine':
+            #     loss_part3 = compute_gene_embedding_loss(model)
+            #     model.zero_grad(set_to_none=True)
+            #     loss_part3.backward()
+            #     optimizer_ae.step()
 
             for i in range(ModelType.n_atlas):
                 loss_atlas_i[i] += loss_part2["loss_AE_all"][i].item()
@@ -542,7 +543,8 @@ def train_model(
             scheduler_dis.step(loss_atlas_val)
             scheduler_ae.step(loss_atlas_val)
             current_lr = optimizer_dis.param_groups[0]["lr"]
-            logging.info(f"\n\ncurrent lr:{current_lr}\n")
+            if ModelType.verbose == True:
+                logging.info(f"\n\ncurrent lr:{current_lr}\n")
 
             # If the loss is lower than the best loss so far, save the model And reset the patience counter
             if loss_atlas_val < loss_atlas_val_best:
@@ -1168,7 +1170,8 @@ def map_model(
             scheduler_dis.step(loss_atlas_val)
             scheduler_ae.step(loss_atlas_val)
             current_lr = optimizer_dis.param_groups[0]["lr"]
-            logging.info(f"\n\ncurrent lr:{current_lr}\n")
+            if ModelType.verbose == True:
+                logging.info(f"\n\ncurrent lr:{current_lr}\n")
 
             # If the loss is lower than the best loss so far, save the model And reset the patience counter
             if loss_atlas_val < loss_atlas_val_best:

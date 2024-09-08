@@ -45,7 +45,6 @@ def main(args):
     kneighbor = ["delaunay"] * len(X_input)
     input_identity = ["ST"] * len(X_input)
 
-
     ### train model
     logging.info("\n\nTraining model...\n")
     if args.mode == "integrate":

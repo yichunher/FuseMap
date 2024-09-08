@@ -9,7 +9,7 @@ import torch
 import anndata as ad
 import pandas as pd
 import numpy as np
-import dgl
+# import dgl
 import random
 from fusemap.model import NNTransfer
 try:
@@ -97,7 +97,8 @@ def read_gene_embedding(model, all_unique_genes, save_dir, n_atlas, var_name):
         ad_gene_embedding.obs["type"] = ad_gene_embedding.obs[
             [f"sample{i}" for i in range(n_atlas)]
         ].apply(lambda row: "_".join(row.values.astype(str)), axis=1)
-
+        
+        ad_gene_embedding.obs['type'] = 'type'+ad_gene_embedding.obs['type'].astype('str')
         ad_gene_embedding.write_h5ad(f"{save_dir}/ad_gene_embedding.h5ad")
     return
 
