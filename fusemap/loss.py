@@ -1,6 +1,6 @@
 import logging
 import torch.nn.functional as F
-# import sklearn
+import sklearn
 import numpy as np
 import torch
 import torch.distributions as D
@@ -218,7 +218,7 @@ def compute_ae_loss_pretrain(
     loss_all = {
         "dis_ae": loss_dis,
         "loss_AE_all": loss_AE_all,
-        "loss_all": -loss_dis + sum(loss_AE_all)+loss_part3,
+        "loss_all": -loss_dis + sum(loss_AE_all),
     }
     return loss_all
 
@@ -412,7 +412,7 @@ def compute_ae_loss(
     loss_all = {
         "dis_ae": loss_dis,
         "loss_AE_all": loss_AE_all,
-        "loss_all": -loss_dis + sum(loss_AE_all)+loss_part3,
+        "loss_all": -loss_dis + sum(loss_AE_all),
     }
     return loss_all
 
