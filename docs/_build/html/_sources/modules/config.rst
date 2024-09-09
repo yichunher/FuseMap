@@ -5,3 +5,4 @@ fusemap.config module
    :members:
    :undoc-members:
    :show-inheritance:
+   :functions:

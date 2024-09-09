@@ -516,7 +516,7 @@ document.write(`
     <span class="n">loss_all</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;dis_ae&quot;</span><span class="p">:</span> <span class="n">loss_dis</span><span class="p">,</span>
         <span class="s2">&quot;loss_AE_all&quot;</span><span class="p">:</span> <span class="n">loss_AE_all</span><span class="p">,</span>
-        <span class="s2">&quot;loss_all&quot;</span><span class="p">:</span> <span class="o">-</span><span class="n">loss_dis</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">loss_AE_all</span><span class="p">)</span><span class="o">+</span><span class="n">loss_part3</span><span class="p">,</span>
+        <span class="s2">&quot;loss_all&quot;</span><span class="p">:</span> <span class="o">-</span><span class="n">loss_dis</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">loss_AE_all</span><span class="p">),</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">loss_all</span></div>
 
@@ -716,7 +716,7 @@ document.write(`
     <span class="n">loss_all</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;dis_ae&quot;</span><span class="p">:</span> <span class="n">loss_dis</span><span class="p">,</span>
         <span class="s2">&quot;loss_AE_all&quot;</span><span class="p">:</span> <span class="n">loss_AE_all</span><span class="p">,</span>
-        <span class="s2">&quot;loss_all&quot;</span><span class="p">:</span> <span class="o">-</span><span class="n">loss_dis</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">loss_AE_all</span><span class="p">)</span><span class="o">+</span><span class="n">loss_part3</span><span class="p">,</span>
+        <span class="s2">&quot;loss_all&quot;</span><span class="p">:</span> <span class="o">-</span><span class="n">loss_dis</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">loss_AE_all</span><span class="p">),</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">loss_all</span></div>
 

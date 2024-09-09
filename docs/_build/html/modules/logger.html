@@ -305,9 +305,7 @@ document.write(`
   </button>
 `);
 </script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -323,18 +321,6 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.logger.MultipleHeaderFilter"><code class="docutils literal notranslate"><span class="pre">MultipleHeaderFilter</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.logger.MultipleHeaderFilter.filter"><code class="docutils literal notranslate"><span class="pre">MultipleHeaderFilter.filter()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.logger.setup_logging"><code class="docutils literal notranslate"><span class="pre">setup_logging()</span></code></a></li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -344,36 +330,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="module-fusemap.logger">
-<span id="fusemap-logger-module"></span><h1>fusemap.logger module<a class="headerlink" href="#module-fusemap.logger" title="Link to this heading">#</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="fusemap.logger.MultipleHeaderFilter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fusemap.logger.</span></span><span class="sig-name descname"><span class="pre">MultipleHeaderFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">patterns_to_filter</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/logger.html#MultipleHeaderFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.logger.MultipleHeaderFilter" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Filter</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="fusemap.logger.MultipleHeaderFilter.filter">
-<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/logger.html#MultipleHeaderFilter.filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.logger.MultipleHeaderFilter.filter" title="Link to this definition">#</a></dt>
-<dd><p>Determine if the specified record is to be logged.</p>
-<p>Returns True if the record should be logged, or False otherwise.
-If deemed appropriate, the record may be modified in-place.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.logger.setup_logging">
-<span class="sig-prename descclassname"><span class="pre">fusemap.logger.</span></span><span class="sig-name descname"><span class="pre">setup_logging</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patterns_to_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/logger.html#setup_logging"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.logger.setup_logging" title="Link to this definition">#</a></dt>
-<dd><p>Configure logging to file and console, ignoring specified message patterns.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>save_path</strong> – Path where the log file will be saved</p></li>
-<li><p><strong>patterns_to_filter</strong> – List of regex patterns for messages to be filtered out</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
+  <section id="fusemap-logger-module">
+<h1>fusemap.logger module<a class="headerlink" href="#fusemap-logger-module" title="Link to this heading">#</a></h1>
 </section>
 
 
@@ -411,25 +369,6 @@ If deemed appropriate, the record may be modified in-place.</p>
             </div>
             
             
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.logger.MultipleHeaderFilter"><code class="docutils literal notranslate"><span class="pre">MultipleHeaderFilter</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.logger.MultipleHeaderFilter.filter"><code class="docutils literal notranslate"><span class="pre">MultipleHeaderFilter.filter()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.logger.setup_logging"><code class="docutils literal notranslate"><span class="pre">setup_logging()</span></code></a></li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>
