@@ -4,3 +4,9 @@ sphinx>=5.3.0
 pydata-sphinx-theme
 sphinx-gallery==0.10
 sphinx-book-theme
+scanpy==1.9.3
+torch
+dgl
+dglgo
+sparse
+leidenalg
