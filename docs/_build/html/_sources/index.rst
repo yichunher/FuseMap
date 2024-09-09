@@ -11,7 +11,7 @@ and (2) consolidates various gene panels across technologies, organs, and specie
 
 
 .. image:: _static/framework.png
-    :width: 75%
+    :width: 100%
     :align: center
 
 ------------------------------------------
@@ -48,14 +48,3 @@ Step-by-step guide
 ^^^^^^^^^^^^^^^^^^^
 Check out our detailed `tutorials <tutorials.html>`_ on how to use FuseMap for spatial integration and mapping.
 
-
-------------------------------------------
-
-Indices
-------------------------------------------
-| :ref:`genindex`
-| :ref:`modindex`
-
-.. * :ref:`genindex`
-.. * :ref:`modindex`
-.. * :ref:`search`
