@@ -305,7 +305,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -321,6 +323,48 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.FlagConfig"><code class="docutils literal notranslate"><span class="pre">FlagConfig</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.FlagConfig.align_anneal"><code class="docutils literal notranslate"><span class="pre">FlagConfig.align_anneal</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.FlagConfig.lambda_disc_single"><code class="docutils literal notranslate"><span class="pre">FlagConfig.lambda_disc_single</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType"><code class="docutils literal notranslate"><span class="pre">ModelType</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.DIS_LAMDA"><code class="docutils literal notranslate"><span class="pre">ModelType.DIS_LAMDA</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.EPS"><code class="docutils literal notranslate"><span class="pre">ModelType.EPS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.TRAIN_WITHOUT_EVAL"><code class="docutils literal notranslate"><span class="pre">ModelType.TRAIN_WITHOUT_EVAL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.USE_REFERENCE_PCT"><code class="docutils literal notranslate"><span class="pre">ModelType.USE_REFERENCE_PCT</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.align_noise_coef"><code class="docutils literal notranslate"><span class="pre">ModelType.align_noise_coef</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.batch_size"><code class="docutils literal notranslate"><span class="pre">ModelType.batch_size</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.dropout_rate"><code class="docutils literal notranslate"><span class="pre">ModelType.dropout_rate</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.hidden_dim"><code class="docutils literal notranslate"><span class="pre">ModelType.hidden_dim</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lambda_ae_single"><code class="docutils literal notranslate"><span class="pre">ModelType.lambda_ae_single</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lambda_ae_spatial"><code class="docutils literal notranslate"><span class="pre">ModelType.lambda_ae_spatial</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lambda_disc_spatial"><code class="docutils literal notranslate"><span class="pre">ModelType.lambda_disc_spatial</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.latent_dim"><code class="docutils literal notranslate"><span class="pre">ModelType.latent_dim</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.learning_rate"><code class="docutils literal notranslate"><span class="pre">ModelType.learning_rate</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lr_factor_final"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_factor_final</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lr_factor_pretrain"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_factor_pretrain</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lr_limit_final"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_limit_final</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lr_limit_pretrain"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_limit_pretrain</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lr_patience_final"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_patience_final</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lr_patience_pretrain"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_patience_pretrain</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.n_epochs"><code class="docutils literal notranslate"><span class="pre">ModelType.n_epochs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.optim_kw"><code class="docutils literal notranslate"><span class="pre">ModelType.optim_kw</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.patience_limit_final"><code class="docutils literal notranslate"><span class="pre">ModelType.patience_limit_final</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.patience_limit_pretrain"><code class="docutils literal notranslate"><span class="pre">ModelType.patience_limit_pretrain</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.pca_dim"><code class="docutils literal notranslate"><span class="pre">ModelType.pca_dim</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.use_input"><code class="docutils literal notranslate"><span class="pre">ModelType.use_input</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.verbose"><code class="docutils literal notranslate"><span class="pre">ModelType.verbose</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.parse_input_args"><code class="docutils literal notranslate"><span class="pre">parse_input_args()</span></code></a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -330,8 +374,166 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="fusemap-config-module">
-<h1>fusemap.config module<a class="headerlink" href="#fusemap-config-module" title="Link to this heading">#</a></h1>
+  <section id="module-fusemap.config">
+<span id="fusemap-config-module"></span><h1>fusemap.config module<a class="headerlink" href="#module-fusemap.config" title="Link to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="fusemap.config.FlagConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fusemap.config.</span></span><span class="sig-name descname"><span class="pre">FlagConfig</span></span><a class="reference internal" href="../_modules/fusemap/config.html#FlagConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.config.FlagConfig" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.FlagConfig.align_anneal">
+<span class="sig-name descname"><span class="pre">align_anneal</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10000000000.0</span></em><a class="headerlink" href="#fusemap.config.FlagConfig.align_anneal" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.FlagConfig.lambda_disc_single">
+<span class="sig-name descname"><span class="pre">lambda_disc_single</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#fusemap.config.FlagConfig.lambda_disc_single" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fusemap.config.ModelType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fusemap.config.</span></span><span class="sig-name descname"><span class="pre">ModelType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/config.html#ModelType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.config.ModelType" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.DIS_LAMDA">
+<span class="sig-name descname"><span class="pre">DIS_LAMDA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#fusemap.config.ModelType.DIS_LAMDA" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.EPS">
+<span class="sig-name descname"><span class="pre">EPS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-10</span></em><a class="headerlink" href="#fusemap.config.ModelType.EPS" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.TRAIN_WITHOUT_EVAL">
+<span class="sig-name descname"><span class="pre">TRAIN_WITHOUT_EVAL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#fusemap.config.ModelType.TRAIN_WITHOUT_EVAL" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.USE_REFERENCE_PCT">
+<span class="sig-name descname"><span class="pre">USE_REFERENCE_PCT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.02</span></em><a class="headerlink" href="#fusemap.config.ModelType.USE_REFERENCE_PCT" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.align_noise_coef">
+<span class="sig-name descname"><span class="pre">align_noise_coef</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.5</span></em><a class="headerlink" href="#fusemap.config.ModelType.align_noise_coef" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.batch_size">
+<span class="sig-name descname"><span class="pre">batch_size</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">64</span></em><a class="headerlink" href="#fusemap.config.ModelType.batch_size" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.dropout_rate">
+<span class="sig-name descname"><span class="pre">dropout_rate</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.2</span></em><a class="headerlink" href="#fusemap.config.ModelType.dropout_rate" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.hidden_dim">
+<span class="sig-name descname"><span class="pre">hidden_dim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">512</span></em><a class="headerlink" href="#fusemap.config.ModelType.hidden_dim" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.lambda_ae_single">
+<span class="sig-name descname"><span class="pre">lambda_ae_single</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#fusemap.config.ModelType.lambda_ae_single" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.lambda_ae_spatial">
+<span class="sig-name descname"><span class="pre">lambda_ae_spatial</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#fusemap.config.ModelType.lambda_ae_spatial" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.lambda_disc_spatial">
+<span class="sig-name descname"><span class="pre">lambda_disc_spatial</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#fusemap.config.ModelType.lambda_disc_spatial" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.latent_dim">
+<span class="sig-name descname"><span class="pre">latent_dim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">64</span></em><a class="headerlink" href="#fusemap.config.ModelType.latent_dim" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.learning_rate">
+<span class="sig-name descname"><span class="pre">learning_rate</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.001</span></em><a class="headerlink" href="#fusemap.config.ModelType.learning_rate" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.lr_factor_final">
+<span class="sig-name descname"><span class="pre">lr_factor_final</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.5</span></em><a class="headerlink" href="#fusemap.config.ModelType.lr_factor_final" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.lr_factor_pretrain">
+<span class="sig-name descname"><span class="pre">lr_factor_pretrain</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.5</span></em><a class="headerlink" href="#fusemap.config.ModelType.lr_factor_pretrain" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.lr_limit_final">
+<span class="sig-name descname"><span class="pre">lr_limit_final</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-05</span></em><a class="headerlink" href="#fusemap.config.ModelType.lr_limit_final" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.lr_limit_pretrain">
+<span class="sig-name descname"><span class="pre">lr_limit_pretrain</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-05</span></em><a class="headerlink" href="#fusemap.config.ModelType.lr_limit_pretrain" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.lr_patience_final">
+<span class="sig-name descname"><span class="pre">lr_patience_final</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#fusemap.config.ModelType.lr_patience_final" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.lr_patience_pretrain">
+<span class="sig-name descname"><span class="pre">lr_patience_pretrain</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#fusemap.config.ModelType.lr_patience_pretrain" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.n_epochs">
+<span class="sig-name descname"><span class="pre">n_epochs</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">16</span></em><a class="headerlink" href="#fusemap.config.ModelType.n_epochs" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.optim_kw">
+<span class="sig-name descname"><span class="pre">optim_kw</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'RMSprop'</span></em><a class="headerlink" href="#fusemap.config.ModelType.optim_kw" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.patience_limit_final">
+<span class="sig-name descname"><span class="pre">patience_limit_final</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#fusemap.config.ModelType.patience_limit_final" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.patience_limit_pretrain">
+<span class="sig-name descname"><span class="pre">patience_limit_pretrain</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#fusemap.config.ModelType.patience_limit_pretrain" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.pca_dim">
+<span class="sig-name descname"><span class="pre">pca_dim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">50</span></em><a class="headerlink" href="#fusemap.config.ModelType.pca_dim" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.use_input">
+<span class="sig-name descname"><span class="pre">use_input</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'norm'</span></em><a class="headerlink" href="#fusemap.config.ModelType.use_input" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fusemap.config.ModelType.verbose">
+<span class="sig-name descname"><span class="pre">verbose</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#fusemap.config.ModelType.verbose" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fusemap.config.parse_input_args">
+<span class="sig-prename descclassname"><span class="pre">fusemap.config.</span></span><span class="sig-name descname"><span class="pre">parse_input_args</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/config.html#parse_input_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.config.parse_input_args" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
 </section>
 
 
@@ -369,6 +571,55 @@ document.write(`
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.FlagConfig"><code class="docutils literal notranslate"><span class="pre">FlagConfig</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.FlagConfig.align_anneal"><code class="docutils literal notranslate"><span class="pre">FlagConfig.align_anneal</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.FlagConfig.lambda_disc_single"><code class="docutils literal notranslate"><span class="pre">FlagConfig.lambda_disc_single</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType"><code class="docutils literal notranslate"><span class="pre">ModelType</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.DIS_LAMDA"><code class="docutils literal notranslate"><span class="pre">ModelType.DIS_LAMDA</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.EPS"><code class="docutils literal notranslate"><span class="pre">ModelType.EPS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.TRAIN_WITHOUT_EVAL"><code class="docutils literal notranslate"><span class="pre">ModelType.TRAIN_WITHOUT_EVAL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.USE_REFERENCE_PCT"><code class="docutils literal notranslate"><span class="pre">ModelType.USE_REFERENCE_PCT</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.align_noise_coef"><code class="docutils literal notranslate"><span class="pre">ModelType.align_noise_coef</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.batch_size"><code class="docutils literal notranslate"><span class="pre">ModelType.batch_size</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.dropout_rate"><code class="docutils literal notranslate"><span class="pre">ModelType.dropout_rate</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.hidden_dim"><code class="docutils literal notranslate"><span class="pre">ModelType.hidden_dim</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lambda_ae_single"><code class="docutils literal notranslate"><span class="pre">ModelType.lambda_ae_single</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lambda_ae_spatial"><code class="docutils literal notranslate"><span class="pre">ModelType.lambda_ae_spatial</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lambda_disc_spatial"><code class="docutils literal notranslate"><span class="pre">ModelType.lambda_disc_spatial</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.latent_dim"><code class="docutils literal notranslate"><span class="pre">ModelType.latent_dim</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.learning_rate"><code class="docutils literal notranslate"><span class="pre">ModelType.learning_rate</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lr_factor_final"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_factor_final</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lr_factor_pretrain"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_factor_pretrain</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lr_limit_final"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_limit_final</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lr_limit_pretrain"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_limit_pretrain</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lr_patience_final"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_patience_final</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.lr_patience_pretrain"><code class="docutils literal notranslate"><span class="pre">ModelType.lr_patience_pretrain</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.n_epochs"><code class="docutils literal notranslate"><span class="pre">ModelType.n_epochs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.optim_kw"><code class="docutils literal notranslate"><span class="pre">ModelType.optim_kw</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.patience_limit_final"><code class="docutils literal notranslate"><span class="pre">ModelType.patience_limit_final</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.patience_limit_pretrain"><code class="docutils literal notranslate"><span class="pre">ModelType.patience_limit_pretrain</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.pca_dim"><code class="docutils literal notranslate"><span class="pre">ModelType.pca_dim</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.use_input"><code class="docutils literal notranslate"><span class="pre">ModelType.use_input</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.ModelType.verbose"><code class="docutils literal notranslate"><span class="pre">ModelType.verbose</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.config.parse_input_args"><code class="docutils literal notranslate"><span class="pre">parse_input_args()</span></code></a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

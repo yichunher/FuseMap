@@ -5,4 +5,3 @@ fusemap.dataset module
    :members:
    :undoc-members:
    :show-inheritance:
-   :functions:

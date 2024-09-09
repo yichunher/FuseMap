@@ -284,11 +284,7 @@ document.write(`
   <h1>Source code for fusemap.train_model</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">ReduceLROnPlateau</span>
-<span class="kn">import</span> <span class="nn">torch.distributions</span> <span class="k">as</span> <span class="nn">D</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
-<span class="kn">import</span> <span class="nn">dgl.dataloading</span> <span class="k">as</span> <span class="nn">dgl_dataload</span>
-<span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">fusemap.config</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">fusemap.dataset</span> <span class="kn">import</span> <span class="o">*</span>
@@ -296,10 +292,8 @@ document.write(`
 <span class="kn">from</span> <span class="nn">fusemap.loss</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">anndata</span> <span class="k">as</span> <span class="nn">ad</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
 <span class="kn">import</span> <span class="nn">scanpy</span> <span class="k">as</span> <span class="nn">sc</span>
-<span class="kn">import</span> <span class="nn">dgl</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 
 <span class="k">try</span><span class="p">:</span>

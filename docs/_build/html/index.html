@@ -155,8 +155,7 @@
  </script></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
-        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents</span></p>
-<ul class="current nav bd-sidenav">
+        <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#"> Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html"> Installation</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="tutorials.html"> Tutorials</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -332,10 +331,11 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#spatial-integration-and-mapping-with-universal-gene-cell-and-tissue-embeddings">Spatial integration and mapping with universal gene, cell, and tissue embeddings.</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contents">Contents</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-start">Quick start</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spatial-integration">Spatial integration</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spatial-mapping">Spatial mapping</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#and-more">And more!</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-by-step-guide">Step-by-step guide</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#indices">Indices</a></li>
@@ -359,9 +359,11 @@ that (1) bridges single-cell or single-spot gene expression within spatial conte
 and (2) consolidates various gene panels across technologies, organs, and species.</p>
 <a class="reference internal image-reference" href="_images/framework.png"><img alt="_images/framework.png" class="align-center" src="_images/framework.png" style="width: 75%;" />
 </a>
+</section>
 <hr class="docutils" />
+<section id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Link to this heading">#</a></h2>
 <div class="toctree-wrapper compound">
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#"> Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html"> Installation</a><ul>
@@ -379,6 +381,8 @@ and (2) consolidates various gene panels across technologies, organs, and specie
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api.html"> API Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api.html#core-functionality">Core Functionality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#model-training">Model Training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#utilities">Utilities</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="about.html"> About</a><ul>
@@ -390,21 +394,25 @@ and (2) consolidates various gene panels across technologies, organs, and specie
 </ul>
 </div>
 </section>
-<section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h2>
+<hr class="docutils" />
+<section id="quick-start">
+<h2>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading">#</a></h2>
 <section id="spatial-integration">
 <h3>Spatial integration<a class="headerlink" href="#spatial-integration" title="Link to this heading">#</a></h3>
-<p><code class="xref py py-mod docutils literal notranslate"><span class="pre">fusemap.spatial_integration</span></code> provides xxx</p>
+<p><a class="reference internal" href="modules/spatial_integrate.html#module-fusemap.spatial_integrate" title="fusemap.spatial_integrate"><code class="xref py py-mod docutils literal notranslate"><span class="pre">fusemap.spatial_integrate</span></code></a> provides tools to integrate spatial transcriptomics data.
+Input data can be from any spatial transcriptomics technology, such as Visium, Slide-seq, or MERFISH.
+Output data can be used for downstream analysis, such as clustering, cell type identification, or spatial gene expression analysis.</p>
 </section>
 <section id="spatial-mapping">
 <h3>Spatial mapping<a class="headerlink" href="#spatial-mapping" title="Link to this heading">#</a></h3>
-<p><a class="reference internal" href="modules/spatial_map.html#module-fusemap.spatial_map" title="fusemap.spatial_map"><code class="xref py py-mod docutils literal notranslate"><span class="pre">fusemap.spatial_map</span></code></a> provides xxx</p>
+<p><a class="reference internal" href="modules/spatial_map.html#module-fusemap.spatial_map" title="fusemap.spatial_map"><code class="xref py py-mod docutils literal notranslate"><span class="pre">fusemap.spatial_map</span></code></a> provides tools to map spatial transcriptomics data to a universal gene, cell, and tissue embedding space.</p>
 </section>
-<section id="and-more">
-<h3>And more!<a class="headerlink" href="#and-more" title="Link to this heading">#</a></h3>
-<p>Check out tutorials for more examples.</p>
+<section id="step-by-step-guide">
+<h3>Step-by-step guide<a class="headerlink" href="#step-by-step-guide" title="Link to this heading">#</a></h3>
+<p>Check out our detailed <a class="reference external" href="tutorials.html">tutorials</a> on how to use FuseMap for spatial integration and mapping.</p>
 </section>
 </section>
+<hr class="docutils" />
 <section id="indices">
 <h2>Indices<a class="headerlink" href="#indices" title="Link to this heading">#</a></h2>
 <div class="line-block">
@@ -451,10 +459,11 @@ and (2) consolidates various gene panels across technologies, organs, and specie
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#spatial-integration-and-mapping-with-universal-gene-cell-and-tissue-embeddings">Spatial integration and mapping with universal gene, cell, and tissue embeddings.</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contents">Contents</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-start">Quick start</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spatial-integration">Spatial integration</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spatial-mapping">Spatial mapping</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#and-more">And more!</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-by-step-guide">Step-by-step guide</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#indices">Indices</a></li>

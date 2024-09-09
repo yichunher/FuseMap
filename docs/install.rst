@@ -12,9 +12,9 @@ Installation is quick and performed using ``pip`` in the usual manner:
 
 ::
 
-    git clone https://github.com/yichunher/fusemap.git
-    cd fusemap
-    pip install -e .
+    conda create -n fusemap python=3.10
+    conda activate fusemap
+    pip install fusemap
 
 .. note::
 

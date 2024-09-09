@@ -304,6 +304,27 @@ document.write(`
 <div class="viewcode-block" id="Discriminator">
 <a class="viewcode-back" href="../../modules/model.html#fusemap.model.Discriminator">[docs]</a>
 <span class="k">class</span> <span class="nc">Discriminator</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Discriminator network for the FuseMap model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    latent_dim : int</span>
+<span class="sd">        The dimension of the latent space.</span>
+<span class="sd">    n_atlas : int</span>
+<span class="sd">        The number of atlases.</span>
+<span class="sd">    dropout_rate : float</span>
+<span class="sd">        The dropout rate.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; disc = Discriminator(100, 10, 0.1)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">,</span> <span class="n">n_atlas</span><span class="p">,</span> <span class="n">dropout_rate</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Discriminator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
@@ -321,6 +342,27 @@ document.write(`
 <div class="viewcode-block" id="Discriminator.forward">
 <a class="viewcode-back" href="../../modules/model.html#fusemap.model.Discriminator.forward">[docs]</a>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass for the Discriminator class.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.Tensor</span>
+<span class="sd">            The input tensor.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        x : torch.Tensor</span>
+<span class="sd">            The output tensor.</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; x = torch.randn(10, 100)</span>
+<span class="sd">        &gt;&gt;&gt; disc = Discriminator(100, 10, 0.1)</span>
+<span class="sd">        &gt;&gt;&gt; y = disc(x)</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear_0</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">act_0</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout_0</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -338,6 +380,24 @@ document.write(`
 <div class="viewcode-block" id="Adj_model">
 <a class="viewcode-back" href="../../modules/model.html#fusemap.model.Adj_model">[docs]</a>
 <span class="k">class</span> <span class="nc">Adj_model</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adjacency model for the FuseMap model.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    N : int</span>
+<span class="sd">        The number of nodes in the graph.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; adj = Adj_model(10)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Adj_model</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="n">N</span>
@@ -349,6 +409,21 @@ document.write(`
 <div class="viewcode-block" id="Adj_model.forward">
 <a class="viewcode-back" href="../../modules/model.html#fusemap.model.Adj_model.forward">[docs]</a>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass for the Adj_model class.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        weight_normalized : torch.Tensor</span>
+<span class="sd">            The normalized weight matrix.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; adj = Adj_model(10)</span>
+<span class="sd">        &gt;&gt;&gt; adj()</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">weight_relu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
         <span class="n">weight_relu</span> <span class="o">=</span> <span class="n">weight_relu</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">weight_relu</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
@@ -385,6 +460,31 @@ document.write(`
 <div class="viewcode-block" id="FuseMapEncoder">
 <a class="viewcode-back" href="../../modules/model.html#fusemap.model.FuseMapEncoder">[docs]</a>
 <span class="k">class</span> <span class="nc">FuseMapEncoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encoder network for the FuseMap model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    input_dim : int</span>
+<span class="sd">        The dimension of the input.</span>
+<span class="sd">    hidden_dim : int</span>
+<span class="sd">        The dimension of the hidden layer.</span>
+<span class="sd">    latent_dim : int</span>
+<span class="sd">        The dimension of the latent space.</span>
+<span class="sd">    dropout_rate : float</span>
+<span class="sd">        The dropout rate.</span>
+<span class="sd">    normalization : str</span>
+<span class="sd">        The normalization type.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; enc = FuseMapEncoder(100, 50, 10, 0.1)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">,</span> <span class="n">dropout_rate</span><span class="p">,</span> <span class="n">normalization</span><span class="o">=</span><span class="s2">&quot;batchnorm&quot;</span>
     <span class="p">):</span>
@@ -423,6 +523,33 @@ document.write(`
 <div class="viewcode-block" id="FuseMapEncoder.forward">
 <a class="viewcode-back" href="../../modules/model.html#fusemap.model.FuseMapEncoder.forward">[docs]</a>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">adj</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass for the FuseMapEncoder class.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.Tensor</span>
+<span class="sd">            The input tensor.</span>
+<span class="sd">        adj : torch.Tensor</span>
+<span class="sd">            The adjacency matrix.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        z_sample : torch.Tensor</span>
+<span class="sd">        The sampled latent space tensor.</span>
+<span class="sd">        None</span>
+<span class="sd">        None</span>
+<span class="sd">        z_mean : torch.Tensor</span>
+<span class="sd">        The mean of the latent space tensor.</span>
+<span class="sd">            </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; x = torch.randn(10, 100)</span>
+<span class="sd">        &gt;&gt;&gt; adj = torch.randn(100, 100)</span>
+<span class="sd">        &gt;&gt;&gt; enc = FuseMapEncoder(100, 50, 10, 0.1)</span>
+<span class="sd">        &gt;&gt;&gt; z_sample, _, _, z_mean = enc(x, adj)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">h_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear_0</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">h_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bn_0</span><span class="p">(</span><span class="n">h_1</span><span class="p">)</span>
         <span class="n">h_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation_0</span><span class="p">(</span><span class="n">h_1</span><span class="p">)</span>
@@ -503,6 +630,55 @@ document.write(`
 <div class="viewcode-block" id="Fuse_network">
 <a class="viewcode-back" href="../../modules/model.html#fusemap.model.Fuse_network">[docs]</a>
 <span class="k">class</span> <span class="nc">Fuse_network</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    FuseMap model.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pca_dim : int</span>
+<span class="sd">        The dimension of the PCA.</span>
+<span class="sd">    input_dim : list</span>
+<span class="sd">        The list of input dimensions.</span>
+<span class="sd">    hidden_dim : int</span>
+<span class="sd">        The dimension of the hidden layer.</span>
+<span class="sd">    latent_dim : int</span>
+<span class="sd">        The dimension of the latent space.</span>
+<span class="sd">    dropout_rate : float</span>
+<span class="sd">        The dropout rate.</span>
+<span class="sd">    var_name : list</span>
+<span class="sd">        The list of variable names.</span>
+<span class="sd">    all_unique_genes : list</span>
+<span class="sd">        The list of all unique genes.</span>
+<span class="sd">    use_input : str</span>
+<span class="sd">        The input type.</span>
+<span class="sd">    n_atlas : int</span>
+<span class="sd">        The number of atlases.</span>
+<span class="sd">    input_identity : list</span>
+<span class="sd">        The list of input identities.</span>
+<span class="sd">    n_obs : list</span>
+<span class="sd">        The list of number of observations.</span>
+<span class="sd">    num_epoch : int</span>
+<span class="sd">        The number of epochs.</span>
+<span class="sd">    pretrain_model : bool</span>
+<span class="sd">        Whether the model is pretrained.</span>
+<span class="sd">    pretrain_n_atlas : int</span>
+<span class="sd">        The number of pretrained atlases.</span>
+<span class="sd">    PRETRAINED_GENE : list</span>
+<span class="sd">        The list of pretrained genes.</span>
+<span class="sd">    new_train_gene : list</span>
+<span class="sd">        The list of new training genes.</span>
+<span class="sd">    use_llm_gene_embedding : bool</span>
+<span class="sd">        Whether to use the LLM gene embedding.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; model = Fuse_network(100, [10, 20], 50, 10, 0.1, [&#39;gene1&#39;, &#39;gene2&#39;], [&#39;gene1&#39;, &#39;gene2&#39;], &#39;norm&#39;, 2, [&#39;scrna&#39;, &#39;scrna&#39;], [100, 200], 100)</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">pca_dim</span><span class="p">,</span>
@@ -656,6 +832,32 @@ document.write(`
     <span class="k">def</span> <span class="nf">add_encoder_module</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">,</span> <span class="n">dropout_rate</span><span class="o">=</span><span class="mf">0.1</span>
     <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add an encoder module to the model.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        key : str</span>
+<span class="sd">            The key for the encoder module.</span>
+<span class="sd">        input_dim : int</span>
+<span class="sd">            The dimension of the input.</span>
+<span class="sd">        hidden_dim : int</span>
+<span class="sd">            The dimension of the hidden layer.</span>
+<span class="sd">        latent_dim : int</span>
+<span class="sd">            The dimension of the latent space.</span>
+<span class="sd">        dropout_rate : float</span>
+<span class="sd">            The dropout rate.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; model = Fuse_network(100, [10, 20], 50, 10, 0.1, [&#39;gene1&#39;, &#39;gene2&#39;], [&#39;gene1&#39;, &#39;gene2&#39;], &#39;norm&#39;, 2, [&#39;scrna&#39;, &#39;scrna&#39;], [100, 200], 100)</span>
+<span class="sd">        &gt;&gt;&gt; model.add_encoder_module(&#39;atlas1&#39;, 10, 50, 10, 0.1)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">FuseMapEncoder</span><span class="p">(</span>
             <span class="n">input_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">,</span> <span class="n">dropout_rate</span>
         <span class="p">)</span></div>
@@ -664,12 +866,58 @@ document.write(`
 <div class="viewcode-block" id="Fuse_network.add_decoder_module">
 <a class="viewcode-back" href="../../modules/model.html#fusemap.model.Fuse_network.add_decoder_module">[docs]</a>
     <span class="k">def</span> <span class="nf">add_decoder_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">gene_embedding</span><span class="p">,</span> <span class="n">var_index</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a decoder module to the model.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        key : str</span>
+<span class="sd">            The key for the decoder module.</span>
+<span class="sd">        gene_embedding : torch.Tensor</span>
+<span class="sd">            The gene embedding tensor.</span>
+<span class="sd">        var_index : list</span>
+<span class="sd">            The list of variable indices.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; model = Fuse_network(100, [10, 20], 50, 10, 0.1, [&#39;gene1&#39;, &#39;gene2&#39;], [&#39;gene1&#39;, &#39;gene2&#39;], &#39;norm&#39;, 2, [&#39;scrna&#39;, &#39;scrna&#39;], [100, 200], 100)</span>
+<span class="sd">        &gt;&gt;&gt; model.add_decoder_module(&#39;atlas1&#39;, torch.randn(10, 100), [1, 2, 3])</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">FuseMapDecoder</span><span class="p">(</span><span class="n">gene_embedding</span><span class="p">,</span> <span class="n">var_index</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Fuse_network.add_adaptdecoder_module">
 <a class="viewcode-back" href="../../modules/model.html#fusemap.model.Fuse_network.add_adaptdecoder_module">[docs]</a>
     <span class="k">def</span> <span class="nf">add_adaptdecoder_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">var_index</span><span class="p">,</span> <span class="n">gene_pretrain</span><span class="p">,</span> <span class="n">gene_new</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add an adapted decoder module to the model.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        key : str</span>
+<span class="sd">            The key for the adapted decoder module.</span>
+<span class="sd">        var_index : list</span>
+<span class="sd">            The list of variable indices.</span>
+<span class="sd">        gene_pretrain : torch.Tensor</span>
+<span class="sd">            The pretrained gene embedding tensor.</span>
+<span class="sd">        gene_new : torch.Tensor</span>
+<span class="sd">            The new gene embedding tensor.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; model = Fuse_network(100, [10, 20], 50, 10, 0.1, [&#39;gene1&#39;, &#39;gene2&#39;], [&#39;gene1&#39;, &#39;gene2&#39;], &#39;norm&#39;, 2, [&#39;scrna&#39;, &#39;scrna&#39;], [100, 200], 100)</span>
+<span class="sd">        &gt;&gt;&gt; model.add_adaptdecoder_module(&#39;atlas1&#39;, [1, 2, 3], torch.randn(10, 100), torch.randn(10, 100))</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">FuseMapAdaptDecoder</span><span class="p">(</span><span class="n">var_index</span><span class="p">,</span> <span class="n">gene_pretrain</span><span class="p">,</span> <span class="n">gene_new</span><span class="p">)</span></div>
 </div>
 

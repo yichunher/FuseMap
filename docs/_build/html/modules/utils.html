@@ -354,7 +354,28 @@ document.write(`
 <dl class="py function">
 <dt class="sig sig-object py" id="fusemap.utils.average_embeddings">
 <span class="sig-prename descclassname"><span class="pre">fusemap.utils.</span></span><span class="sig-name descname"><span class="pre">average_embeddings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obsm_latent</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/utils.html#average_embeddings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.utils.average_embeddings" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Calculate the average embeddings for each category in the AnnData object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adata</strong> (<em>AnnData</em>) – Anndata object containing the embeddings</p></li>
+<li><p><strong>category</strong> (<em>str</em>) – Column name in adata.obs containing the category information</p></li>
+<li><p><strong>obsm_latent</strong> (<em>str</em>) – Key in adata.obsm containing the latent embeddings</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>new_adata</strong> – Anndata object containing the average embeddings</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>AnnData</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">adata</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">read_h5ad</span><span class="p">(</span><span class="s2">&quot;path/to/adata.h5ad&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_adata</span> <span class="o">=</span> <span class="n">average_embeddings</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="s2">&quot;cell_type&quot;</span><span class="p">,</span> <span class="s2">&quot;latent&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="fusemap.utils.generate_ad_embed">

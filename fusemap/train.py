@@ -5,19 +5,10 @@ from fusemap.loss import *
 from fusemap.config import *
 from fusemap.utils import *
 from fusemap.train_model import *
-from torch.optim.lr_scheduler import ReduceLROnPlateau
-import torch.distributions as D
 from pathlib import Path
-import itertools
-import dgl.dataloading as dgl_dataload
-import random
+# import dgl.dataloading as dgl_dataload
 import os
-import anndata as ad
 import torch
-import numpy as np
-from tqdm import tqdm
-import scanpy as sc
-import dgl
 import logging
 try:
     import pickle5 as pickle
@@ -30,6 +21,38 @@ except ModuleNotFoundError:
 
 def train(X_input, save_dir, kneighbor, input_identity, 
           data_pth=None, preprocess_save=False):
+    """
+    A function to train FuseMap model.
+
+    Parameters
+    ----------
+    X_input : list
+        A list of anndata objects, each representing a spatial section.
+    save_dir : str
+        The path to save the data.
+    kneighbor : list
+        A list of strings, each representing the method to calculate the k-nearest neighbors.
+    input_identity : list
+        A list of strings, each representing the identity of the input data.
+    data_pth : str
+        The path to save the data.
+
+        
+    Examples
+    --------
+    >>> import fusemap
+    >>> import scanpy as sc
+    >>> import os
+    >>> spatial_integrate(
+    ...     [sc.read_h5ad(f) for f in os.listdir('data') if f.endswith('.h5ad')],
+    ...     'data',
+    ...     ['delaunay']*len(X_input),
+    ...     ['ST']*len(X_input),
+    ...     'data'
+    ... )
+
+
+    """
     # ModelType = parse_ModelType()
 
     ModelType.preprocess_save = preprocess_save

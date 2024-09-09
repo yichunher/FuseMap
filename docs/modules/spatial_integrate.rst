@@ -1,5 +1,5 @@
 fusemap.spatial\_integrate module
----------------------------
+--------------------------------------
 
 .. automodule:: fusemap.spatial_integrate
    :members:

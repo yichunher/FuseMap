@@ -2,7 +2,7 @@ import torch
 import scipy.sparse as sp
 # import dgl
 import numpy as np
-from torch.utils.data import Dataset, DataLoader, DataLoader, TensorDataset
+from torch.utils.data import Dataset, DataLoader, DataLoader
 import itertools
 
 
@@ -11,6 +11,33 @@ def get_feature_sparse(device, feature):
 
 
 def construct_mask(n_atlas, spatial_dataset_list, g_all):
+    """
+    Construct mask for training and validation
+
+    Parameters
+    ----------
+    n_atlas : int
+        Number of atlases
+    spatial_dataset_list : list
+        List of spatial datasets
+    g_all : list
+        List of graphs
+
+    Returns
+    -------
+    train_mask : list
+        List of training masks
+    val_mask : list
+        List of validation masks
+
+    Examples
+    --------
+    >>> n_atlas = 2
+    >>> spatial_dataset_list = [CustomGraphDataset(i, j, ModelType.use_input) for i, j in zip(g_all, adatas)]
+    >>> g_all = [dgl.graph((adj_coo.row, adj_coo.col)) for adj_coo in adj_all]
+    >>> train_mask, val_mask = construct_mask(n_atlas, spatial_dataset_list, g_all)
+    
+    """
     train_pct = 0.85
     # np.random.seed(0)
     num_train = [int(len(i) * train_pct) for i in spatial_dataset_list]

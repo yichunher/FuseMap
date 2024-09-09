@@ -45,11 +45,11 @@
             "python": "/home/jialiulab/.conda/envs/fusemap_glue/bin/python", 
             "args": [
                 "--input_data_folder_path", "/home/jialiulab/disk1/yichun/FuseMap/input_data/tissue_type_integrate_test3/",
-                "--output_save_dir", "/home/jialiulab/disk1/yichun/FuseMap/output/tissue_integrate_test3_llmfalse/",
+                "--output_save_dir", "/home/jialiulab/disk1/yichun/FuseMap/output/tissue_integrate_test3_llmcombine_1/",
                 "--mode", "integrate",
                 // "--keep_celltype","gtTaxonomyRank4",
                 // "--keep_tissueregion","gtTissueRegion",
-                "--use_llm_gene_embedding","false",
+                "--use_llm_gene_embedding","combine",
             ],
             "justMyCode": true,
         },

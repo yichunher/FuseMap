@@ -289,19 +289,10 @@ document.write(`
 <span class="kn">from</span> <span class="nn">fusemap.config</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">fusemap.utils</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">fusemap.train_model</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">ReduceLROnPlateau</span>
-<span class="kn">import</span> <span class="nn">torch.distributions</span> <span class="k">as</span> <span class="nn">D</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">import</span> <span class="nn">itertools</span>
-<span class="kn">import</span> <span class="nn">dgl.dataloading</span> <span class="k">as</span> <span class="nn">dgl_dataload</span>
-<span class="kn">import</span> <span class="nn">random</span>
+<span class="c1"># import dgl.dataloading as dgl_dataload</span>
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">anndata</span> <span class="k">as</span> <span class="nn">ad</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
-<span class="kn">import</span> <span class="nn">scanpy</span> <span class="k">as</span> <span class="nn">sc</span>
-<span class="kn">import</span> <span class="nn">dgl</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">pickle5</span> <span class="k">as</span> <span class="nn">pickle</span>
@@ -316,6 +307,38 @@ document.write(`
 <a class="viewcode-back" href="../../modules/train.html#fusemap.train.train">[docs]</a>
 <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">X_input</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">,</span> <span class="n">kneighbor</span><span class="p">,</span> <span class="n">input_identity</span><span class="p">,</span> 
           <span class="n">data_pth</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">preprocess_save</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A function to train FuseMap model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X_input : list</span>
+<span class="sd">        A list of anndata objects, each representing a spatial section.</span>
+<span class="sd">    save_dir : str</span>
+<span class="sd">        The path to save the data.</span>
+<span class="sd">    kneighbor : list</span>
+<span class="sd">        A list of strings, each representing the method to calculate the k-nearest neighbors.</span>
+<span class="sd">    input_identity : list</span>
+<span class="sd">        A list of strings, each representing the identity of the input data.</span>
+<span class="sd">    data_pth : str</span>
+<span class="sd">        The path to save the data.</span>
+
+<span class="sd">        </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import fusemap</span>
+<span class="sd">    &gt;&gt;&gt; import scanpy as sc</span>
+<span class="sd">    &gt;&gt;&gt; import os</span>
+<span class="sd">    &gt;&gt;&gt; spatial_integrate(</span>
+<span class="sd">    ...     [sc.read_h5ad(f) for f in os.listdir(&#39;data&#39;) if f.endswith(&#39;.h5ad&#39;)],</span>
+<span class="sd">    ...     &#39;data&#39;,</span>
+<span class="sd">    ...     [&#39;delaunay&#39;]*len(X_input),</span>
+<span class="sd">    ...     [&#39;ST&#39;]*len(X_input),</span>
+<span class="sd">    ...     &#39;data&#39;</span>
+<span class="sd">    ... )</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># ModelType = parse_ModelType()</span>
 
     <span class="n">ModelType</span><span class="o">.</span><span class="n">preprocess_save</span> <span class="o">=</span> <span class="n">preprocess_save</span>

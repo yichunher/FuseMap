@@ -296,6 +296,34 @@ document.write(`
 <div class="viewcode-block" id="AE_Gene_loss">
 <a class="viewcode-back" href="../../modules/loss.html#fusemap.loss.AE_Gene_loss">[docs]</a>
 <span class="k">def</span> <span class="nf">AE_Gene_loss</span><span class="p">(</span><span class="n">recon_x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z_distribution</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the generator loss for the autoencoder.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    recon_x : torch.Tensor</span>
+<span class="sd">        The reconstructed tensor.</span>
+<span class="sd">    x : torch.Tensor</span>
+<span class="sd">        The original tensor.</span>
+<span class="sd">    z_distribution : torch.distributions</span>
+<span class="sd">        The distribution of the latent variables.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    torch.Tensor</span>
+<span class="sd">        The gene loss.</span>
+<span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import torch</span>
+<span class="sd">    &gt;&gt;&gt; import torch.distributions as D</span>
+<span class="sd">    &gt;&gt;&gt; recon_x = torch.randn(10, 10)</span>
+<span class="sd">    &gt;&gt;&gt; x = torch.randn(10, 10)</span>
+<span class="sd">    &gt;&gt;&gt; z_distribution = D.Normal(0.0, 1.0)</span>
+<span class="sd">    &gt;&gt;&gt; AE_Gene_loss(recon_x, x, z_distribution)</span>
+<span class="sd">    tensor(0.0)</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">if</span> <span class="n">recon_x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">recon_x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
@@ -311,6 +339,25 @@ document.write(`
 <div class="viewcode-block" id="prod">
 <a class="viewcode-back" href="../../modules/loss.html#fusemap.loss.prod">[docs]</a>
 <span class="k">def</span> <span class="nf">prod</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the product of a list of numbers.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : list</span>
+<span class="sd">        The list of numbers.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int</span>
+<span class="sd">        The product of the numbers.</span>
+<span class="sd">        </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; x = [1, 2, 3, 4]</span>
+<span class="sd">    &gt;&gt;&gt; prod(x)</span>
+<span class="sd">    24</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1">########### function from GLUE: https://github.com/gao-lab/GLUE</span>
     <span class="c1"># try:</span>
     <span class="c1"># from math import prod  # pylint: disable=redefined-outer-name</span>
@@ -333,6 +380,27 @@ document.write(`
 <span class="k">def</span> <span class="nf">compute_gene_embedding_loss</span><span class="p">(</span>
         <span class="n">model</span>
         <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the gene embedding loss.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : torch.nn.Module</span>
+<span class="sd">        The model.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    torch.Tensor</span>
+<span class="sd">        The gene embedding loss.</span>
+<span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import torch</span>
+<span class="sd">    &gt;&gt;&gt; import fusemap</span>
+<span class="sd">    &gt;&gt;&gt; model = fusemap.model.Fuse_network()</span>
+<span class="sd">    &gt;&gt;&gt; compute_gene_embedding_loss(model)</span>
+<span class="sd">    tensor(0.0)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Calculate gene embedding loss</span>
     <span class="n">learned_matrix</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">gene_embedding</span><span class="o">.</span><span class="n">T</span>
 
@@ -361,6 +429,61 @@ document.write(`
     <span class="n">mask_batch_spatial</span><span class="p">,</span>
     <span class="n">flagconfig</span><span class="p">,</span>
 <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the discriminator loss for the pretraining phase.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : torch.nn.Module</span>
+<span class="sd">        The model.</span>
+<span class="sd">    flag_source_cat_single : torch.Tensor</span>
+<span class="sd">        The source category for the single-cell data.</span>
+<span class="sd">    flag_source_cat_spatial : torch.Tensor</span>
+<span class="sd">        The source category for the spatial data.</span>
+<span class="sd">    anneal : float</span>
+<span class="sd">        The annealing factor.</span>
+<span class="sd">    batch_features_all : list</span>
+<span class="sd">        The list of features.</span>
+<span class="sd">    adj_all : list</span>
+<span class="sd">        The list of adjacency matrices.</span>
+<span class="sd">    mask_batch_single : list</span>
+<span class="sd">        The list of masks for the single-cell data.</span>
+<span class="sd">    mask_batch_spatial : list</span>
+<span class="sd">        The list of masks for the spatial data.</span>
+<span class="sd">    flagconfig : FlagConfig</span>
+<span class="sd">        The configuration flags.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        The discriminator loss.</span>
+<span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import torch</span>
+<span class="sd">    &gt;&gt;&gt; import fusemap</span>
+<span class="sd">    &gt;&gt;&gt; model = fusemap.model.Fuse_network()</span>
+<span class="sd">    &gt;&gt;&gt; flag_source_cat_single = torch.randn(10, 10)</span>
+<span class="sd">    &gt;&gt;&gt; flag_source_cat_spatial = torch.randn(10, 10)</span>
+<span class="sd">    &gt;&gt;&gt; anneal = 0.5</span>
+<span class="sd">    &gt;&gt;&gt; batch_features_all = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; adj_all = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; mask_batch_single = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; mask_batch_spatial = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; flagconfig = fusemap.config.FlagConfig()</span>
+<span class="sd">    &gt;&gt;&gt; compute_dis_loss_pretrain(</span>
+<span class="sd">    ...     model,</span>
+<span class="sd">    ...     flag_source_cat_single,</span>
+<span class="sd">    ...     flag_source_cat_spatial,</span>
+<span class="sd">    ...     anneal,</span>
+<span class="sd">    ...     batch_features_all,</span>
+<span class="sd">    ...     adj_all,</span>
+<span class="sd">    ...     mask_batch_single,</span>
+<span class="sd">    ...     mask_batch_spatial,</span>
+<span class="sd">    ...     flagconfig</span>
+<span class="sd">    ... )</span>
+<span class="sd">    {&#39;dis&#39;: tensor(0.0)}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">mask_batch_single_all</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">mask_batch_single</span><span class="p">)</span>
     <span class="n">mask_batch_spatial_all</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">mask_batch_spatial</span><span class="p">)</span>
 
@@ -428,6 +551,61 @@ document.write(`
     <span class="n">mask_batch_spatial</span><span class="p">,</span>
     <span class="n">flagconfig</span><span class="p">,</span>
 <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the autoencoder loss for the pretraining phase.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : torch.nn.Module</span>
+<span class="sd">        The model.</span>
+<span class="sd">    flag_source_cat_single : torch.Tensor</span>
+<span class="sd">        The source category for the single-cell data.</span>
+<span class="sd">    flag_source_cat_spatial : torch.Tensor</span>
+<span class="sd">        The source category for the spatial data.   </span>
+<span class="sd">    anneal : float</span>
+<span class="sd">        The annealing factor.</span>
+<span class="sd">    batch_features_all : list</span>
+<span class="sd">        The list of features.</span>
+<span class="sd">    adj_all : list</span>
+<span class="sd">        The list of adjacency matrices.</span>
+<span class="sd">    mask_batch_single : list    </span>
+<span class="sd">        The list of masks for the single-cell data.</span>
+<span class="sd">    mask_batch_spatial : list</span>
+<span class="sd">        The list of masks for the spatial data.</span>
+<span class="sd">    flagconfig : FlagConfig</span>
+<span class="sd">        The configuration flags.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        The autoencoder loss.</span>
+<span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import torch</span>
+<span class="sd">    &gt;&gt;&gt; import fusemap</span>
+<span class="sd">    &gt;&gt;&gt; model = fusemap.model.Fuse_network()</span>
+<span class="sd">    &gt;&gt;&gt; flag_source_cat_single = torch.randn(10, 10)</span>
+<span class="sd">    &gt;&gt;&gt; flag_source_cat_spatial = torch.randn(10, 10)</span>
+<span class="sd">    &gt;&gt;&gt; anneal = 0.5</span>
+<span class="sd">    &gt;&gt;&gt; batch_features_all = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; adj_all = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; mask_batch_single = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; mask_batch_spatial = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; flagconfig = fusemap.config.FlagConfig()</span>
+<span class="sd">    &gt;&gt;&gt; compute_ae_loss_pretrain(</span>
+<span class="sd">    ...     model,</span>
+<span class="sd">    ...     flag_source_cat_single,</span>
+<span class="sd">    ...     flag_source_cat_spatial,</span>
+<span class="sd">    ...     anneal,</span>
+<span class="sd">    ...     batch_features_all,</span>
+<span class="sd">    ...     adj_all,</span>
+<span class="sd">    ...     mask_batch_single,</span>
+<span class="sd">    ...     mask_batch_spatial,</span>
+<span class="sd">    ...     flagconfig</span>
+<span class="sd">    ... )</span>
+<span class="sd">    {&#39;dis_ae&#39;: tensor(0.0), &#39;loss_AE_all&#39;: [tensor(0.0)], &#39;loss_all&#39;: tensor(0.0)}</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">z_all</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">model</span><span class="o">.</span><span class="n">encoder</span><span class="p">[</span><span class="s2">&quot;atlas&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)](</span><span class="n">batch_features_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">adj_all</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
@@ -502,7 +680,7 @@ document.write(`
     <span class="n">loss_dis</span> <span class="o">=</span> <span class="n">flagconfig</span><span class="o">.</span><span class="n">lambda_disc_single</span> <span class="o">*</span> <span class="p">(</span><span class="n">loss_dis_single</span> <span class="o">+</span> <span class="n">loss_dis_spatial</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">use_llm_gene_embedding</span><span class="o">==</span><span class="s1">&#39;combine&#39;</span><span class="p">:</span>
-        <span class="n">loss_part3</span> <span class="o">=</span> <span class="n">compute_gene_embedding_loss</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span>
+        <span class="n">loss_part3</span> <span class="o">=</span> <span class="n">compute_gene_embedding_loss</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="o">*</span><span class="mi">1</span>
         
     <span class="k">if</span> <span class="p">(</span>
         <span class="n">flagconfig</span><span class="o">.</span><span class="n">lambda_disc_single</span> <span class="o">==</span> <span class="mi">1</span>
@@ -516,7 +694,7 @@ document.write(`
     <span class="n">loss_all</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;dis_ae&quot;</span><span class="p">:</span> <span class="n">loss_dis</span><span class="p">,</span>
         <span class="s2">&quot;loss_AE_all&quot;</span><span class="p">:</span> <span class="n">loss_AE_all</span><span class="p">,</span>
-        <span class="s2">&quot;loss_all&quot;</span><span class="p">:</span> <span class="o">-</span><span class="n">loss_dis</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">loss_AE_all</span><span class="p">),</span>
+        <span class="s2">&quot;loss_all&quot;</span><span class="p">:</span> <span class="o">-</span><span class="n">loss_dis</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">loss_AE_all</span><span class="p">)</span><span class="o">+</span><span class="n">loss_part3</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">loss_all</span></div>
 
@@ -542,6 +720,69 @@ document.write(`
     <span class="n">balance_weight_spatial_block</span><span class="p">,</span>
     <span class="n">flagconfig</span><span class="p">,</span>
 <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the discriminator loss for the final training phase.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : torch.nn.Module</span>
+<span class="sd">        The model.</span>
+<span class="sd">    flag_source_cat_single : torch.Tensor</span>
+<span class="sd">        The source category for the single-cell data.</span>
+<span class="sd">    flag_source_cat_spatial : torch.Tensor</span>
+<span class="sd">        The source category for the spatial data.</span>
+<span class="sd">    anneal : float</span>
+<span class="sd">        The annealing factor.</span>
+<span class="sd">    batch_features_all : list</span>
+<span class="sd">        The list of features.</span>
+<span class="sd">    adj_all : list</span>
+<span class="sd">        The list of adjacency matrices.</span>
+<span class="sd">    mask_batch_single : list</span>
+<span class="sd">        The list of masks for the single-cell data.</span>
+<span class="sd">    mask_batch_spatial : list</span>
+<span class="sd">        The list of masks for the spatial data.</span>
+<span class="sd">    balance_weight_single_block : list</span>
+<span class="sd">        The list of balance weights for the single-cell data.</span>
+<span class="sd">    balance_weight_spatial_block : list</span>
+<span class="sd">        The list of balance weights for the spatial data.</span>
+<span class="sd">    flagconfig : FlagConfig</span>
+<span class="sd">        The configuration flags.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        The discriminator loss.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import torch</span>
+<span class="sd">    &gt;&gt;&gt; import fusemap</span>
+<span class="sd">    &gt;&gt;&gt; model = fusemap.model.Fuse_network()</span>
+<span class="sd">    &gt;&gt;&gt; flag_source_cat_single = torch.randn(10, 10)</span>
+<span class="sd">    &gt;&gt;&gt; flag_source_cat_spatial = torch.randn(10, 10)</span>
+<span class="sd">    &gt;&gt;&gt; anneal = 0.5</span>
+<span class="sd">    &gt;&gt;&gt; batch_features_all = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; adj_all = [torch.randn(10, 10)] </span>
+<span class="sd">    &gt;&gt;&gt; mask_batch_single = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; mask_batch_spatial = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; balance_weight_single_block = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; balance_weight_spatial_block = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; flagconfig = fusemap.config.FlagConfig()</span>
+<span class="sd">    &gt;&gt;&gt; compute_dis_loss(</span>
+<span class="sd">    ...     model,</span>
+<span class="sd">    ...     flag_source_cat_single,</span>
+<span class="sd">    ...     flag_source_cat_spatial,</span>
+<span class="sd">    ...     anneal,</span>
+<span class="sd">    ...     batch_features_all,</span>
+<span class="sd">    ...     adj_all,</span>
+<span class="sd">    ...     mask_batch_single,</span>
+<span class="sd">    ...     mask_batch_spatial,</span>
+<span class="sd">    ...     balance_weight_single_block,</span>
+<span class="sd">    ...     balance_weight_spatial_block,   </span>
+<span class="sd">    ...     flagconfig</span>
+<span class="sd">    ... )</span>
+<span class="sd">    {&#39;dis&#39;: tensor(0.0)}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">mask_batch_single_all</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">mask_batch_single</span><span class="p">)</span>
     <span class="n">mask_batch_spatial_all</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">mask_batch_spatial</span><span class="p">)</span>
     <span class="n">balance_weight_single_block</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">balance_weight_single_block</span><span class="p">)</span>
@@ -617,6 +858,69 @@ document.write(`
     <span class="n">balance_weight_spatial_block</span><span class="p">,</span>
     <span class="n">flagconfig</span><span class="p">,</span>
 <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the autoencoder loss for the final training phase.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : torch.nn.Module</span>
+<span class="sd">        The model.</span>
+<span class="sd">    flag_source_cat_single : torch.Tensor</span>
+<span class="sd">        The source category for the single-cell data.</span>
+<span class="sd">    flag_source_cat_spatial : torch.Tensor</span>
+<span class="sd">        The source category for the spatial data.</span>
+<span class="sd">    anneal : float</span>
+<span class="sd">        The annealing factor.</span>
+<span class="sd">    batch_features_all : list</span>
+<span class="sd">        The list of features.</span>
+<span class="sd">    adj_all : list</span>
+<span class="sd">        The list of adjacency matrices.</span>
+<span class="sd">    mask_batch_single : list</span>
+<span class="sd">        The list of masks for the single-cell data.</span>
+<span class="sd">    mask_batch_spatial : list</span>
+<span class="sd">        The list of masks for the spatial data.</span>
+<span class="sd">    balance_weight_single_block : list</span>
+<span class="sd">        The list of balance weights for the single-cell data.</span>
+<span class="sd">    balance_weight_spatial_block : list</span>
+<span class="sd">        The list of balance weights for the spatial data.</span>
+<span class="sd">    flagconfig : FlagConfig</span>
+<span class="sd">        The configuration flags.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        The autoencoder loss.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import torch</span>
+<span class="sd">    &gt;&gt;&gt; import fusemap</span>
+<span class="sd">    &gt;&gt;&gt; model = fusemap.model.Fuse_network()</span>
+<span class="sd">    &gt;&gt;&gt; flag_source_cat_single = torch.randn(10, 10)</span>
+<span class="sd">    &gt;&gt;&gt; flag_source_cat_spatial = torch.randn(10, 10)</span>
+<span class="sd">    &gt;&gt;&gt; anneal = 0.5</span>
+<span class="sd">    &gt;&gt;&gt; batch_features_all = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; adj_all = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; mask_batch_single = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; mask_batch_spatial = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; balance_weight_single_block = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; balance_weight_spatial_block = [torch.randn(10, 10)]</span>
+<span class="sd">    &gt;&gt;&gt; flagconfig = fusemap.config.FlagConfig()</span>
+<span class="sd">    &gt;&gt;&gt; compute_ae_loss(</span>
+<span class="sd">    ...     model,</span>
+<span class="sd">    ...     flag_source_cat_single,</span>
+<span class="sd">    ...     flag_source_cat_spatial,</span>
+<span class="sd">    ...     anneal,</span>
+<span class="sd">    ...     batch_features_all,</span>
+<span class="sd">    ...     adj_all,</span>
+<span class="sd">    ...     mask_batch_single,</span>
+<span class="sd">    ...     mask_batch_spatial,</span>
+<span class="sd">    ...     balance_weight_single_block,</span>
+<span class="sd">    ...     balance_weight_spatial_block,</span>
+<span class="sd">    ...     flagconfig</span>
+<span class="sd">    ... )</span>
+<span class="sd">    {&#39;dis_ae&#39;: tensor(0.0), &#39;loss_AE_all&#39;: [tensor(0.0)], &#39;loss_all&#39;: tensor(0.0)}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">z_all</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">model</span><span class="o">.</span><span class="n">encoder</span><span class="p">[</span><span class="s2">&quot;atlas&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)](</span><span class="n">batch_features_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">adj_all</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">n_atlas</span><span class="p">)</span>
@@ -702,7 +1006,7 @@ document.write(`
 
 
     <span class="k">if</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">use_llm_gene_embedding</span><span class="o">==</span><span class="s1">&#39;combine&#39;</span><span class="p">:</span>
-        <span class="n">loss_part3</span> <span class="o">=</span> <span class="n">compute_gene_embedding_loss</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span>
+        <span class="n">loss_part3</span> <span class="o">=</span> <span class="n">compute_gene_embedding_loss</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="o">*</span><span class="mi">1</span>
         
     <span class="k">if</span> <span class="p">(</span>
         <span class="n">flagconfig</span><span class="o">.</span><span class="n">lambda_disc_single</span> <span class="o">==</span> <span class="mi">1</span>
@@ -716,7 +1020,7 @@ document.write(`
     <span class="n">loss_all</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;dis_ae&quot;</span><span class="p">:</span> <span class="n">loss_dis</span><span class="p">,</span>
         <span class="s2">&quot;loss_AE_all&quot;</span><span class="p">:</span> <span class="n">loss_AE_all</span><span class="p">,</span>
-        <span class="s2">&quot;loss_all&quot;</span><span class="p">:</span> <span class="o">-</span><span class="n">loss_dis</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">loss_AE_all</span><span class="p">),</span>
+        <span class="s2">&quot;loss_all&quot;</span><span class="p">:</span> <span class="o">-</span><span class="n">loss_dis</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">loss_AE_all</span><span class="p">)</span><span class="o">+</span><span class="n">loss_part3</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">loss_all</span></div>
 
@@ -730,6 +1034,39 @@ document.write(`
 <div class="viewcode-block" id="get_balance_weight_subsample">
 <a class="viewcode-back" href="../../modules/loss.html#fusemap.loss.get_balance_weight_subsample">[docs]</a>
 <span class="k">def</span> <span class="nf">get_balance_weight_subsample</span><span class="p">(</span><span class="n">leiden_adata_single</span><span class="p">,</span> <span class="n">adatas_</span><span class="p">,</span> <span class="n">key_leiden_category</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the balance weight for the subsample.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    leiden_adata_single : list</span>
+<span class="sd">        The list of single-cell data.</span>
+<span class="sd">    adatas_ : list</span>
+<span class="sd">        The list of data.</span>
+<span class="sd">    key_leiden_category : str</span>
+<span class="sd">        The key for the leiden category.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        The balance weight.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import fusemap</span>
+<span class="sd">    &gt;&gt;&gt; leiden_adata_single = [fusemap.data.load_sample_data()]</span>
+<span class="sd">    &gt;&gt;&gt; adatas_ = [fusemap.data.load_sample_data()]</span>
+<span class="sd">    &gt;&gt;&gt; key_leiden_category = &#39;leiden&#39;</span>
+<span class="sd">    &gt;&gt;&gt; get_balance_weight_subsample(leiden_adata_single, adatas_, key_leiden_category)</span>
+<span class="sd">    [tensor([[0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000],</span>
+<span class="sd">            [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000],</span>
+<span class="sd">            [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000],</span>
+<span class="sd">            ...,</span>
+<span class="sd">            [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000],</span>
+<span class="sd">            [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000],</span>
+<span class="sd">            [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000]])]</span>
+<span class="sd">            </span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1">########### function from GLUE: https://github.com/gao-lab/GLUE</span>
     <span class="n">us</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">sklearn</span><span class="o">.</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">leiden</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="s2">&quot;l2&quot;</span><span class="p">)</span>

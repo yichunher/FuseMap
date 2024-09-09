@@ -1,10 +1,6 @@
 import logging
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-import torch.distributions as D
-from pathlib import Path
 import itertools
-import dgl.dataloading as dgl_dataload
-import random
 import os
 from fusemap.config import *
 from fusemap.dataset import *
@@ -12,10 +8,8 @@ from fusemap.utils import *
 from fusemap.loss import *
 import anndata as ad
 import torch
-import numpy as np
 from tqdm import tqdm
 import scanpy as sc
-import dgl
 import torch.nn as nn
 
 try:

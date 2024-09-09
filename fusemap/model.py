@@ -15,6 +15,27 @@ def reset_parameters(para):
 
 
 class Discriminator(nn.Module):
+    """
+    Discriminator network for the FuseMap model.
+
+    Parameters
+    ----------
+    latent_dim : int
+        The dimension of the latent space.
+    n_atlas : int
+        The number of atlases.
+    dropout_rate : float
+        The dropout rate.
+    
+    Returns
+    -------
+    None
+    
+    Examples
+    --------
+    >>> disc = Discriminator(100, 10, 0.1)
+    """
+
     def __init__(self, latent_dim, n_atlas, dropout_rate):
         super(Discriminator, self).__init__()
 
@@ -30,6 +51,27 @@ class Discriminator(nn.Module):
         # self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
+        """
+        Forward pass for the Discriminator class.
+        
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor.
+        
+        Returns
+        -------
+        x : torch.Tensor
+            The output tensor.
+        
+        Examples
+        --------
+        >>> x = torch.randn(10, 100)
+        >>> disc = Discriminator(100, 10, 0.1)
+        >>> y = disc(x)
+        
+        """
+
         x = self.linear_0(x)
         x = self.act_0(x)
         x = self.dropout_0(x)
@@ -43,6 +85,24 @@ class Discriminator(nn.Module):
 
 
 class Adj_model(nn.Module):
+    """
+    Adjacency model for the FuseMap model.
+
+
+    Parameters
+    ----------
+    N : int
+        The number of nodes in the graph.
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    >>> adj = Adj_model(10)
+    """
+
     def __init__(self, N):
         super(Adj_model, self).__init__()
         self.N = N
@@ -52,6 +112,21 @@ class Adj_model(nn.Module):
         torch.nn.init.xavier_uniform_(self.weight)
 
     def forward(self):
+        """
+        Forward pass for the Adj_model class.
+
+        Returns
+        -------
+        weight_normalized : torch.Tensor
+            The normalized weight matrix.
+
+        Examples
+        --------
+        >>> adj = Adj_model(10)
+        >>> adj()
+        
+        """
+
         weight_relu = torch.relu(self.weight)
         weight_relu = weight_relu + torch.eye(self.N).to(weight_relu.device)
 
@@ -84,6 +159,31 @@ class Adj_model(nn.Module):
 
 
 class FuseMapEncoder(nn.Module):
+    """
+    Encoder network for the FuseMap model.
+
+    Parameters
+    ----------
+    input_dim : int
+        The dimension of the input.
+    hidden_dim : int
+        The dimension of the hidden layer.
+    latent_dim : int
+        The dimension of the latent space.
+    dropout_rate : float
+        The dropout rate.
+    normalization : str
+        The normalization type.
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    >>> enc = FuseMapEncoder(100, 50, 10, 0.1)
+    """
+
     def __init__(
         self, input_dim, hidden_dim, latent_dim, dropout_rate, normalization="batchnorm"
     ):
@@ -120,6 +220,33 @@ class FuseMapEncoder(nn.Module):
         self.log_var = nn.Linear(hidden_dim, latent_dim)
 
     def forward(self, x, adj):
+        """
+        Forward pass for the FuseMapEncoder class.
+        
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor.
+        adj : torch.Tensor
+            The adjacency matrix.
+            
+        Returns
+        -------
+        z_sample : torch.Tensor
+        The sampled latent space tensor.
+        None
+        None
+        z_mean : torch.Tensor
+        The mean of the latent space tensor.
+            
+        Examples
+        --------
+        >>> x = torch.randn(10, 100)
+        >>> adj = torch.randn(100, 100)
+        >>> enc = FuseMapEncoder(100, 50, 10, 0.1)
+        >>> z_sample, _, _, z_mean = enc(x, adj)
+        """
+
         h_1 = self.linear_0(x)
         h_1 = self.bn_0(h_1)
         h_1 = self.activation_0(h_1)
@@ -184,6 +311,55 @@ class FuseMapAdaptDecoder(nn.Module):
 
 
 class Fuse_network(nn.Module):
+    """
+    FuseMap model.
+    
+    Parameters
+    ----------
+    pca_dim : int
+        The dimension of the PCA.
+    input_dim : list
+        The list of input dimensions.
+    hidden_dim : int
+        The dimension of the hidden layer.
+    latent_dim : int
+        The dimension of the latent space.
+    dropout_rate : float
+        The dropout rate.
+    var_name : list
+        The list of variable names.
+    all_unique_genes : list
+        The list of all unique genes.
+    use_input : str
+        The input type.
+    n_atlas : int
+        The number of atlases.
+    input_identity : list
+        The list of input identities.
+    n_obs : list
+        The list of number of observations.
+    num_epoch : int
+        The number of epochs.
+    pretrain_model : bool
+        Whether the model is pretrained.
+    pretrain_n_atlas : int
+        The number of pretrained atlases.
+    PRETRAINED_GENE : list
+        The list of pretrained genes.
+    new_train_gene : list
+        The list of new training genes.
+    use_llm_gene_embedding : bool
+        Whether to use the LLM gene embedding.
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    >>> model = Fuse_network(100, [10, 20], 50, 10, 0.1, ['gene1', 'gene2'], ['gene1', 'gene2'], 'norm', 2, ['scrna', 'scrna'], [100, 200], 100)
+    
+    """
     def __init__(
         self,
         pca_dim,
@@ -335,14 +511,86 @@ class Fuse_network(nn.Module):
     def add_encoder_module(
         self, key, input_dim, hidden_dim, latent_dim, dropout_rate=0.1
     ):
+        """
+        Add an encoder module to the model.
+
+        Parameters
+        ----------
+        key : str
+            The key for the encoder module.
+        input_dim : int
+            The dimension of the input.
+        hidden_dim : int
+            The dimension of the hidden layer.
+        latent_dim : int
+            The dimension of the latent space.
+        dropout_rate : float
+            The dropout rate.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        >>> model = Fuse_network(100, [10, 20], 50, 10, 0.1, ['gene1', 'gene2'], ['gene1', 'gene2'], 'norm', 2, ['scrna', 'scrna'], [100, 200], 100)
+        >>> model.add_encoder_module('atlas1', 10, 50, 10, 0.1)
+
+        """
         self.encoder[key] = FuseMapEncoder(
             input_dim, hidden_dim, latent_dim, dropout_rate
         )
 
     def add_decoder_module(self, key, gene_embedding, var_index):
+        """
+        Add a decoder module to the model.
+
+        Parameters
+        ----------
+        key : str
+            The key for the decoder module.
+        gene_embedding : torch.Tensor
+            The gene embedding tensor.
+        var_index : list
+            The list of variable indices.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        >>> model = Fuse_network(100, [10, 20], 50, 10, 0.1, ['gene1', 'gene2'], ['gene1', 'gene2'], 'norm', 2, ['scrna', 'scrna'], [100, 200], 100)
+        >>> model.add_decoder_module('atlas1', torch.randn(10, 100), [1, 2, 3])
+
+        """
         self.decoder[key] = FuseMapDecoder(gene_embedding, var_index)
 
     def add_adaptdecoder_module(self, key, var_index, gene_pretrain, gene_new):
+        """
+        Add an adapted decoder module to the model.
+
+        Parameters
+        ----------
+        key : str
+            The key for the adapted decoder module.
+        var_index : list
+            The list of variable indices.
+        gene_pretrain : torch.Tensor
+            The pretrained gene embedding tensor.
+        gene_new : torch.Tensor
+            The new gene embedding tensor.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        >>> model = Fuse_network(100, [10, 20], 50, 10, 0.1, ['gene1', 'gene2'], ['gene1', 'gene2'], 'norm', 2, ['scrna', 'scrna'], [100, 200], 100)
+        >>> model.add_adaptdecoder_module('atlas1', [1, 2, 3], torch.randn(10, 100), torch.randn(10, 100))
+        
+        """
         self.decoder[key] = FuseMapAdaptDecoder(var_index, gene_pretrain, gene_new)
 
 

@@ -73,6 +73,28 @@ def save_snapshot(model, epoch_pretrain, epoch_final, snapshot_path,verbose):
 
 
 def average_embeddings(adata, category, obsm_latent):
+    """
+    Calculate the average embeddings for each category in the AnnData object
+
+    Parameters
+    ----------
+    adata : AnnData
+        Anndata object containing the embeddings
+    category : str
+        Column name in adata.obs containing the category information
+    obsm_latent : str
+        Key in adata.obsm containing the latent embeddings
+
+    Returns
+    -------
+    new_adata : AnnData
+        Anndata object containing the average embeddings
+
+    Examples    
+    --------
+    >>> adata = sc.read_h5ad("path/to/adata.h5ad")
+    >>> new_adata = average_embeddings(adata, "cell_type", "latent")
+    """
     latent_df = pd.DataFrame(adata.obsm[obsm_latent], index=adata.obs[category])
     mean_embeddings = latent_df.groupby(level=0).mean()
 

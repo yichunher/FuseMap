@@ -371,6 +371,28 @@ document.write(`
 <div class="viewcode-block" id="average_embeddings">
 <a class="viewcode-back" href="../../modules/utils.html#fusemap.utils.average_embeddings">[docs]</a>
 <span class="k">def</span> <span class="nf">average_embeddings</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">obsm_latent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the average embeddings for each category in the AnnData object</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata : AnnData</span>
+<span class="sd">        Anndata object containing the embeddings</span>
+<span class="sd">    category : str</span>
+<span class="sd">        Column name in adata.obs containing the category information</span>
+<span class="sd">    obsm_latent : str</span>
+<span class="sd">        Key in adata.obsm containing the latent embeddings</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    new_adata : AnnData</span>
+<span class="sd">        Anndata object containing the average embeddings</span>
+
+<span class="sd">    Examples    </span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; adata = sc.read_h5ad(&quot;path/to/adata.h5ad&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; new_adata = average_embeddings(adata, &quot;cell_type&quot;, &quot;latent&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">latent_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="n">obsm_latent</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">category</span><span class="p">])</span>
     <span class="n">mean_embeddings</span> <span class="o">=</span> <span class="n">latent_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 

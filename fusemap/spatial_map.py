@@ -6,17 +6,10 @@ from fusemap.loss import *
 from fusemap.config import *
 from fusemap.utils import *
 from fusemap.train_model import *
-from torch.optim.lr_scheduler import ReduceLROnPlateau
-import torch.distributions as D
 from pathlib import Path
-import itertools
-import dgl.dataloading as dgl_dataload
+# import dgl.dataloading as dgl_dataload
 import os
-import anndata as ad
 import torch
-import numpy as np
-from tqdm import tqdm
-import scanpy as sc
 
 try:
     import pickle5 as pickle
@@ -32,6 +25,39 @@ def spatial_map(
     input_identity,
     data_pth=None,
 ):
+    """
+    A function to map spatial data using FuseMap.
+    
+    Parameters
+    ----------
+    molccf_path : str
+        The path to the molCCF data.
+    X_input : list
+        A list of anndata objects, each representing a spatial section.
+    args : argparse.Namespace
+        Arguments for FuseMap.
+    kneighbor : list
+        A list of strings, each representing the method to calculate the k-nearest neighbors.
+    input_identity : list
+        A list of strings, each representing the identity of the input data.
+    data_pth : str
+        The path to save the data.
+    
+    Examples
+    --------
+    >>> import fusemap
+    >>> import scanpy as sc
+    >>> import os
+    >>> spatial_map(
+    ...     "/home/jialiulab/disk1/yichun/FuseMap/molCCF/",
+    ...     [sc.read_h5ad(f) for f in os.listdir('data') if f.endswith('.h5ad')],
+    ...     fusemap.config.ModelType,
+    ...     ['delaunay']*len(X_input),
+    ...     ['ST']*len(X_input),
+    ...     'data'
+    ... )
+    """
+
     ### preprocess
     ModelType.data_pth = data_pth
     ModelType.save_dir = args.output_save_dir

@@ -355,12 +355,92 @@ document.write(`
 <dl class="py function">
 <dt class="sig sig-object py" id="fusemap.loss.AE_Gene_loss">
 <span class="sig-prename descclassname"><span class="pre">fusemap.loss.</span></span><span class="sig-name descname"><span class="pre">AE_Gene_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recon_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_distribution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/loss.html#AE_Gene_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.loss.AE_Gene_loss" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Compute the generator loss for the autoencoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>recon_x</strong> (<em>torch.Tensor</em>) – The reconstructed tensor.</p></li>
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – The original tensor.</p></li>
+<li><p><strong>z_distribution</strong> (<em>torch.distributions</em>) – The distribution of the latent variables.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The gene loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch.distributions</span> <span class="k">as</span> <span class="nn">D</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">recon_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">z_distribution</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">AE_Gene_loss</span><span class="p">(</span><span class="n">recon_x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z_distribution</span><span class="p">)</span>
+<span class="go">tensor(0.0)</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="fusemap.loss.compute_ae_loss">
 <span class="sig-prename descclassname"><span class="pre">fusemap.loss.</span></span><span class="sig-name descname"><span class="pre">compute_ae_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flag_source_cat_single</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flag_source_cat_spatial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anneal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_features_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_batch_single</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_batch_spatial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">balance_weight_single_block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">balance_weight_spatial_block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flagconfig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/loss.html#compute_ae_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.loss.compute_ae_loss" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Compute the autoencoder loss for the final training phase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – The model.</p></li>
+<li><p><strong>flag_source_cat_single</strong> (<em>torch.Tensor</em>) – The source category for the single-cell data.</p></li>
+<li><p><strong>flag_source_cat_spatial</strong> (<em>torch.Tensor</em>) – The source category for the spatial data.</p></li>
+<li><p><strong>anneal</strong> (<em>float</em>) – The annealing factor.</p></li>
+<li><p><strong>batch_features_all</strong> (<em>list</em>) – The list of features.</p></li>
+<li><p><strong>adj_all</strong> (<em>list</em>) – The list of adjacency matrices.</p></li>
+<li><p><strong>mask_batch_single</strong> (<em>list</em>) – The list of masks for the single-cell data.</p></li>
+<li><p><strong>mask_batch_spatial</strong> (<em>list</em>) – The list of masks for the spatial data.</p></li>
+<li><p><strong>balance_weight_single_block</strong> (<em>list</em>) – The list of balance weights for the single-cell data.</p></li>
+<li><p><strong>balance_weight_spatial_block</strong> (<em>list</em>) – The list of balance weights for the spatial data.</p></li>
+<li><p><strong>flagconfig</strong> (<a class="reference internal" href="config.html#fusemap.config.FlagConfig" title="fusemap.config.FlagConfig"><em>FlagConfig</em></a>) – The configuration flags.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The autoencoder loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fusemap</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">fusemap</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Fuse_network</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flag_source_cat_single</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flag_source_cat_spatial</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">anneal</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">batch_features_all</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">adj_all</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask_batch_single</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask_batch_spatial</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">balance_weight_single_block</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">balance_weight_spatial_block</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flagconfig</span> <span class="o">=</span> <span class="n">fusemap</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">FlagConfig</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">compute_ae_loss</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">model</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">flag_source_cat_single</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">anneal</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">batch_features_all</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">adj_all</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">mask_batch_single</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">mask_batch_spatial</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">balance_weight_single_block</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">balance_weight_spatial_block</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">flagconfig</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">{&#39;dis_ae&#39;: tensor(0.0), &#39;loss_AE_all&#39;: [tensor(0.0)], &#39;loss_all&#39;: tensor(0.0)}</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="fusemap.loss.compute_ae_loss_map">
@@ -370,12 +450,114 @@ document.write(`
 <dl class="py function">
 <dt class="sig sig-object py" id="fusemap.loss.compute_ae_loss_pretrain">
 <span class="sig-prename descclassname"><span class="pre">fusemap.loss.</span></span><span class="sig-name descname"><span class="pre">compute_ae_loss_pretrain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flag_source_cat_single</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flag_source_cat_spatial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anneal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_features_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_batch_single</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_batch_spatial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flagconfig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/loss.html#compute_ae_loss_pretrain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.loss.compute_ae_loss_pretrain" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Compute the autoencoder loss for the pretraining phase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – The model.</p></li>
+<li><p><strong>flag_source_cat_single</strong> (<em>torch.Tensor</em>) – The source category for the single-cell data.</p></li>
+<li><p><strong>flag_source_cat_spatial</strong> (<em>torch.Tensor</em>) – The source category for the spatial data.</p></li>
+<li><p><strong>anneal</strong> (<em>float</em>) – The annealing factor.</p></li>
+<li><p><strong>batch_features_all</strong> (<em>list</em>) – The list of features.</p></li>
+<li><p><strong>adj_all</strong> (<em>list</em>) – The list of adjacency matrices.</p></li>
+<li><p><strong>mask_batch_single</strong> (<em>list</em>) – The list of masks for the single-cell data.</p></li>
+<li><p><strong>mask_batch_spatial</strong> (<em>list</em>) – The list of masks for the spatial data.</p></li>
+<li><p><strong>flagconfig</strong> (<a class="reference internal" href="config.html#fusemap.config.FlagConfig" title="fusemap.config.FlagConfig"><em>FlagConfig</em></a>) – The configuration flags.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The autoencoder loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fusemap</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">fusemap</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Fuse_network</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flag_source_cat_single</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flag_source_cat_spatial</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">anneal</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">batch_features_all</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">adj_all</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask_batch_single</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask_batch_spatial</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flagconfig</span> <span class="o">=</span> <span class="n">fusemap</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">FlagConfig</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">compute_ae_loss_pretrain</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">model</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">flag_source_cat_single</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">anneal</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">batch_features_all</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">adj_all</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">mask_batch_single</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">mask_batch_spatial</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">flagconfig</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">{&#39;dis_ae&#39;: tensor(0.0), &#39;loss_AE_all&#39;: [tensor(0.0)], &#39;loss_all&#39;: tensor(0.0)}</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="fusemap.loss.compute_dis_loss">
 <span class="sig-prename descclassname"><span class="pre">fusemap.loss.</span></span><span class="sig-name descname"><span class="pre">compute_dis_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flag_source_cat_single</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flag_source_cat_spatial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anneal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_features_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_batch_single</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_batch_spatial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">balance_weight_single_block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">balance_weight_spatial_block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flagconfig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/loss.html#compute_dis_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.loss.compute_dis_loss" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Compute the discriminator loss for the final training phase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – The model.</p></li>
+<li><p><strong>flag_source_cat_single</strong> (<em>torch.Tensor</em>) – The source category for the single-cell data.</p></li>
+<li><p><strong>flag_source_cat_spatial</strong> (<em>torch.Tensor</em>) – The source category for the spatial data.</p></li>
+<li><p><strong>anneal</strong> (<em>float</em>) – The annealing factor.</p></li>
+<li><p><strong>batch_features_all</strong> (<em>list</em>) – The list of features.</p></li>
+<li><p><strong>adj_all</strong> (<em>list</em>) – The list of adjacency matrices.</p></li>
+<li><p><strong>mask_batch_single</strong> (<em>list</em>) – The list of masks for the single-cell data.</p></li>
+<li><p><strong>mask_batch_spatial</strong> (<em>list</em>) – The list of masks for the spatial data.</p></li>
+<li><p><strong>balance_weight_single_block</strong> (<em>list</em>) – The list of balance weights for the single-cell data.</p></li>
+<li><p><strong>balance_weight_spatial_block</strong> (<em>list</em>) – The list of balance weights for the spatial data.</p></li>
+<li><p><strong>flagconfig</strong> (<a class="reference internal" href="config.html#fusemap.config.FlagConfig" title="fusemap.config.FlagConfig"><em>FlagConfig</em></a>) – The configuration flags.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The discriminator loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fusemap</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">fusemap</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Fuse_network</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flag_source_cat_single</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flag_source_cat_spatial</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">anneal</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">batch_features_all</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">adj_all</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask_batch_single</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask_batch_spatial</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">balance_weight_single_block</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">balance_weight_spatial_block</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flagconfig</span> <span class="o">=</span> <span class="n">fusemap</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">FlagConfig</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">compute_dis_loss</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">model</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">flag_source_cat_single</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">anneal</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">batch_features_all</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">adj_all</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">mask_batch_single</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">mask_batch_spatial</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">balance_weight_single_block</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">balance_weight_spatial_block</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">flagconfig</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">{&#39;dis&#39;: tensor(0.0)}</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="fusemap.loss.compute_dis_loss_map">
@@ -385,12 +567,80 @@ document.write(`
 <dl class="py function">
 <dt class="sig sig-object py" id="fusemap.loss.compute_dis_loss_pretrain">
 <span class="sig-prename descclassname"><span class="pre">fusemap.loss.</span></span><span class="sig-name descname"><span class="pre">compute_dis_loss_pretrain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flag_source_cat_single</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flag_source_cat_spatial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anneal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_features_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_batch_single</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_batch_spatial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flagconfig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/loss.html#compute_dis_loss_pretrain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.loss.compute_dis_loss_pretrain" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Compute the discriminator loss for the pretraining phase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – The model.</p></li>
+<li><p><strong>flag_source_cat_single</strong> (<em>torch.Tensor</em>) – The source category for the single-cell data.</p></li>
+<li><p><strong>flag_source_cat_spatial</strong> (<em>torch.Tensor</em>) – The source category for the spatial data.</p></li>
+<li><p><strong>anneal</strong> (<em>float</em>) – The annealing factor.</p></li>
+<li><p><strong>batch_features_all</strong> (<em>list</em>) – The list of features.</p></li>
+<li><p><strong>adj_all</strong> (<em>list</em>) – The list of adjacency matrices.</p></li>
+<li><p><strong>mask_batch_single</strong> (<em>list</em>) – The list of masks for the single-cell data.</p></li>
+<li><p><strong>mask_batch_spatial</strong> (<em>list</em>) – The list of masks for the spatial data.</p></li>
+<li><p><strong>flagconfig</strong> (<a class="reference internal" href="config.html#fusemap.config.FlagConfig" title="fusemap.config.FlagConfig"><em>FlagConfig</em></a>) – The configuration flags.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The discriminator loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fusemap</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">fusemap</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Fuse_network</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flag_source_cat_single</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flag_source_cat_spatial</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">anneal</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">batch_features_all</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">adj_all</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask_batch_single</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask_batch_spatial</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flagconfig</span> <span class="o">=</span> <span class="n">fusemap</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">FlagConfig</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">compute_dis_loss_pretrain</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">model</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">flag_source_cat_single</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">flag_source_cat_spatial</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">anneal</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">batch_features_all</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">adj_all</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">mask_batch_single</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">mask_batch_spatial</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">flagconfig</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">{&#39;dis&#39;: tensor(0.0)}</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="fusemap.loss.compute_gene_embedding_loss">
 <span class="sig-prename descclassname"><span class="pre">fusemap.loss.</span></span><span class="sig-name descname"><span class="pre">compute_gene_embedding_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/loss.html#compute_gene_embedding_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.loss.compute_gene_embedding_loss" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Compute the gene embedding loss.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model</strong> (<em>torch.nn.Module</em>) – The model.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The gene embedding loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fusemap</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">fusemap</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Fuse_network</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">compute_gene_embedding_loss</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="go">tensor(0.0)</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="fusemap.loss.get_balance_weight">
@@ -400,12 +650,61 @@ document.write(`
 <dl class="py function">
 <dt class="sig sig-object py" id="fusemap.loss.get_balance_weight_subsample">
 <span class="sig-prename descclassname"><span class="pre">fusemap.loss.</span></span><span class="sig-name descname"><span class="pre">get_balance_weight_subsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">leiden_adata_single</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adatas_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_leiden_category</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/loss.html#get_balance_weight_subsample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.loss.get_balance_weight_subsample" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Compute the balance weight for the subsample.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>leiden_adata_single</strong> (<em>list</em>) – The list of single-cell data.</p></li>
+<li><p><strong>adatas</strong> (<em>list</em>) – The list of data.</p></li>
+<li><p><strong>key_leiden_category</strong> (<em>str</em>) – The key for the leiden category.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The balance weight.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fusemap</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">leiden_adata_single</span> <span class="o">=</span> <span class="p">[</span><span class="n">fusemap</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">load_sample_data</span><span class="p">()]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">adatas_</span> <span class="o">=</span> <span class="p">[</span><span class="n">fusemap</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">load_sample_data</span><span class="p">()]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">key_leiden_category</span> <span class="o">=</span> <span class="s1">&#39;leiden&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_balance_weight_subsample</span><span class="p">(</span><span class="n">leiden_adata_single</span><span class="p">,</span> <span class="n">adatas_</span><span class="p">,</span> <span class="n">key_leiden_category</span><span class="p">)</span>
+<span class="go">[tensor([[0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000],</span>
+<span class="go">        [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000],</span>
+<span class="go">        [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000],</span>
+<span class="go">        ...,</span>
+<span class="go">        [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000],</span>
+<span class="go">        [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000],</span>
+<span class="go">        [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000]])]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="fusemap.loss.prod">
 <span class="sig-prename descclassname"><span class="pre">fusemap.loss.</span></span><span class="sig-name descname"><span class="pre">prod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/loss.html#prod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.loss.prod" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Compute the product of a list of numbers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>list</em>) – The list of numbers.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The product of the numbers.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prod</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">24</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </section>
 

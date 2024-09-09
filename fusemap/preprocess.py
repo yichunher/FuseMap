@@ -11,6 +11,38 @@ import logging
 def preprocess_raw(
     X_input, kneighbor, input_identity, use_input, n_atlas, data_pth=None
 ):
+    """A function to preprocess raw data.
+    
+    Parameters
+    ----------
+    X_input : list
+        A list of anndata objects, each representing a spatial section.
+    kneighbor : list
+        A list of strings, each representing the method to calculate the k-nearest neighbors.
+    input_identity : list
+        A list of strings, each representing the identity of the input data.
+    use_input : str
+        The method to use the input data.
+    n_atlas : int
+        The number of atlases.
+    data_pth : str
+        The path to save the data.
+
+    Examples
+    --------
+    >>> import fusemap
+    >>> import scanpy as sc
+    >>> import os
+    >>> preprocess_raw(
+    ...     [sc.read_h5ad(f) for f in os.listdir('data') if f.endswith('.h5ad')],
+    ...     ['delaunay']*len(X_input),
+    ...     ['ST']*len(X_input),
+    ...     'pca',
+    ...     len(X_input),
+    ...     'data'
+    ... )
+    """
+
     logging.info(
         "\n\n---------------------------------- Preprocess adata ----------------------------------\n"
     )

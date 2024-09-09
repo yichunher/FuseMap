@@ -10,6 +10,34 @@ from fusemap.config import *
 import torch.nn as nn
 
 def AE_Gene_loss(recon_x, x, z_distribution):
+    """
+    Compute the generator loss for the autoencoder.
+    
+    Parameters
+    ----------
+    recon_x : torch.Tensor
+        The reconstructed tensor.
+    x : torch.Tensor
+        The original tensor.
+    z_distribution : torch.distributions
+        The distribution of the latent variables.
+    Returns
+    -------
+    torch.Tensor
+        The gene loss.
+    
+    Examples
+    --------
+    >>> import torch
+    >>> import torch.distributions as D
+    >>> recon_x = torch.randn(10, 10)
+    >>> x = torch.randn(10, 10)
+    >>> z_distribution = D.Normal(0.0, 1.0)
+    >>> AE_Gene_loss(recon_x, x, z_distribution)
+    tensor(0.0)
+    
+    """
+
     if recon_x.shape[0] == 0:
         return torch.tensor(0.0, dtype=torch.float32).to(recon_x.device)
 
@@ -22,6 +50,25 @@ def AE_Gene_loss(recon_x, x, z_distribution):
 
 
 def prod(x):
+    """
+    Compute the product of a list of numbers.
+    
+    Parameters
+    ----------
+    x : list
+        The list of numbers.
+    Returns
+    -------
+    int
+        The product of the numbers.
+        
+    Examples
+    --------
+    >>> x = [1, 2, 3, 4]
+    >>> prod(x)
+    24
+    
+    """
     ########### function from GLUE: https://github.com/gao-lab/GLUE
     # try:
     # from math import prod  # pylint: disable=redefined-outer-name
@@ -41,6 +88,27 @@ pretrain loss
 def compute_gene_embedding_loss(
         model
         ):
+    """
+    Compute the gene embedding loss.
+    
+    Parameters
+    ----------
+    model : torch.nn.Module
+        The model.
+    Returns
+    -------
+    torch.Tensor
+        The gene embedding loss.
+    
+    Examples
+    --------
+    >>> import torch
+    >>> import fusemap
+    >>> model = fusemap.model.Fuse_network()
+    >>> compute_gene_embedding_loss(model)
+    tensor(0.0)
+
+    """
     # Calculate gene embedding loss
     learned_matrix = model.gene_embedding.T
 
@@ -66,6 +134,61 @@ def compute_dis_loss_pretrain(
     mask_batch_spatial,
     flagconfig,
 ):
+    """
+    Compute the discriminator loss for the pretraining phase.
+    
+    Parameters
+    ----------
+    model : torch.nn.Module
+        The model.
+    flag_source_cat_single : torch.Tensor
+        The source category for the single-cell data.
+    flag_source_cat_spatial : torch.Tensor
+        The source category for the spatial data.
+    anneal : float
+        The annealing factor.
+    batch_features_all : list
+        The list of features.
+    adj_all : list
+        The list of adjacency matrices.
+    mask_batch_single : list
+        The list of masks for the single-cell data.
+    mask_batch_spatial : list
+        The list of masks for the spatial data.
+    flagconfig : FlagConfig
+        The configuration flags.
+    Returns
+    -------
+    dict
+        The discriminator loss.
+    
+    Examples
+    --------
+    >>> import torch
+    >>> import fusemap
+    >>> model = fusemap.model.Fuse_network()
+    >>> flag_source_cat_single = torch.randn(10, 10)
+    >>> flag_source_cat_spatial = torch.randn(10, 10)
+    >>> anneal = 0.5
+    >>> batch_features_all = [torch.randn(10, 10)]
+    >>> adj_all = [torch.randn(10, 10)]
+    >>> mask_batch_single = [torch.randn(10, 10)]
+    >>> mask_batch_spatial = [torch.randn(10, 10)]
+    >>> flagconfig = fusemap.config.FlagConfig()
+    >>> compute_dis_loss_pretrain(
+    ...     model,
+    ...     flag_source_cat_single,
+    ...     flag_source_cat_spatial,
+    ...     anneal,
+    ...     batch_features_all,
+    ...     adj_all,
+    ...     mask_batch_single,
+    ...     mask_batch_spatial,
+    ...     flagconfig
+    ... )
+    {'dis': tensor(0.0)}
+
+    """
     mask_batch_single_all = torch.hstack(mask_batch_single)
     mask_batch_spatial_all = torch.hstack(mask_batch_spatial)
 
@@ -130,6 +253,61 @@ def compute_ae_loss_pretrain(
     mask_batch_spatial,
     flagconfig,
 ):
+    """
+    Compute the autoencoder loss for the pretraining phase.
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        The model.
+    flag_source_cat_single : torch.Tensor
+        The source category for the single-cell data.
+    flag_source_cat_spatial : torch.Tensor
+        The source category for the spatial data.   
+    anneal : float
+        The annealing factor.
+    batch_features_all : list
+        The list of features.
+    adj_all : list
+        The list of adjacency matrices.
+    mask_batch_single : list    
+        The list of masks for the single-cell data.
+    mask_batch_spatial : list
+        The list of masks for the spatial data.
+    flagconfig : FlagConfig
+        The configuration flags.
+    Returns
+    -------
+    dict
+        The autoencoder loss.
+    
+    Examples
+    --------
+    >>> import torch
+    >>> import fusemap
+    >>> model = fusemap.model.Fuse_network()
+    >>> flag_source_cat_single = torch.randn(10, 10)
+    >>> flag_source_cat_spatial = torch.randn(10, 10)
+    >>> anneal = 0.5
+    >>> batch_features_all = [torch.randn(10, 10)]
+    >>> adj_all = [torch.randn(10, 10)]
+    >>> mask_batch_single = [torch.randn(10, 10)]
+    >>> mask_batch_spatial = [torch.randn(10, 10)]
+    >>> flagconfig = fusemap.config.FlagConfig()
+    >>> compute_ae_loss_pretrain(
+    ...     model,
+    ...     flag_source_cat_single,
+    ...     flag_source_cat_spatial,
+    ...     anneal,
+    ...     batch_features_all,
+    ...     adj_all,
+    ...     mask_batch_single,
+    ...     mask_batch_spatial,
+    ...     flagconfig
+    ... )
+    {'dis_ae': tensor(0.0), 'loss_AE_all': [tensor(0.0)], 'loss_all': tensor(0.0)}
+    
+    """
     z_all = [
         model.encoder["atlas" + str(i)](batch_features_all[i], adj_all[i])
         for i in range(ModelType.n_atlas)
@@ -204,7 +382,7 @@ def compute_ae_loss_pretrain(
     loss_dis = flagconfig.lambda_disc_single * (loss_dis_single + loss_dis_spatial)
 
     if ModelType.use_llm_gene_embedding=='combine':
-        loss_part3 = compute_gene_embedding_loss(model)*10
+        loss_part3 = compute_gene_embedding_loss(model)*1
         
     if (
         flagconfig.lambda_disc_single == 1
@@ -218,7 +396,7 @@ def compute_ae_loss_pretrain(
     loss_all = {
         "dis_ae": loss_dis,
         "loss_AE_all": loss_AE_all,
-        "loss_all": -loss_dis + sum(loss_AE_all),
+        "loss_all": -loss_dis + sum(loss_AE_all)+loss_part3,
     }
     return loss_all
 
@@ -241,6 +419,69 @@ def compute_dis_loss(
     balance_weight_spatial_block,
     flagconfig,
 ):
+    """
+    Compute the discriminator loss for the final training phase.
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        The model.
+    flag_source_cat_single : torch.Tensor
+        The source category for the single-cell data.
+    flag_source_cat_spatial : torch.Tensor
+        The source category for the spatial data.
+    anneal : float
+        The annealing factor.
+    batch_features_all : list
+        The list of features.
+    adj_all : list
+        The list of adjacency matrices.
+    mask_batch_single : list
+        The list of masks for the single-cell data.
+    mask_batch_spatial : list
+        The list of masks for the spatial data.
+    balance_weight_single_block : list
+        The list of balance weights for the single-cell data.
+    balance_weight_spatial_block : list
+        The list of balance weights for the spatial data.
+    flagconfig : FlagConfig
+        The configuration flags.
+    Returns
+    -------
+    dict
+        The discriminator loss.
+
+    Examples
+    --------
+    >>> import torch
+    >>> import fusemap
+    >>> model = fusemap.model.Fuse_network()
+    >>> flag_source_cat_single = torch.randn(10, 10)
+    >>> flag_source_cat_spatial = torch.randn(10, 10)
+    >>> anneal = 0.5
+    >>> batch_features_all = [torch.randn(10, 10)]
+    >>> adj_all = [torch.randn(10, 10)] 
+    >>> mask_batch_single = [torch.randn(10, 10)]
+    >>> mask_batch_spatial = [torch.randn(10, 10)]
+    >>> balance_weight_single_block = [torch.randn(10, 10)]
+    >>> balance_weight_spatial_block = [torch.randn(10, 10)]
+    >>> flagconfig = fusemap.config.FlagConfig()
+    >>> compute_dis_loss(
+    ...     model,
+    ...     flag_source_cat_single,
+    ...     flag_source_cat_spatial,
+    ...     anneal,
+    ...     batch_features_all,
+    ...     adj_all,
+    ...     mask_batch_single,
+    ...     mask_batch_spatial,
+    ...     balance_weight_single_block,
+    ...     balance_weight_spatial_block,   
+    ...     flagconfig
+    ... )
+    {'dis': tensor(0.0)}
+
+    """
     mask_batch_single_all = torch.hstack(mask_batch_single)
     mask_batch_spatial_all = torch.hstack(mask_batch_spatial)
     balance_weight_single_block = torch.hstack(balance_weight_single_block)
@@ -313,6 +554,69 @@ def compute_ae_loss(
     balance_weight_spatial_block,
     flagconfig,
 ):
+    """
+    Compute the autoencoder loss for the final training phase.
+    
+    Parameters
+    ----------
+    model : torch.nn.Module
+        The model.
+    flag_source_cat_single : torch.Tensor
+        The source category for the single-cell data.
+    flag_source_cat_spatial : torch.Tensor
+        The source category for the spatial data.
+    anneal : float
+        The annealing factor.
+    batch_features_all : list
+        The list of features.
+    adj_all : list
+        The list of adjacency matrices.
+    mask_batch_single : list
+        The list of masks for the single-cell data.
+    mask_batch_spatial : list
+        The list of masks for the spatial data.
+    balance_weight_single_block : list
+        The list of balance weights for the single-cell data.
+    balance_weight_spatial_block : list
+        The list of balance weights for the spatial data.
+    flagconfig : FlagConfig
+        The configuration flags.
+    Returns
+    -------
+    dict
+        The autoencoder loss.
+
+    Examples
+    --------
+    >>> import torch
+    >>> import fusemap
+    >>> model = fusemap.model.Fuse_network()
+    >>> flag_source_cat_single = torch.randn(10, 10)
+    >>> flag_source_cat_spatial = torch.randn(10, 10)
+    >>> anneal = 0.5
+    >>> batch_features_all = [torch.randn(10, 10)]
+    >>> adj_all = [torch.randn(10, 10)]
+    >>> mask_batch_single = [torch.randn(10, 10)]
+    >>> mask_batch_spatial = [torch.randn(10, 10)]
+    >>> balance_weight_single_block = [torch.randn(10, 10)]
+    >>> balance_weight_spatial_block = [torch.randn(10, 10)]
+    >>> flagconfig = fusemap.config.FlagConfig()
+    >>> compute_ae_loss(
+    ...     model,
+    ...     flag_source_cat_single,
+    ...     flag_source_cat_spatial,
+    ...     anneal,
+    ...     batch_features_all,
+    ...     adj_all,
+    ...     mask_batch_single,
+    ...     mask_batch_spatial,
+    ...     balance_weight_single_block,
+    ...     balance_weight_spatial_block,
+    ...     flagconfig
+    ... )
+    {'dis_ae': tensor(0.0), 'loss_AE_all': [tensor(0.0)], 'loss_all': tensor(0.0)}
+
+    """
     z_all = [
         model.encoder["atlas" + str(i)](batch_features_all[i], adj_all[i])
         for i in range(ModelType.n_atlas)
@@ -398,7 +702,7 @@ def compute_ae_loss(
 
 
     if ModelType.use_llm_gene_embedding=='combine':
-        loss_part3 = compute_gene_embedding_loss(model)*10
+        loss_part3 = compute_gene_embedding_loss(model)*1
         
     if (
         flagconfig.lambda_disc_single == 1
@@ -412,7 +716,7 @@ def compute_ae_loss(
     loss_all = {
         "dis_ae": loss_dis,
         "loss_AE_all": loss_AE_all,
-        "loss_all": -loss_dis + sum(loss_AE_all),
+        "loss_all": -loss_dis + sum(loss_AE_all)+loss_part3,
     }
     return loss_all
 
@@ -423,6 +727,39 @@ balance weight part
 
 
 def get_balance_weight_subsample(leiden_adata_single, adatas_, key_leiden_category):
+    """
+    Compute the balance weight for the subsample.
+    
+    Parameters
+    ----------
+    leiden_adata_single : list
+        The list of single-cell data.
+    adatas_ : list
+        The list of data.
+    key_leiden_category : str
+        The key for the leiden category.
+    Returns
+    -------
+    list
+        The balance weight.
+
+    Examples
+    --------
+    >>> import fusemap
+    >>> leiden_adata_single = [fusemap.data.load_sample_data()]
+    >>> adatas_ = [fusemap.data.load_sample_data()]
+    >>> key_leiden_category = 'leiden'
+    >>> get_balance_weight_subsample(leiden_adata_single, adatas_, key_leiden_category)
+    [tensor([[0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000],
+            [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000],
+            [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000],
+            ...,
+            [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000],
+            [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000],
+            [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000]])]
+            
+    
+    """
     ########### function from GLUE: https://github.com/gao-lab/GLUE
     us = [
         sklearn.preprocessing.normalize(leiden.X, norm="l2")

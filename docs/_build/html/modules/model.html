@@ -376,10 +376,37 @@ document.write(`
 <dt class="sig sig-object py" id="fusemap.model.Adj_model">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fusemap.model.</span></span><span class="sig-name descname"><span class="pre">Adj_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/model.html#Adj_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.model.Adj_model" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Adjacency model for the FuseMap model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>N</strong> (<em>int</em>) – The number of nodes in the graph.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">adj</span> <span class="o">=</span> <span class="n">Adj_model</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="fusemap.model.Adj_model.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/model.html#Adj_model.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.model.Adj_model.forward" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Forward pass for the Adj_model class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>weight_normalized</strong> – The normalized weight matrix.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>torch.Tensor</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">adj</span> <span class="o">=</span> <span class="n">Adj_model</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">adj</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </dd></dl>
 
@@ -387,10 +414,45 @@ document.write(`
 <dt class="sig sig-object py" id="fusemap.model.Discriminator">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fusemap.model.</span></span><span class="sig-name descname"><span class="pre">Discriminator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/model.html#Discriminator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.model.Discriminator" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Discriminator network for the FuseMap model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>latent_dim</strong> (<em>int</em>) – The dimension of the latent space.</p></li>
+<li><p><strong>n_atlas</strong> (<em>int</em>) – The number of atlases.</p></li>
+<li><p><strong>dropout_rate</strong> (<em>float</em>) – The dropout rate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">disc</span> <span class="o">=</span> <span class="n">Discriminator</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="fusemap.model.Discriminator.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/model.html#Discriminator.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.model.Discriminator.forward" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Forward pass for the Discriminator class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input tensor.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>x</strong> – The output tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">disc</span> <span class="o">=</span> <span class="n">Discriminator</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">disc</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </dd></dl>
 
@@ -420,10 +482,56 @@ document.write(`
 <dt class="sig sig-object py" id="fusemap.model.FuseMapEncoder">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fusemap.model.</span></span><span class="sig-name descname"><span class="pre">FuseMapEncoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/model.html#FuseMapEncoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.model.FuseMapEncoder" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Encoder network for the FuseMap model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_dim</strong> (<em>int</em>) – The dimension of the input.</p></li>
+<li><p><strong>hidden_dim</strong> (<em>int</em>) – The dimension of the hidden layer.</p></li>
+<li><p><strong>latent_dim</strong> (<em>int</em>) – The dimension of the latent space.</p></li>
+<li><p><strong>dropout_rate</strong> (<em>float</em>) – The dropout rate.</p></li>
+<li><p><strong>normalization</strong> (<em>str</em>) – The normalization type.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">enc</span> <span class="o">=</span> <span class="n">FuseMapEncoder</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="fusemap.model.FuseMapEncoder.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/model.html#FuseMapEncoder.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.model.FuseMapEncoder.forward" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Forward pass for the FuseMapEncoder class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – The input tensor.</p></li>
+<li><p><strong>adj</strong> (<em>torch.Tensor</em>) – The adjacency matrix.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>z_sample</strong> (<em>torch.Tensor</em>)</p></li>
+<li><p><em>The sampled latent space tensor.</em></p></li>
+<li><p><em>None</em></p></li>
+<li><p><em>None</em></p></li>
+<li><p><strong>z_mean</strong> (<em>torch.Tensor</em>)</p></li>
+<li><p><em>The mean of the latent space tensor.</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">adj</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">enc</span> <span class="o">=</span> <span class="n">FuseMapEncoder</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">z_sample</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">z_mean</span> <span class="o">=</span> <span class="n">enc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">adj</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </dd></dl>
 
@@ -431,20 +539,108 @@ document.write(`
 <dt class="sig sig-object py" id="fusemap.model.Fuse_network">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fusemap.model.</span></span><span class="sig-name descname"><span class="pre">Fuse_network</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/model.html#Fuse_network"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.model.Fuse_network" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>FuseMap model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pca_dim</strong> (<em>int</em>) – The dimension of the PCA.</p></li>
+<li><p><strong>input_dim</strong> (<em>list</em>) – The list of input dimensions.</p></li>
+<li><p><strong>hidden_dim</strong> (<em>int</em>) – The dimension of the hidden layer.</p></li>
+<li><p><strong>latent_dim</strong> (<em>int</em>) – The dimension of the latent space.</p></li>
+<li><p><strong>dropout_rate</strong> (<em>float</em>) – The dropout rate.</p></li>
+<li><p><strong>var_name</strong> (<em>list</em>) – The list of variable names.</p></li>
+<li><p><strong>all_unique_genes</strong> (<em>list</em>) – The list of all unique genes.</p></li>
+<li><p><strong>use_input</strong> (<em>str</em>) – The input type.</p></li>
+<li><p><strong>n_atlas</strong> (<em>int</em>) – The number of atlases.</p></li>
+<li><p><strong>input_identity</strong> (<em>list</em>) – The list of input identities.</p></li>
+<li><p><strong>n_obs</strong> (<em>list</em>) – The list of number of observations.</p></li>
+<li><p><strong>num_epoch</strong> (<em>int</em>) – The number of epochs.</p></li>
+<li><p><strong>pretrain_model</strong> (<em>bool</em>) – Whether the model is pretrained.</p></li>
+<li><p><strong>pretrain_n_atlas</strong> (<em>int</em>) – The number of pretrained atlases.</p></li>
+<li><p><strong>PRETRAINED_GENE</strong> (<em>list</em>) – The list of pretrained genes.</p></li>
+<li><p><strong>new_train_gene</strong> (<em>list</em>) – The list of new training genes.</p></li>
+<li><p><strong>use_llm_gene_embedding</strong> (<em>bool</em>) – Whether to use the LLM gene embedding.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">Fuse_network</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;gene1&#39;</span><span class="p">,</span> <span class="s1">&#39;gene2&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;gene1&#39;</span><span class="p">,</span> <span class="s1">&#39;gene2&#39;</span><span class="p">],</span> <span class="s1">&#39;norm&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;scrna&#39;</span><span class="p">,</span> <span class="s1">&#39;scrna&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span> <span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="fusemap.model.Fuse_network.add_adaptdecoder_module">
 <span class="sig-name descname"><span class="pre">add_adaptdecoder_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gene_pretrain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gene_new</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/model.html#Fuse_network.add_adaptdecoder_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.model.Fuse_network.add_adaptdecoder_module" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Add an adapted decoder module to the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<em>str</em>) – The key for the adapted decoder module.</p></li>
+<li><p><strong>var_index</strong> (<em>list</em>) – The list of variable indices.</p></li>
+<li><p><strong>gene_pretrain</strong> (<em>torch.Tensor</em>) – The pretrained gene embedding tensor.</p></li>
+<li><p><strong>gene_new</strong> (<em>torch.Tensor</em>) – The new gene embedding tensor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">Fuse_network</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;gene1&#39;</span><span class="p">,</span> <span class="s1">&#39;gene2&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;gene1&#39;</span><span class="p">,</span> <span class="s1">&#39;gene2&#39;</span><span class="p">],</span> <span class="s1">&#39;norm&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;scrna&#39;</span><span class="p">,</span> <span class="s1">&#39;scrna&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span> <span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">add_adaptdecoder_module</span><span class="p">(</span><span class="s1">&#39;atlas1&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="fusemap.model.Fuse_network.add_decoder_module">
 <span class="sig-name descname"><span class="pre">add_decoder_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gene_embedding</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/model.html#Fuse_network.add_decoder_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.model.Fuse_network.add_decoder_module" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Add a decoder module to the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<em>str</em>) – The key for the decoder module.</p></li>
+<li><p><strong>gene_embedding</strong> (<em>torch.Tensor</em>) – The gene embedding tensor.</p></li>
+<li><p><strong>var_index</strong> (<em>list</em>) – The list of variable indices.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">Fuse_network</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;gene1&#39;</span><span class="p">,</span> <span class="s1">&#39;gene2&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;gene1&#39;</span><span class="p">,</span> <span class="s1">&#39;gene2&#39;</span><span class="p">],</span> <span class="s1">&#39;norm&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;scrna&#39;</span><span class="p">,</span> <span class="s1">&#39;scrna&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span> <span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">add_decoder_module</span><span class="p">(</span><span class="s1">&#39;atlas1&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="fusemap.model.Fuse_network.add_encoder_module">
 <span class="sig-name descname"><span class="pre">add_encoder_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/model.html#Fuse_network.add_encoder_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.model.Fuse_network.add_encoder_module" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Add an encoder module to the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<em>str</em>) – The key for the encoder module.</p></li>
+<li><p><strong>input_dim</strong> (<em>int</em>) – The dimension of the input.</p></li>
+<li><p><strong>hidden_dim</strong> (<em>int</em>) – The dimension of the hidden layer.</p></li>
+<li><p><strong>latent_dim</strong> (<em>int</em>) – The dimension of the latent space.</p></li>
+<li><p><strong>dropout_rate</strong> (<em>float</em>) – The dropout rate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">Fuse_network</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;gene1&#39;</span><span class="p">,</span> <span class="s1">&#39;gene2&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;gene1&#39;</span><span class="p">,</span> <span class="s1">&#39;gene2&#39;</span><span class="p">],</span> <span class="s1">&#39;norm&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;scrna&#39;</span><span class="p">,</span> <span class="s1">&#39;scrna&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span> <span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">add_encoder_module</span><span class="p">(</span><span class="s1">&#39;atlas1&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </dd></dl>
 

@@ -45,8 +45,28 @@ API Reference
 Core Functionality
 --------------------------------------------------------------------------------
 
-These modules provide functionality for FuseMap for a
-variety of tasks, including xx and xx.
+These modules provide functionality for FuseMap for spatial integration and mapping.
 
 * :mod:`fusemap.spatial_integrate`
 * :mod:`fusemap.spatial_map`
+
+Model Training
+--------------------------------------------------------------------------------
+
+These modules provide functionality for training FuseMap models.
+
+* :mod:`fusemap.loss`
+* :mod:`fusemap.model`
+* :mod:`fusemap.train`
+* :mod:`fusemap.train_model`
+* :mod:`fusemap.dataset`
+
+Utilities
+--------------------------------------------------------------------------------
+
+These modules provide utility functions for FuseMap.
+
+* :mod:`fusemap.config`
+* :mod:`fusemap.logger`
+* :mod:`fusemap.preprocess`
+* :mod:`fusemap.utils`

@@ -297,6 +297,38 @@ document.write(`
 <span class="k">def</span> <span class="nf">preprocess_raw</span><span class="p">(</span>
     <span class="n">X_input</span><span class="p">,</span> <span class="n">kneighbor</span><span class="p">,</span> <span class="n">input_identity</span><span class="p">,</span> <span class="n">use_input</span><span class="p">,</span> <span class="n">n_atlas</span><span class="p">,</span> <span class="n">data_pth</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A function to preprocess raw data.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X_input : list</span>
+<span class="sd">        A list of anndata objects, each representing a spatial section.</span>
+<span class="sd">    kneighbor : list</span>
+<span class="sd">        A list of strings, each representing the method to calculate the k-nearest neighbors.</span>
+<span class="sd">    input_identity : list</span>
+<span class="sd">        A list of strings, each representing the identity of the input data.</span>
+<span class="sd">    use_input : str</span>
+<span class="sd">        The method to use the input data.</span>
+<span class="sd">    n_atlas : int</span>
+<span class="sd">        The number of atlases.</span>
+<span class="sd">    data_pth : str</span>
+<span class="sd">        The path to save the data.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import fusemap</span>
+<span class="sd">    &gt;&gt;&gt; import scanpy as sc</span>
+<span class="sd">    &gt;&gt;&gt; import os</span>
+<span class="sd">    &gt;&gt;&gt; preprocess_raw(</span>
+<span class="sd">    ...     [sc.read_h5ad(f) for f in os.listdir(&#39;data&#39;) if f.endswith(&#39;.h5ad&#39;)],</span>
+<span class="sd">    ...     [&#39;delaunay&#39;]*len(X_input),</span>
+<span class="sd">    ...     [&#39;ST&#39;]*len(X_input),</span>
+<span class="sd">    ...     &#39;pca&#39;,</span>
+<span class="sd">    ...     len(X_input),</span>
+<span class="sd">    ...     &#39;data&#39;</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
         <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">---------------------------------- Preprocess adata ----------------------------------</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="p">)</span>
