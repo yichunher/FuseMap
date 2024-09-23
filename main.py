@@ -3,7 +3,7 @@ warnings.filterwarnings("ignore")
 from fusemap import *
 import scanpy as sc
 from pathlib import Path
-
+import copy
 
 def main(args):
     seed_all(0)
@@ -52,9 +52,15 @@ def main(args):
                           )
     elif args.mode == "map":
         # molccf_path = "/home/jialiulab/disk1/yichun/FuseMap/molCCF/"
-        spatial_map(
-            X_input, args, kneighbor, input_identity
+        for i in range(len(X_input)):
+            args_i=copy.copy(args)
+            args_i.output_save_dir = args.output_save_dir + f"/{X_input[i].obs['file_name'].unique()[0]}/"
+            spatial_map(
+            [X_input[i]], args_i, [kneighbor[i]], [input_identity[i]]
         )
+        # spatial_map(
+        #     X_input, args, kneighbor, input_identity
+        # )
     else:
         raise ValueError(f"mode {args.mode} not recognized")
 

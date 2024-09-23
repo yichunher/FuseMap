@@ -82,8 +82,8 @@
             "console": "integratedTerminal",
             "python": "/home/jialiulab/.conda/envs/fusemap_glue/bin/python", 
             "args": [
-                "--input_data_folder_path", "/home/jialiulab/disk1/yichun/FuseMap/input_data/mouse_disease_map/",
-                "--output_save_dir", "/home/jialiulab/disk1/yichun/FuseMap/output/mouse_disease_aging_map_sole/",
+                "--input_data_folder_path", "/home/jialiulab/disk1/yichun/FuseMap/input_data/mouse_disease_aging_map/",
+                "--output_save_dir", "/home/jialiulab/disk1/yichun/FuseMap/output/mouse_disease_aging_map/",
                 "--mode", "map",
                 // "--keep_celltype","top_level_cell_type",
                 // "--keep_tissueregion","region",
