@@ -152,8 +152,7 @@
  </script></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
-        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents</span></p>
-<ul class="current nav bd-sidenav">
+        <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../index.html"> Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html"> Installation</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials.html"> Tutorials</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -305,9 +304,7 @@ document.write(`
   </button>
 `);
 </script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -323,23 +320,6 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.average_embeddings"><code class="docutils literal notranslate"><span class="pre">average_embeddings()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.generate_ad_embed"><code class="docutils literal notranslate"><span class="pre">generate_ad_embed()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.load_snapshot"><code class="docutils literal notranslate"><span class="pre">load_snapshot()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.read_cell_embedding"><code class="docutils literal notranslate"><span class="pre">read_cell_embedding()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.read_gene_embedding"><code class="docutils literal notranslate"><span class="pre">read_gene_embedding()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.read_gene_embedding_map"><code class="docutils literal notranslate"><span class="pre">read_gene_embedding_map()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.save_obj"><code class="docutils literal notranslate"><span class="pre">save_obj()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.save_snapshot"><code class="docutils literal notranslate"><span class="pre">save_snapshot()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.seed_all"><code class="docutils literal notranslate"><span class="pre">seed_all()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.transfer_annotation"><code class="docutils literal notranslate"><span class="pre">transfer_annotation()</span></code></a></li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -349,79 +329,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="module-fusemap.utils">
-<span id="fusemap-utils-module"></span><h1>fusemap.utils module<a class="headerlink" href="#module-fusemap.utils" title="Link to this heading">#</a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.utils.average_embeddings">
-<span class="sig-prename descclassname"><span class="pre">fusemap.utils.</span></span><span class="sig-name descname"><span class="pre">average_embeddings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obsm_latent</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/utils.html#average_embeddings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.utils.average_embeddings" title="Link to this definition">#</a></dt>
-<dd><p>Calculate the average embeddings for each category in the AnnData object</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>adata</strong> (<em>AnnData</em>) – Anndata object containing the embeddings</p></li>
-<li><p><strong>category</strong> (<em>str</em>) – Column name in adata.obs containing the category information</p></li>
-<li><p><strong>obsm_latent</strong> (<em>str</em>) – Key in adata.obsm containing the latent embeddings</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>new_adata</strong> – Anndata object containing the average embeddings</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>AnnData</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">adata</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">read_h5ad</span><span class="p">(</span><span class="s2">&quot;path/to/adata.h5ad&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">new_adata</span> <span class="o">=</span> <span class="n">average_embeddings</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="s2">&quot;cell_type&quot;</span><span class="p">,</span> <span class="s2">&quot;latent&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.utils.generate_ad_embed">
-<span class="sig-prename descclassname"><span class="pre">fusemap.utils.</span></span><span class="sig-name descname"><span class="pre">generate_ad_embed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ttype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'final'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/utils.html#generate_ad_embed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.utils.generate_ad_embed" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.utils.load_snapshot">
-<span class="sig-prename descclassname"><span class="pre">fusemap.utils.</span></span><span class="sig-name descname"><span class="pre">load_snapshot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snapshot_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/utils.html#load_snapshot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.utils.load_snapshot" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.utils.read_cell_embedding">
-<span class="sig-prename descclassname"><span class="pre">fusemap.utils.</span></span><span class="sig-name descname"><span class="pre">read_cell_embedding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_celltype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_tissueregion</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'final'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/utils.html#read_cell_embedding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.utils.read_cell_embedding" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.utils.read_gene_embedding">
-<span class="sig-prename descclassname"><span class="pre">fusemap.utils.</span></span><span class="sig-name descname"><span class="pre">read_gene_embedding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_unique_genes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_atlas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/utils.html#read_gene_embedding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.utils.read_gene_embedding" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.utils.read_gene_embedding_map">
-<span class="sig-prename descclassname"><span class="pre">fusemap.utils.</span></span><span class="sig-name descname"><span class="pre">read_gene_embedding_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_train_gene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PRETRAINED_GENE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_atlas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/utils.html#read_gene_embedding_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.utils.read_gene_embedding_map" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.utils.save_obj">
-<span class="sig-prename descclassname"><span class="pre">fusemap.utils.</span></span><span class="sig-name descname"><span class="pre">save_obj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">objt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/utils.html#save_obj"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.utils.save_obj" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.utils.save_snapshot">
-<span class="sig-prename descclassname"><span class="pre">fusemap.utils.</span></span><span class="sig-name descname"><span class="pre">save_snapshot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_pretrain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_final</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snapshot_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/utils.html#save_snapshot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.utils.save_snapshot" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.utils.seed_all">
-<span class="sig-prename descclassname"><span class="pre">fusemap.utils.</span></span><span class="sig-name descname"><span class="pre">seed_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cuda_deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/utils.html#seed_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.utils.seed_all" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.utils.transfer_annotation">
-<span class="sig-prename descclassname"><span class="pre">fusemap.utils.</span></span><span class="sig-name descname"><span class="pre">transfer_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molccf_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/utils.html#transfer_annotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.utils.transfer_annotation" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
+  <section id="fusemap-utils-module">
+<h1>fusemap.utils module<a class="headerlink" href="#fusemap-utils-module" title="Link to this heading">#</a></h1>
 </section>
 
 
@@ -459,30 +368,6 @@ document.write(`
             </div>
             
             
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.average_embeddings"><code class="docutils literal notranslate"><span class="pre">average_embeddings()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.generate_ad_embed"><code class="docutils literal notranslate"><span class="pre">generate_ad_embed()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.load_snapshot"><code class="docutils literal notranslate"><span class="pre">load_snapshot()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.read_cell_embedding"><code class="docutils literal notranslate"><span class="pre">read_cell_embedding()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.read_gene_embedding"><code class="docutils literal notranslate"><span class="pre">read_gene_embedding()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.read_gene_embedding_map"><code class="docutils literal notranslate"><span class="pre">read_gene_embedding_map()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.save_obj"><code class="docutils literal notranslate"><span class="pre">save_obj()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.save_snapshot"><code class="docutils literal notranslate"><span class="pre">save_snapshot()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.seed_all"><code class="docutils literal notranslate"><span class="pre">seed_all()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.utils.transfer_annotation"><code class="docutils literal notranslate"><span class="pre">transfer_annotation()</span></code></a></li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>

@@ -1,6 +1,6 @@
 import logging
 import torch.nn.functional as F
-# import sklearn
+import sklearn
 import numpy as np
 import torch
 import torch.distributions as D
@@ -8,6 +8,7 @@ import pandas as pd
 from sparse import COO
 from fusemap.config import *
 import torch.nn as nn
+from sklearn import preprocessing
 
 def AE_Gene_loss(recon_x, x, z_distribution):
     """
@@ -121,6 +122,42 @@ def compute_gene_embedding_loss(
     loss_part3 = loss_fn(predicted_matrix, model.ground_truth_rel_matrix)
     return loss_part3
 
+
+def compute_gene_embedding_new_loss(
+        model
+        ):
+    """
+    Compute the gene embedding loss.
+    
+    Parameters
+    ----------
+    model : torch.nn.Module
+        The model.
+    Returns
+    -------
+    torch.Tensor
+        The gene embedding loss.
+    
+    Examples
+    --------
+    >>> import torch
+    >>> import fusemap
+    >>> model = fusemap.model.Fuse_network()
+    >>> compute_gene_embedding_loss(model)
+    tensor(0.0)
+
+    """
+    # Calculate gene embedding loss
+    learned_matrix = torch.hstack([model.gene_embedding_new,model.gene_embedding_pretrained]).T
+
+    learned_matrix=learned_matrix[model.llm_ind,:]
+
+    learned_matrix_normalized = learned_matrix / learned_matrix.norm(dim=1, keepdim=True)
+    predicted_matrix = torch.matmul(learned_matrix_normalized, learned_matrix_normalized.T)
+
+    loss_fn = nn.MSELoss()
+    loss_part3 = loss_fn(predicted_matrix, model.ground_truth_rel_matrix)
+    return loss_part3
                 
 
 def compute_dis_loss_pretrain(
@@ -363,8 +400,8 @@ def compute_ae_loss_pretrain(
                 + (anneal * ModelType.align_noise_coef.value) * noise_spatial
             )
 
-    ### compute dis loss
 
+    ### compute dis loss
     loss_dis_single = F.cross_entropy(
         F.softmax(model.discriminator_single(z_mean_cat_single), dim=1),
         flag_source_cat_single[mask_batch_single_all],
@@ -381,9 +418,7 @@ def compute_ae_loss_pretrain(
 
     loss_dis = flagconfig.lambda_disc_single * (loss_dis_single + loss_dis_spatial)
 
-    if ModelType.use_llm_gene_embedding=='combine':
-        loss_part3 = compute_gene_embedding_loss(model)*1
-        
+
     if (
         flagconfig.lambda_disc_single == 1
     ):  # and loss_dis.item()<sum(loss_AE_all).item()/DIS_LAMDA:
@@ -393,10 +428,19 @@ def compute_ae_loss_pretrain(
         print(f"lambda_disc_single changed to {flagconfig.lambda_disc_single}")
         loss_dis = flagconfig.lambda_disc_single * loss_dis
 
+    # if ModelType.use_llm_gene_embedding=='combine':
+    #     loss_part3 = compute_gene_embedding_loss(model)*10000
+    #     loss_all = {
+    #         "dis_ae": loss_dis,
+    #         "loss_AE_all": loss_AE_all,
+    #         "loss_all": -loss_dis + sum(loss_AE_all)+loss_part3,
+    #     }
+    # else:
+
     loss_all = {
         "dis_ae": loss_dis,
         "loss_AE_all": loss_AE_all,
-        "loss_all": -loss_dis + sum(loss_AE_all)+loss_part3,
+        "loss_all": -loss_dis + sum(loss_AE_all),
     }
     return loss_all
 
@@ -700,10 +744,6 @@ def compute_ae_loss(
 
     loss_dis = flagconfig.lambda_disc_single * (loss_dis_single + loss_dis_spatial)
 
-
-    if ModelType.use_llm_gene_embedding=='combine':
-        loss_part3 = compute_gene_embedding_loss(model)*1
-        
     if (
         flagconfig.lambda_disc_single == 1
     ):  # and loss_dis.item()<sum(loss_AE_all).item()/DIS_LAMDA:
@@ -713,10 +753,19 @@ def compute_ae_loss(
         print(f"lambda_disc_single changed to {flagconfig.lambda_disc_single}")
         loss_dis = flagconfig.lambda_disc_single * loss_dis
 
+    # if ModelType.use_llm_gene_embedding=='combine':
+    #     loss_part3 = compute_gene_embedding_loss(model)*10000
+    #     loss_all = {
+    #         "dis_ae": loss_dis,
+    #         "loss_AE_all": loss_AE_all,
+    #         "loss_all": -loss_dis + sum(loss_AE_all)+loss_part3,
+    #     }
+    # else:
+    
     loss_all = {
         "dis_ae": loss_dis,
         "loss_AE_all": loss_AE_all,
-        "loss_all": -loss_dis + sum(loss_AE_all)+loss_part3,
+        "loss_all": -loss_dis + sum(loss_AE_all),
     }
     return loss_all
 
@@ -761,6 +810,7 @@ def get_balance_weight_subsample(leiden_adata_single, adatas_, key_leiden_catego
     
     """
     ########### function from GLUE: https://github.com/gao-lab/GLUE
+
     us = [
         sklearn.preprocessing.normalize(leiden.X, norm="l2")
         for leiden in leiden_adata_single
@@ -874,7 +924,7 @@ def get_balance_weight_subsample(leiden_adata_single, adatas_, key_leiden_catego
 def get_balance_weight(adatas, leiden_adata_single, adatas_, key_leiden_category):
     ########### function from GLUE: https://github.com/gao-lab/GLUE
     us = [
-        sklearn.preprocessing.normalize(leiden.X, norm="l2")
+        preprocessing.normalize(leiden.X, norm="l2")
         for leiden in leiden_adata_single
     ]
     ns = [leiden.obs["size"] for leiden in leiden_adata_single]
@@ -944,7 +994,7 @@ def compute_dis_loss_map(
         adapt_model.encoder["atlas" + str(i)](batch_features_all[i], adj_all[i])
         for i in range(ModelType.n_atlas)
     ]
-    z_mean_cat_single = torch.cat([z_all[i][1] for i in range(ModelType.n_atlas)])[
+    z_mean_cat_single = torch.cat([z_all[i][3] for i in range(ModelType.n_atlas)])[
         mask_batch_single_all, :
     ]
     z_mean_cat_single = torch.vstack(
@@ -1064,7 +1114,7 @@ def compute_ae_loss_map(
 
     decoder_all = [
         adapt_model.decoder["atlas" + str(i)](
-            z_all[i][1],
+            # z_all[i][1],
             z_spatial_all[i],
             adj_all[i],
             adapt_model.gene_embedding_pretrained,
@@ -1091,7 +1141,7 @@ def compute_ae_loss_map(
     mask_batch_single_all = torch.hstack(mask_batch_single)
     mask_batch_spatial_all = torch.hstack(mask_batch_spatial)
 
-    z_mean_cat_single = torch.cat([z_all[i][1] for i in range(ModelType.n_atlas)])[
+    z_mean_cat_single = torch.cat([z_all[i][3] for i in range(ModelType.n_atlas)])[
         mask_batch_single_all, :
     ]
     z_mean_cat_single = torch.vstack(

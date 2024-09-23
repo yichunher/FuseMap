@@ -7,7 +7,7 @@ from fusemap.config import *
 from fusemap.utils import *
 from fusemap.train_model import *
 from pathlib import Path
-# import dgl.dataloading as dgl_dataload
+import dgl.dataloading as dgl_dataload
 import os
 import torch
 
@@ -18,7 +18,6 @@ except ModuleNotFoundError:
 
 
 def spatial_map(
-    molccf_path,
     X_input,
     args,
     kneighbor,
@@ -30,7 +29,7 @@ def spatial_map(
     
     Parameters
     ----------
-    molccf_path : str
+    pretrain_model_path : str
         The path to the molCCF data.
     X_input : list
         A list of anndata objects, each representing a spatial section.
@@ -97,7 +96,7 @@ def spatial_map(
         TRAINED_X_NUM,
         TRAINED_GENE_EMBED,
         TRAINED_GENE_NAME,
-    ) = load_ref_model(molccf_path, device)
+    ) = load_ref_model(args.pretrain_model_path, device)
 
     ### define new model
     PRETRAINED_GENE = []
@@ -121,7 +120,6 @@ def spatial_map(
         ModelType.var_name,
         all_unique_genes,
         ModelType.use_input.value,
-        ModelType.harmonized_gene,
         ModelType.n_atlas,
         ModelType.input_identity,
         ModelType.n_obs,
@@ -130,8 +128,13 @@ def spatial_map(
         pretrain_n_atlas=TRAINED_X_NUM,
         PRETRAINED_GENE=PRETRAINED_GENE,
         new_train_gene=new_train_gene,
+        use_llm_gene_embedding=args.use_llm_gene_embedding
+
     )
     adapt_model.to(device)
+    if args.use_llm_gene_embedding=='combine':
+        adapt_model.ground_truth_rel_matrix=adapt_model.ground_truth_rel_matrix.to(device)
+    ModelType.use_llm_gene_embedding=args.use_llm_gene_embedding
 
     ModelType.epochs_run_pretrain = 0
     ModelType.epochs_run_final = 0
@@ -186,7 +189,7 @@ def spatial_map(
 
         ### load reference data
         (dataloader_pretrain_single, dataloader_pretrain_spatial) = load_ref_data(
-            molccf_path,
+            args.pretrain_model_path,
             TRAINED_X_NUM,
             ModelType.batch_size.value,
             USE_REFERENCE_PCT=ModelType.USE_REFERENCE_PCT.value
@@ -200,7 +203,7 @@ def spatial_map(
             device,
             train_mask,
             val_mask,
-            molccf_path,
+            args.pretrain_model_path,
             dataloader_pretrain_single,
             dataloader_pretrain_spatial,
             TRAINED_X_NUM,
@@ -254,9 +257,9 @@ def spatial_map(
     )
 
     ### transfer molCCF cell annotations
-    transfer_annotation(
-        adatas,
-        ModelType.save_dir,
-        molccf_path,
-    )
+    # transfer_annotation(
+    #     adatas,
+    #     ModelType.save_dir,
+    #     molccf_path,
+    # )
     return

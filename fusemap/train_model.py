@@ -199,11 +199,11 @@ def pretrain_model(
             loss_part2["loss_all"].backward()
             optimizer_ae.step()
 
-            # if ModelType.use_llm_gene_embedding=='combine':
-            #     loss_part3 = compute_gene_embedding_loss(model)
-            #     model.zero_grad(set_to_none=True)
-            #     loss_part3.backward()
-            #     optimizer_ae.step()
+            if ModelType.use_llm_gene_embedding=='combine':
+                loss_part3 = compute_gene_embedding_loss(model)
+                model.zero_grad(set_to_none=True)
+                loss_part3.backward()
+                optimizer_ae.step()
 
             for i in range(ModelType.n_atlas):
                 loss_atlas_i[i] += loss_part2["loss_AE_all"][i].item()
@@ -449,11 +449,11 @@ def train_model(
             loss_part2["loss_all"].backward()
             optimizer_ae.step()
 
-            # if ModelType.use_llm_gene_embedding=='combine':
-            #     loss_part3 = compute_gene_embedding_loss(model)
-            #     model.zero_grad(set_to_none=True)
-            #     loss_part3.backward()
-            #     optimizer_ae.step()
+            if ModelType.use_llm_gene_embedding=='combine':
+                loss_part3 = compute_gene_embedding_loss(model)
+                model.zero_grad(set_to_none=True)
+                loss_part3.backward()
+                optimizer_ae.step()
 
             for i in range(ModelType.n_atlas):
                 loss_atlas_i[i] += loss_part2["loss_AE_all"][i].item()
@@ -752,7 +752,7 @@ def balance_weight(model, adatas, save_dir, n_atlas, device):
             adata_.obs["fusemap_single_leiden"] = ad_fusemap_single_leiden[ind]
             adata_.obs["fusemap_spatial_leiden"] = ad_fusemap_spatial_leiden[ind]
 
-    if len(leiden_adata_single) > 10:
+    if len(leiden_adata_single) > 8:
         # raise ValueError('balance weight')
         balance_weight_single = get_balance_weight_subsample(
             leiden_adata_single, adatas_, "fusemap_single_leiden"
@@ -781,7 +781,7 @@ def load_ref_model(
     ref_dir,
     device,
 ):
-    PRETRAINED_MODEL_PATH = ref_dir + f"/pretrain_model.pt"
+    PRETRAINED_MODEL_PATH = ref_dir + f"/trained_model/FuseMap_final_model_final.pt"
 
     if os.path.exists(PRETRAINED_MODEL_PATH):
         TRAINED_MODEL = torch.load(PRETRAINED_MODEL_PATH, map_location=device)
@@ -863,9 +863,9 @@ def transfer_weight(TRAINED_MODEL, pretrain_index, adapt_model):
 
 
 def load_ref_data(ref_dir, TRAINED_X_NUM, batch_size, USE_REFERENCE_PCT=0.1):
-    with open(ref_dir + f"/latent_embeddings_single.pkl", "rb") as openfile:
+    with open(ref_dir + f"/latent_embeddings_all_single_final.pkl", "rb") as openfile:
         latent_embeddings_single = pickle.load(openfile)
-    with open(ref_dir + f"/latent_embeddings_spatial.pkl", "rb") as openfile:
+    with open(ref_dir + f"/latent_embeddings_all_spatial_final.pkl", "rb") as openfile:
         latent_embeddings_spatial = pickle.load(openfile)
 
     ds_pretrain_single = [
@@ -959,7 +959,7 @@ def map_model(
 
         adapt_model.train()
 
-        for blocks_all in tqdm(spatial_dataloader):
+        for blocks_all in spatial_dataloader:
             (
                 batch_features_all,
                 adj_all_block,
@@ -1049,6 +1049,12 @@ def map_model(
             adapt_model.zero_grad(set_to_none=True)
             loss_part2["loss_all"].backward()
             optimizer_ae.step()
+
+            if ModelType.use_llm_gene_embedding=='combine':
+                loss_part3 = compute_gene_embedding_new_loss(adapt_model)
+                adapt_model.zero_grad(set_to_none=True)
+                loss_part3.backward()
+                optimizer_ae.step()
 
             for i in range(ModelType.n_atlas):
                 loss_atlas_i[i] += loss_part2["loss_AE_all"][i].item()

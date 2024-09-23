@@ -151,8 +151,7 @@
  </script></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
-        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents</span></p>
-<ul class="nav bd-sidenav">
+        <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../index.html"> Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html"> Installation</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials.html"> Tutorials</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -290,8 +289,7 @@ document.write(`
 <span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">pickle</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">itertools</span>
+
 
 
 <div class="viewcode-block" id="reset_parameters">
@@ -916,7 +914,7 @@ document.write(`
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; model = Fuse_network(100, [10, 20], 50, 10, 0.1, [&#39;gene1&#39;, &#39;gene2&#39;], [&#39;gene1&#39;, &#39;gene2&#39;], &#39;norm&#39;, 2, [&#39;scrna&#39;, &#39;scrna&#39;], [100, 200], 100)</span>
 <span class="sd">        &gt;&gt;&gt; model.add_adaptdecoder_module(&#39;atlas1&#39;, [1, 2, 3], torch.randn(10, 100), torch.randn(10, 100))</span>
-<span class="sd">        </span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">FuseMapAdaptDecoder</span><span class="p">(</span><span class="n">var_index</span><span class="p">,</span> <span class="n">gene_pretrain</span><span class="p">,</span> <span class="n">gene_new</span><span class="p">)</span></div>
 </div>

@@ -9,7 +9,7 @@ import torch
 import anndata as ad
 import pandas as pd
 import numpy as np
-# import dgl
+import dgl
 import random
 from fusemap.model import NNTransfer
 try:
@@ -180,12 +180,16 @@ def generate_ad_embed(save_dir, X_input, keep_label, ttype, use_key="final"):
 def read_cell_embedding(X_input, save_dir,keep_celltype, keep_tissueregion, use_key="final"):
     if not os.path.exists(f"{save_dir}/ad_celltype_embedding.h5ad"):
         ad_embed = generate_ad_embed(save_dir, X_input, keep_celltype, ttype="single", use_key=use_key)
+        for i in ad_embed.obs.columns:
+            ad_embed.obs[i]=ad_embed.obs[i].astype(str)
         ad_embed.write_h5ad(save_dir + "/ad_celltype_embedding.h5ad")
 
     if not os.path.exists(f"{save_dir}/ad_tissueregion_embedding.h5ad"):
         ad_embed = generate_ad_embed(
             save_dir, X_input, keep_tissueregion, ttype="spatial", use_key=use_key
         )
+        for i in ad_embed.obs.columns:
+            ad_embed.obs[i]=ad_embed.obs[i].astype(str)
         ad_embed.write_h5ad(save_dir + "/ad_tissueregion_embedding.h5ad")
 
 

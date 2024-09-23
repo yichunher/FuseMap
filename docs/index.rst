@@ -1,5 +1,4 @@
-
-Welcome to FuseMap's documentation!
+FuseMap
 =====================================
 
 

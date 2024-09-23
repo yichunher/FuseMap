@@ -51,9 +51,9 @@ def main(args):
         spatial_integrate(X_input, args, kneighbor, input_identity
                           )
     elif args.mode == "map":
-        molccf_path = "/home/jialiulab/disk1/yichun/FuseMap/molCCF/"
+        # molccf_path = "/home/jialiulab/disk1/yichun/FuseMap/molCCF/"
         spatial_map(
-            molccf_path, X_input, args, kneighbor, input_identity
+            X_input, args, kneighbor, input_identity
         )
     else:
         raise ValueError(f"mode {args.mode} not recognized")

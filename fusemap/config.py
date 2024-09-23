@@ -1,6 +1,4 @@
-import sys
 import argparse
-from typing import Dict, Any
 from enum import Enum
 
 
@@ -36,7 +34,10 @@ def parse_input_args():
         "--use_llm_gene_embedding",
         default=False,
     )
-    
+    parser.add_argument(
+        "--pretrain_model_path",
+        default="",
+    )
     args = parser.parse_args()
     return args
 
@@ -73,3 +74,4 @@ class ModelType(Enum):
     TRAIN_WITHOUT_EVAL = 10
     USE_REFERENCE_PCT = 0.02
     verbose = False
+    use_key='final'

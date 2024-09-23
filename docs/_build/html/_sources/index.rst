@@ -1,5 +1,9 @@
-
-Welcome to FuseMap's documentation!
+.. image:: https://readthedocs.org/projects/fusemap/badge/?version=latest
+    :target: https://fusemap.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+      
+      
+FuseMap
 =====================================
 
 

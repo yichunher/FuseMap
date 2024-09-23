@@ -1,6 +1,6 @@
 import torch
 import scipy.sparse as sp
-# import dgl
+import dgl
 import numpy as np
 from torch.utils.data import Dataset, DataLoader, DataLoader
 import itertools
@@ -36,7 +36,7 @@ def construct_mask(n_atlas, spatial_dataset_list, g_all):
     >>> spatial_dataset_list = [CustomGraphDataset(i, j, ModelType.use_input) for i, j in zip(g_all, adatas)]
     >>> g_all = [dgl.graph((adj_coo.row, adj_coo.col)) for adj_coo in adj_all]
     >>> train_mask, val_mask = construct_mask(n_atlas, spatial_dataset_list, g_all)
-    
+
     """
     train_pct = 0.85
     # np.random.seed(0)

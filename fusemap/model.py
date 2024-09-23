@@ -6,8 +6,7 @@ try:
 except ModuleNotFoundError:
     import pickle
 import torch
-import numpy as np
-import itertools
+
 
 
 def reset_parameters(para):
@@ -274,7 +273,8 @@ class FuseMapDecoder(nn.Module):
         super(FuseMapDecoder, self).__init__()
         self.gene_embedding = gene_embedding
         self.var_index = var_index
-        self.activation_3 = nn.LeakyReLU(negative_slope=0.2)
+        # self.activation_3 = nn.LeakyReLU(negative_slope=0.2)
+        self.activation_3 = nn.ReLU()
 
     def forward(self, z_spatial, adj):
         h_4 = torch.mm(adj, z_spatial)
@@ -290,9 +290,10 @@ class FuseMapAdaptDecoder(nn.Module):
         self.gene_embedding_pretrain = gene_embedding_pretrain
         self.gene_embedding_new = gene_embedding_new
         self.var_index = var_index
-        self.activation_3 = nn.LeakyReLU(negative_slope=0.2)
-
-    def forward(self, z, z_spatial, adj, gene_embedding_pretrain, gene_embedding_new):
+        # self.activation_3 = nn.LeakyReLU(negative_slope=0.2)
+        self.activation_3 = nn.ReLU()
+        
+    def forward(self, z_spatial, adj, gene_embedding_pretrain, gene_embedding_new):
         h_4 = torch.mm(adj, z_spatial)
         # p=0
         # gene_embed_all = torch.hstack([gene_embedding_pretrain, self.gene_embedding_new ])
@@ -418,7 +419,35 @@ class Fuse_network(nn.Module):
 
         elif use_llm_gene_embedding=='combine':
             if pretrain_model:
-                raise ValueError("pretrain_model is not supported for use_llm_gene_embedding")
+                self.gene_embedding_pretrained = nn.Parameter(
+                    torch.zeros(latent_dim, len(PRETRAINED_GENE))
+                )
+                self.gene_embedding_new = nn.Parameter(
+                    torch.zeros(latent_dim, len(new_train_gene))
+                )
+                all_genes = new_train_gene + PRETRAINED_GENE
+                for ij in range(n_atlas):
+                    self.var_index.append([all_genes.index(i) for i in var_name[ij]])
+                reset_parameters(self.gene_embedding_new)
+            
+                path_genept="./jupyter_notebook/data/GenePT_emebdding_v2/GenePT_gene_protein_embedding_model_3_text_pca.pickle"
+                with open(path_genept, "rb") as fp:
+                    GPT_3_5_gene_embeddings = pickle.load(fp)  
+
+                self.llm_gene_embedding = torch.zeros(latent_dim, len(all_genes))    
+                for i,gene in enumerate(all_genes):
+                    if gene in GPT_3_5_gene_embeddings.keys():
+                        self.llm_gene_embedding[:,i] = torch.tensor(GPT_3_5_gene_embeddings[gene])
+
+                # Calculate gene embedding loss
+                ground_truth_matrix = self.llm_gene_embedding.T
+                ind = torch.sum(ground_truth_matrix,axis=1)!=0
+                ground_truth_matrix=ground_truth_matrix[ind,:]
+                
+                self.llm_ind=ind
+                ground_truth_matrix_normalized = ground_truth_matrix / ground_truth_matrix.norm(dim=1, keepdim=True)
+                self.ground_truth_rel_matrix = torch.matmul(ground_truth_matrix_normalized, ground_truth_matrix_normalized.T)
+
             else:
                 self.gene_embedding = nn.Parameter(
                     torch.zeros(latent_dim, len(all_unique_genes))
@@ -589,7 +618,7 @@ class Fuse_network(nn.Module):
         --------
         >>> model = Fuse_network(100, [10, 20], 50, 10, 0.1, ['gene1', 'gene2'], ['gene1', 'gene2'], 'norm', 2, ['scrna', 'scrna'], [100, 200], 100)
         >>> model.add_adaptdecoder_module('atlas1', [1, 2, 3], torch.randn(10, 100), torch.randn(10, 100))
-        
+
         """
         self.decoder[key] = FuseMapAdaptDecoder(var_index, gene_pretrain, gene_new)
 

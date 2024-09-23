@@ -71,11 +71,11 @@ def preprocess_adata(X_input, n_atlas):
         if not "spatial_input" in X_input[i].obsm:
             ### filter genes
             if isinstance(X_input[i].X, np.ndarray):
-                X_input[i] = X_input[i][:, np.sum(X_input[i].X, axis=0) > 5]
-                X_input[i] = X_input[i][:, np.max(X_input[i].X, axis=0) > 3]
+                X_input[i] = X_input[i][:, np.sum(X_input[i].X, axis=0) > 1]
+                X_input[i] = X_input[i][:, np.max(X_input[i].X, axis=0) > 1]
             if scipy.sparse.issparse(X_input[i].X):
-                X_input[i] = X_input[i][:, np.sum(X_input[i].X.toarray(), axis=0) > 5]
-                X_input[i] = X_input[i][:, np.max(X_input[i].X.toarray(), axis=0) > 3]
+                X_input[i] = X_input[i][:, np.sum(X_input[i].X.toarray(), axis=0) > 1]
+                X_input[i] = X_input[i][:, np.max(X_input[i].X.toarray(), axis=0) > 1]
 
             ### unify genes
             X_input[i].var.index = [i.upper() for i in X_input[i].var.index]

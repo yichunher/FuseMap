@@ -6,7 +6,7 @@ from fusemap.config import *
 from fusemap.utils import *
 from fusemap.train_model import *
 from pathlib import Path
-# import dgl.dataloading as dgl_dataload
+import dgl.dataloading as dgl_dataload
 import os
 import torch
 import logging
@@ -256,6 +256,7 @@ def spatial_integrate(
         ModelType.save_dir,
         args.keep_celltype,
         args.keep_tissueregion,
+        use_key=ModelType.use_key.value,
     )
 
     return

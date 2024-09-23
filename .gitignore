@@ -9,10 +9,13 @@ jupyter_notebook/
 jupyter_notebook/*
 jupyter_notebook/*/*
 jupyter_notebook/*/*/*
+jupyter_notebook/*/*/*/*
+jupyter_notebook/*/*/*/*/*
 output/
 output/*
 output/*/*
 output/*/*/*
+output/*/*/*/*
 molCCF/
 molCCF/*
 molCCF/*/*

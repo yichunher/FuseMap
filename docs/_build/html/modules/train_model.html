@@ -152,8 +152,7 @@
  </script></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
-        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents</span></p>
-<ul class="current nav bd-sidenav">
+        <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../index.html"> Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html"> Installation</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials.html"> Tutorials</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -305,9 +304,7 @@ document.write(`
   </button>
 `);
 </script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -323,23 +320,6 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.add_pretrain_to_name"><code class="docutils literal notranslate"><span class="pre">add_pretrain_to_name()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.balance_weight"><code class="docutils literal notranslate"><span class="pre">balance_weight()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.get_data"><code class="docutils literal notranslate"><span class="pre">get_data()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.load_ref_data"><code class="docutils literal notranslate"><span class="pre">load_ref_data()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.load_ref_model"><code class="docutils literal notranslate"><span class="pre">load_ref_model()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.map_model"><code class="docutils literal notranslate"><span class="pre">map_model()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.pretrain_model"><code class="docutils literal notranslate"><span class="pre">pretrain_model()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.read_model"><code class="docutils literal notranslate"><span class="pre">read_model()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.train_model"><code class="docutils literal notranslate"><span class="pre">train_model()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.transfer_weight"><code class="docutils literal notranslate"><span class="pre">transfer_weight()</span></code></a></li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -349,58 +329,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="module-fusemap.train_model">
-<span id="fusemap-train-model-module"></span><h1>fusemap.train_model module<a class="headerlink" href="#module-fusemap.train_model" title="Link to this heading">#</a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.train_model.add_pretrain_to_name">
-<span class="sig-prename descclassname"><span class="pre">fusemap.train_model.</span></span><span class="sig-name descname"><span class="pre">add_pretrain_to_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/train_model.html#add_pretrain_to_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.train_model.add_pretrain_to_name" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.train_model.balance_weight">
-<span class="sig-prename descclassname"><span class="pre">fusemap.train_model.</span></span><span class="sig-name descname"><span class="pre">balance_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adatas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_atlas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/train_model.html#balance_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.train_model.balance_weight" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.train_model.get_data">
-<span class="sig-prename descclassname"><span class="pre">fusemap.train_model.</span></span><span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blocks_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/train_model.html#get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.train_model.get_data" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.train_model.load_ref_data">
-<span class="sig-prename descclassname"><span class="pre">fusemap.train_model.</span></span><span class="sig-name descname"><span class="pre">load_ref_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TRAINED_X_NUM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">USE_REFERENCE_PCT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/train_model.html#load_ref_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.train_model.load_ref_data" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.train_model.load_ref_model">
-<span class="sig-prename descclassname"><span class="pre">fusemap.train_model.</span></span><span class="sig-name descname"><span class="pre">load_ref_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/train_model.html#load_ref_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.train_model.load_ref_model" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.train_model.map_model">
-<span class="sig-prename descclassname"><span class="pre">fusemap.train_model.</span></span><span class="sig-name descname"><span class="pre">map_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adapt_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_dataloader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader_pretrain_single</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader_pretrain_spatial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TRAINED_X_NUM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flagconfig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/train_model.html#map_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.train_model.map_model" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.train_model.pretrain_model">
-<span class="sig-prename descclassname"><span class="pre">fusemap.train_model.</span></span><span class="sig-name descname"><span class="pre">pretrain_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_dataloader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flagconfig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/train_model.html#pretrain_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.train_model.pretrain_model" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.train_model.read_model">
-<span class="sig-prename descclassname"><span class="pre">fusemap.train_model.</span></span><span class="sig-name descname"><span class="pre">read_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_dataloader_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ModelType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/train_model.html#read_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.train_model.read_model" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.train_model.train_model">
-<span class="sig-prename descclassname"><span class="pre">fusemap.train_model.</span></span><span class="sig-name descname"><span class="pre">train_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_dataloader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_all</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flagconfig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/train_model.html#train_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.train_model.train_model" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="fusemap.train_model.transfer_weight">
-<span class="sig-prename descclassname"><span class="pre">fusemap.train_model.</span></span><span class="sig-name descname"><span class="pre">transfer_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">TRAINED_MODEL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrain_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adapt_model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fusemap/train_model.html#transfer_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fusemap.train_model.transfer_weight" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
+  <section id="fusemap-train-model-module">
+<h1>fusemap.train_model module<a class="headerlink" href="#fusemap-train-model-module" title="Link to this heading">#</a></h1>
 </section>
 
 
@@ -438,30 +368,6 @@ document.write(`
             </div>
             
             
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.add_pretrain_to_name"><code class="docutils literal notranslate"><span class="pre">add_pretrain_to_name()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.balance_weight"><code class="docutils literal notranslate"><span class="pre">balance_weight()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.get_data"><code class="docutils literal notranslate"><span class="pre">get_data()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.load_ref_data"><code class="docutils literal notranslate"><span class="pre">load_ref_data()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.load_ref_model"><code class="docutils literal notranslate"><span class="pre">load_ref_model()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.map_model"><code class="docutils literal notranslate"><span class="pre">map_model()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.pretrain_model"><code class="docutils literal notranslate"><span class="pre">pretrain_model()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.read_model"><code class="docutils literal notranslate"><span class="pre">read_model()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.train_model"><code class="docutils literal notranslate"><span class="pre">train_model()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fusemap.train_model.transfer_weight"><code class="docutils literal notranslate"><span class="pre">transfer_weight()</span></code></a></li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>
