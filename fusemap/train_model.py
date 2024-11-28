@@ -141,6 +141,8 @@ def pretrain_model(
         loss_dis = 0
         loss_ae_dis = 0
         loss_all_item = 0
+        if ModelType.use_llm_gene_embedding=='combine':
+            loss_gene_embedding = 0
         loss_atlas_i = {}
         for i in range(ModelType.n_atlas):
             loss_atlas_i[i] = 0
@@ -153,7 +155,7 @@ def pretrain_model(
 
         model.train()
 
-        for blocks_all in spatial_dataloader:
+        for blocks_all in tqdm(spatial_dataloader):
             (
                 batch_features_all,
                 adj_all_block,
@@ -200,10 +202,12 @@ def pretrain_model(
             optimizer_ae.step()
 
             if ModelType.use_llm_gene_embedding=='combine':
-                loss_part3 = compute_gene_embedding_loss(model)
-                model.zero_grad(set_to_none=True)
-                loss_part3.backward()
-                optimizer_ae.step()
+                # for _ in range(3):
+                    loss_part3 = compute_gene_embedding_loss(model)
+                    model.zero_grad(set_to_none=True)
+                    loss_part3.backward()
+                    optimizer_ae.step()
+                    loss_gene_embedding += loss_part3.item()
 
             for i in range(ModelType.n_atlas):
                 loss_atlas_i[i] += loss_part2["loss_AE_all"][i].item()
@@ -212,16 +216,22 @@ def pretrain_model(
 
         flagconfig.align_anneal /= 2
 
-        if ModelType.verbose == True:
+        if ModelType.verbose.value == True:
             logging.info(
                 f"\n\nTrain Epoch {epoch}/{ModelType.n_epochs}, \
             Loss dis: {loss_dis / len(spatial_dataloader)},\
             Loss AE: {[i / len(spatial_dataloader) for i in loss_atlas_i.values()]} , \
+            Loss AE sum: {sum([i / len(spatial_dataloader) for i in loss_atlas_i.values()])} , \
             Loss ae dis:{loss_ae_dis / len(spatial_dataloader)},\
             Loss all:{loss_all_item / len(spatial_dataloader)}\n"
             )
+            if ModelType.use_llm_gene_embedding=='combine':
+                logging.info(
+                    f"Train Epoch {epoch}/{ModelType.n_epochs}, \
+                Loss gene embedding: {loss_gene_embedding / len(spatial_dataloader)}\n"
+                )
 
-        save_snapshot(model, epoch, ModelType.epochs_run_final, ModelType.snapshot_path,ModelType.verbose)
+        save_snapshot(model, epoch, ModelType.epochs_run_final, ModelType.snapshot_path,ModelType.verbose.value)
 
         if not os.path.exists(f"{ModelType.save_dir}/lambda_disc_single.pkl"):
             save_obj(
@@ -271,7 +281,7 @@ def pretrain_model(
                     loss_atlas_val / len(spatial_dataloader) / ModelType.n_atlas
                 )
 
-                if ModelType.verbose == True:
+                if ModelType.verbose.value == True:
                     logging.info(
                         f"\n\nValidation Epoch {epoch + 1}/{ModelType.n_epochs}, \
                     Loss AE validation: {loss_atlas_val} \n"
@@ -280,7 +290,7 @@ def pretrain_model(
             scheduler_dis.step(loss_atlas_val)
             scheduler_ae.step(loss_atlas_val)
             current_lr = optimizer_dis.param_groups[0]["lr"]
-            if ModelType.verbose == True:
+            if ModelType.verbose.value == True:
                 logging.info(f"\n\ncurrent lr:{current_lr}\n")
 
             # If the loss is lower than the best loss so far, save the model And reset the patience counter
@@ -377,6 +387,8 @@ def train_model(
         loss_dis = 0
         loss_ae_dis = 0
         loss_all_item = 0
+        if ModelType.use_llm_gene_embedding=='combine':
+            loss_gene_embedding = 0
         loss_atlas_i = {}
         for i in range(ModelType.n_atlas):
             loss_atlas_i[i] = 0
@@ -450,10 +462,12 @@ def train_model(
             optimizer_ae.step()
 
             if ModelType.use_llm_gene_embedding=='combine':
-                loss_part3 = compute_gene_embedding_loss(model)
-                model.zero_grad(set_to_none=True)
-                loss_part3.backward()
-                optimizer_ae.step()
+                # for _ in range(3):
+                    loss_part3 = compute_gene_embedding_loss(model)
+                    model.zero_grad(set_to_none=True)
+                    loss_part3.backward()
+                    optimizer_ae.step()
+                    loss_gene_embedding += loss_part3.item()
 
             for i in range(ModelType.n_atlas):
                 loss_atlas_i[i] += loss_part2["loss_AE_all"][i].item()
@@ -463,17 +477,23 @@ def train_model(
         flagconfig.align_anneal /= 2
 
         save_snapshot(
-            model, ModelType.epochs_run_pretrain, epoch, ModelType.snapshot_path,ModelType.verbose
+            model, ModelType.epochs_run_pretrain, epoch, ModelType.snapshot_path,ModelType.verbose.value
         )
 
-        if ModelType.verbose == True:
+        if ModelType.verbose.value == True:
             logging.info(
                 f"\n\nTrain Epoch {epoch + 1}/{ModelType.n_epochs.value}, \
             Loss dis: {loss_dis / len(spatial_dataloader)},\
             Loss AE: {[i / len(spatial_dataloader) for i in loss_atlas_i.values()]} , \
+            Loss AE sum: {sum([i / len(spatial_dataloader) for i in loss_atlas_i.values()])} , \
             Loss ae dis:{loss_ae_dis / len(spatial_dataloader)},\
             Loss all:{loss_all_item / len(spatial_dataloader)}\n"
             )
+            if ModelType.use_llm_gene_embedding=='combine':
+                logging.info(
+                    f"Train Epoch {epoch + 1}/{ModelType.n_epochs.value}, \
+                Loss gene embedding: {loss_gene_embedding / len(spatial_dataloader)}\n"
+                )
 
         ################# validation
         if epoch > ModelType.TRAIN_WITHOUT_EVAL.value:
@@ -528,7 +548,7 @@ def train_model(
                 loss_atlas_val = (
                     loss_atlas_val / len(spatial_dataloader) / ModelType.n_atlas
                 )
-                if ModelType.verbose == True:
+                if ModelType.verbose.value == True:
                     logging.info(
                         f"\n\nValidation Epoch {epoch + 1}/{ModelType.n_epochs.value}, \
                     Loss AE validation: {loss_atlas_val} \n"
@@ -537,7 +557,7 @@ def train_model(
             scheduler_dis.step(loss_atlas_val)
             scheduler_ae.step(loss_atlas_val)
             current_lr = optimizer_dis.param_groups[0]["lr"]
-            if ModelType.verbose == True:
+            if ModelType.verbose.value == True:
                 logging.info(f"\n\ncurrent lr:{current_lr}\n")
 
             # If the loss is lower than the best loss so far, save the model And reset the patience counter
@@ -585,7 +605,7 @@ def read_model(
     model.load_state_dict(
         torch.load(f"{ModelType.save_dir}/trained_model/FuseMap_{mode}_model_final.pt")
     )
-
+    
     with torch.no_grad():
         model.eval()
 
@@ -752,7 +772,7 @@ def balance_weight(model, adatas, save_dir, n_atlas, device):
             adata_.obs["fusemap_single_leiden"] = ad_fusemap_single_leiden[ind]
             adata_.obs["fusemap_spatial_leiden"] = ad_fusemap_spatial_leiden[ind]
 
-    if len(leiden_adata_single) > 8:
+    if len(leiden_adata_single) > 6:
         # raise ValueError('balance weight')
         balance_weight_single = get_balance_weight_subsample(
             leiden_adata_single, adatas_, "fusemap_single_leiden"
@@ -1063,7 +1083,7 @@ def map_model(
 
         flagconfig.align_anneal /= 2
 
-        if ModelType.verbose == True:
+        if ModelType.verbose.value == True:
             logging.info(
                 f"\n\nTrain Epoch {epoch}/{ModelType.n_epochs}, \
             Loss dis: {loss_dis / len(spatial_dataloader)},\
@@ -1073,7 +1093,7 @@ def map_model(
             )
 
         save_snapshot(
-            adapt_model, epoch, ModelType.epochs_run_final, ModelType.snapshot_path, ModelType.verbose
+            adapt_model, epoch, ModelType.epochs_run_final, ModelType.snapshot_path, ModelType.verbose.value
         )
 
         if not os.path.exists(f"{ModelType.save_dir}/lambda_disc_single.pkl"):
@@ -1161,7 +1181,7 @@ def map_model(
                         loss_atlas_val += loss_part2["loss_AE_all"][i].item()
 
                 loss_atlas_val = loss_atlas_val / len(spatial_dataloader) / ModelType.n_atlas
-                if ModelType.verbose == True:
+                if ModelType.verbose.value == True:
                     logging.info(
                         f"\n\nValidation Epoch {epoch + 1}/{ModelType.n_epochs.value}, \
                     Loss AE validation: {loss_atlas_val} \n"
@@ -1170,7 +1190,7 @@ def map_model(
             scheduler_dis.step(loss_atlas_val)
             scheduler_ae.step(loss_atlas_val)
             current_lr = optimizer_dis.param_groups[0]["lr"]
-            if ModelType.verbose == True:
+            if ModelType.verbose.value == True:
                 logging.info(f"\n\ncurrent lr:{current_lr}\n")
 
             # If the loss is lower than the best loss so far, save the model And reset the patience counter

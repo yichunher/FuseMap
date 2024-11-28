@@ -66,16 +66,14 @@ def preprocess_raw(
             data_i.write_h5ad(pth_i)
 
 
+def contains_only_integers(arr):
+    # Check if all values are whole numbers, even if they are floats
+    return np.all(arr % 1 == 0)
+
+
 def preprocess_adata(X_input, n_atlas):
     for i in range(n_atlas):
-        if not "spatial_input" in X_input[i].obsm:
-            ### filter genes
-            if isinstance(X_input[i].X, np.ndarray):
-                X_input[i] = X_input[i][:, np.sum(X_input[i].X, axis=0) > 1]
-                X_input[i] = X_input[i][:, np.max(X_input[i].X, axis=0) > 1]
-            if scipy.sparse.issparse(X_input[i].X):
-                X_input[i] = X_input[i][:, np.sum(X_input[i].X.toarray(), axis=0) > 1]
-                X_input[i] = X_input[i][:, np.max(X_input[i].X.toarray(), axis=0) > 1]
+        # if not "spatial_input" in X_input[i].obsm:
 
             ### unify genes
             X_input[i].var.index = [i.upper() for i in X_input[i].var.index]
@@ -84,20 +82,41 @@ def preprocess_adata(X_input, n_atlas):
             _, indices = np.unique(X_input[i].var.index, return_index=True)
             X_input[i] = X_input[i][:, indices]
 
+            ### filter genes
+            if isinstance(X_input[i].X, np.ndarray):
+                if contains_only_integers(X_input[i].X):
+                    X_input[i] = X_input[i][:, np.sum(X_input[i].X, axis=0) > 1]
+                    X_input[i] = X_input[i][:, np.max(X_input[i].X, axis=0) > 1]
+                    ### filter cells
+                    X_input[i] = X_input[i][np.sum(X_input[i].X, axis=1) > 5]
+
+                    X_input[i].layers["counts"] = X_input[i].X.copy()
+
+                    sc.pp.normalize_total(X_input[i])  # , target_sum=1e4)
+                    sc.pp.log1p(X_input[i])
+                    sc.pp.scale(X_input[i], zero_center=False, max_value=10)
+                    
+            if scipy.sparse.issparse(X_input[i].X):
+                if contains_only_integers(X_input[i].X.toarray()):
+                    X_input[i] = X_input[i][:, np.sum(X_input[i].X.toarray(), axis=0) > 1]
+                    X_input[i] = X_input[i][:, np.max(X_input[i].X.toarray(), axis=0) > 1]
+                    ### filter cells
+                    X_input[i] = X_input[i][np.sum(X_input[i].X, axis=1) > 5]
+
+                    X_input[i].layers["counts"] = X_input[i].X.copy()
+
+                    sc.pp.normalize_total(X_input[i])  # , target_sum=1e4)
+                    sc.pp.log1p(X_input[i])
+                    sc.pp.scale(X_input[i], zero_center=False, max_value=10)
+            
+            # sc.pp.scale(X_input[i], zero_center=False, max_value=10)
+
+
+            # if isinstance(X_input[i].X, np.ndarray):
+            #     X_input[i].X = csr_matrix(X_input[i].X)
+
             ### unify genes
             X_input[i].var.index = [i.upper() for i in X_input[i].var.index]
-
-            ### filter cells
-            X_input[i] = X_input[i][np.sum(X_input[i].X, axis=1) > 5]
-
-            ### normalize and pca
-            X_input[i].layers["counts"] = X_input[i].X.copy()
-
-            sc.pp.normalize_total(X_input[i])  # , target_sum=1e4)
-            sc.pp.log1p(X_input[i])
-            sc.pp.scale(X_input[i], zero_center=False, max_value=10)
-            if isinstance(X_input[i].X, np.ndarray):
-                X_input[i].X = csr_matrix(X_input[i].X)
 
     return X_input
 
@@ -177,16 +196,18 @@ def preprocess_adj_sparse(adatas, n_atlas, input_identity):
 def get_spatial_input(adatas, n_atlas, use_input):
     for i_atlas in range(n_atlas):
         adata = adatas[i_atlas]
-        if not "spatial_input" in adata.obsm:
-            if use_input == "pca":
-                adata.obsm["spatial_input"] = adata.obsm["X_pca"]
-            if use_input == "raw":
-                adata.obsm["spatial_input"] = adata.layers["counts"]
-            if use_input == "norm":
+        # if use_input == "pca":
+        #     adata.obsm["spatial_input"] = adata.obsm["X_pca"]
+        # if use_input == "raw":
+        #     adata.obsm["spatial_input"] = adata.layers["counts"]
+        if use_input == "norm":
+            if isinstance(adata.X, np.ndarray):
+                adata.obsm["spatial_input"]= csr_matrix(adata.X)
+            else:
                 adata.obsm["spatial_input"] = adata.X
         else:
-            if isinstance(adata.obsm['spatial_input'], np.ndarray):
-                adata.obsm['spatial_input'] = csr_matrix(adata.obsm['spatial_input'])
+            raise ValueError("use_input not implemented")
+
 
 def get_unique_gene_indices(gene_list):
     unique_genes, indices = np.unique(gene_list, return_index=True)

@@ -379,7 +379,7 @@ class Fuse_network(nn.Module):
         pretrain_n_atlas=0,
         PRETRAINED_GENE=None,
         new_train_gene=None,
-        use_llm_gene_embedding=False,
+        use_llm_gene_embedding='false',
     ):
         super(Fuse_network, self).__init__()
         self.encoder = {}
@@ -430,7 +430,7 @@ class Fuse_network(nn.Module):
                     self.var_index.append([all_genes.index(i) for i in var_name[ij]])
                 reset_parameters(self.gene_embedding_new)
             
-                path_genept="./jupyter_notebook/data/GenePT_emebdding_v2/GenePT_gene_protein_embedding_model_3_text_pca.pickle"
+                path_genept="./data/GenePT_gene_protein_embedding_model_3_text_pca.pickle"
                 with open(path_genept, "rb") as fp:
                     GPT_3_5_gene_embeddings = pickle.load(fp)  
 
@@ -458,7 +458,7 @@ class Fuse_network(nn.Module):
                     )
                 reset_parameters(self.gene_embedding)
 
-                path_genept="./jupyter_notebook/data/GenePT_emebdding_v2/GenePT_gene_protein_embedding_model_3_text_pca.pickle"
+                path_genept="./data/GenePT_gene_protein_embedding_model_3_text_pca.pickle"
                 with open(path_genept, "rb") as fp:
                     GPT_3_5_gene_embeddings = pickle.load(fp)  
 

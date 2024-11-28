@@ -169,7 +169,17 @@ def generate_ad_embed(save_dir, X_input, keep_label, ttype, use_key="final"):
         ad_list.append(ad_embed_1)
     ad_embed = ad.concat(ad_list)
 
-    origin_concat=ad.concat(X_input,join='outer').obs
+    try:
+        origin_concat=ad.concat(X_input,join='outer').obs
+    except:
+        origin_concat_old=ad.concat(X_input).obs
+        origin_concat=origin_concat_old.copy()
+        for i in range(len(X_input)):
+            X_input_i=X_input[i]
+            for j in X_input_i.obs.columns:
+                if j not in origin_concat_old.columns:
+                    origin_concat.loc[origin_concat['file_name']==X_input_i.obs['file_name'].unique()[0],j]=list(X_input_i.obs[j].values)
+
     ad_embed.obs.index = origin_concat.index
     for i in origin_concat.columns:
         if i not in ad_embed.obs.columns:

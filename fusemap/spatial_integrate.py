@@ -256,7 +256,7 @@ def spatial_integrate(
         ModelType.save_dir,
         args.keep_celltype,
         args.keep_tissueregion,
-        use_key=ModelType.use_key.value,
+        use_key= ModelType.use_key.value,
     )
 
     return

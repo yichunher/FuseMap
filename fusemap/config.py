@@ -32,7 +32,7 @@ def parse_input_args():
     )
     parser.add_argument(
         "--use_llm_gene_embedding",
-        default=False,
+        default='false',
     )
     parser.add_argument(
         "--pretrain_model_path",
