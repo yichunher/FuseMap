@@ -36,9 +36,13 @@ def main(args):
                 X.obs["x"] = X.obs["col"]
                 X.obs["y"] = X.obs["row"]
             except:
-                raise ValueError(
-                    "Please provide spatial coordinates in the obs['x'] and obs['y'] columns"
-                )
+                try:
+                    X.obs['x']=X.obsm['spatial'][:,0]
+                    X.obs['y']=X.obsm['spatial'][:,1]
+                except:                
+                    raise ValueError(
+                        "Please provide spatial coordinates in the obs['x'] and obs['y'] columns"
+                    )
         X.obs["name"] = f"section{ind}"
         X.obs['file_name'] = file_name_i.split('/')[-1]
         X_input.append(X)
@@ -48,19 +52,17 @@ def main(args):
     ### train model
     logging.info("\n\nTraining model...\n")
     if args.mode == "integrate":
-        spatial_integrate(X_input, args, kneighbor, input_identity
+        spatial_integrate(
+            X_input, args, kneighbor, input_identity
                           )
     elif args.mode == "map":
-        # molccf_path = "/home/jialiulab/disk1/yichun/FuseMap/molCCF/"
         for i in range(len(X_input)):
             args_i=copy.copy(args)
             args_i.output_save_dir = args.output_save_dir + f"/{X_input[i].obs['file_name'].unique()[0]}/"
             spatial_map(
             [X_input[i]], args_i, [kneighbor[i]], [input_identity[i]]
-        )
-        # spatial_map(
-        #     X_input, args, kneighbor, input_identity
-        # )
+                        )   
+            
     else:
         raise ValueError(f"mode {args.mode} not recognized")
 
